@@ -1,0 +1,228 @@
+<HTML>
+<button onclick="addComponent('res')">Resistor</button>
+<button onclick="addComponent('cap')">Capacitor</button>
+<button onclick="addComponent('ind')">Inductor</button>
+<button onclick="addComponent('volt')">DC Voltage</button>
+<button onclick="addComponent('voltac')">AC voltage</button>
+<button onclick="addComponent('cur')">DC Current</button>
+<button onclick="finishAddComponent()">Finish adding</button>
+
+<svg id = "svg" width="1000" height="600" style="border:1px solid black" onmousemove="record(event)"></svg>
+</HTML>
+
+<script>
+var svg = document.getElementById("svg");
+var posArray = [];
+var lineArray = [];
+var points = [];
+var imgSrc;
+var component;
+var addComp = false;
+var moveComp = false;
+var moveID;
+recordPoints = false;
+mousePositions = [];
+var components=[];
+var res = {name:"Resistor",init: "res", prop:"Resistance", unit: '\u03A9'};
+var cap = {name:"Capacitor",init: "cap", prop:"Capacitance", unit: "F"};
+var ind = {name:"Inductor",init: "ind", prop:"Inductance", unit: "H"};
+var volt = {name:"Voltage source",init: "volt", prop:"Voltage", unit: "V"};
+var voltAC = {name:"AC voltage source",init: "voltac", prop:"Phasor voltage",unit: "V"};
+var cur = {name:"Current source",init: "cur", prop:"Current",unit: "A"};
+var info = [res, cap, ind, volt, voltAC, cur];
+
+
+function addComponent(comp){
+	var name;
+	for(var i=0; i<info.length; i++){
+		if(comp==info[i].init){
+			component = info[i];
+		}
+	}
+	imgSrc = component.init+".png";
+	addComp = true;
+}
+
+function finishAddComponent(){
+	addComp = false;
+}
+
+function findPolyLine(origin, dest, svg){
+	return [origin.coords,dest.coords];
+}
+
+/*
+function drawLines(origin, dest, positions){
+	var sumX = 0, sumY = 0;
+	for(var i=0; i<positions.length; i++){
+		sumX+=positions[i].x;
+		sumY+=positions[i].y;
+	}
+	var avgPoint = new Position(sumX/positions.length, sumY/positions.length);
+	var center = new Position((origin.x+dest.x)/2, (origin.y+dest.y)/2);
+	var originC = new Position(origin.x - center.x, origin.y - center.y);
+	var corner1C = new Position(dest.x - center.x, origin.y - center.y);
+	var corner2C = new Position(origin.x - center.x, dest.y - center.y);
+	var destC = new Position(-originC.x, -originC.y);
+	var normalC = new Position(-originC.y, originC.x);
+	var normal2C = new Position(originC.y, -originC.x);
+	var avgC = new Position(avgPoint.x - center.x, avgPoint.y - center.y);
+	var corner;
+	if(dist(normalC, avgC)<dist(normal2C, avgC)){
+		if(dist(normalC, corner1C)<dist(normalC, corner2C)){
+			corner = new Position(dest.x, origin.y);
+		}else{
+			corner = new Position(origin.x, dest.y);
+		}
+	}else{
+		if(dist(normal2C, corner1C)<dist(normal2C, corner2C)){
+			corner = new Position(dest.x, origin.y);
+		}else{
+			corner = new Position(origin.x, dest.y);
+		}
+	}
+	
+	svg.innerHTML+='<polyline points="'+origin.x+','+origin.y+' '+corner.x+','+corner.y+' '+dest.x+','+dest.y+'" style="fill:none;stroke:black;stroke-width:2"/>';
+	lineArray.push([origin, dest]);
+}
+*/
+
+function drawPolyLine(origin, dest){
+	var polyStr = "";
+	var polyLinePoints = findPolyLine(origin, dest, svg);
+	for(var i=0; i<polyLinePoints.length; i++){
+		polyStr+=polyLinePoints[i][0]+","+polyLinePoints[i][1]+" ";
+	}
+	svg.innerHTML+='<polyline points="'+polyStr+'" style="fill:none;stroke:black;stroke-width:2"/>';	
+}
+function Position(x, y){
+	this.x = x;
+	this.y = y;
+	this.show = function(){
+		console.log(this.x+" "+this.y);
+	}
+	this.coords = function(){
+		return [this.x, this.y];
+	}
+}
+
+function dist(a, b){
+	return Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2));
+}
+
+function move(id){
+	console.log(id);
+	moveComp = true;
+	moveID = id;
+}
+
+function updateValue(id){
+	var value = prompt("Please enter a "+ components[id].info.prop+" for the "+components[id].info.name+" in "+components[id].info.unit);
+	if(value!=null){
+		components[id].value = value;
+		document.getElementById("txt"+id).innerHTML = value+" "+components[id].info.unit;
+	}
+}
+
+/*
+function record(e){
+	if(recordPoints){
+		mousePositions.push(new Position(e.clientX, e.clientY));
+	}
+}
+*/
+
+svg.addEventListener("click", function(){
+	var pos = new Position(window.event.clientX-10,window.event.clientY-30);
+	var listen = true;
+	for(var i=0; i<components.length; i++){
+		if(Math.abs(pos.x - document.getElementById("img"+i).x.baseVal.value)<48 && Math.abs(pos.y - document.getElementById("img"+i).y.baseVal.value)<48){
+			listen = false;
+		} 
+	}
+	if(listen){
+	if(addComp){
+		
+		var value = prompt("Please enter a "+ component.prop+" for the "+component.name+" in "+component.unit);
+		while(value==""){
+			alert("Please enter a valid value");
+			value = prompt("Please enter a "+ component.prop+" for the "+component.name+" in "+component.unit);
+		}
+		if(value!=null){
+			var adjustedPos = new Position(pos.x-24, pos.y-48);
+			var leftPos = new Position(pos.x-24, pos.y-24);
+			var rightPos = new Position(pos.x+24, pos.y-24);
+			var id = components.length;
+			components.push({id:id, info:component, value:value});
+			svg.innerHTML+='<circle id="left'+id+'" cx="'+leftPos.x+'" cy="'+leftPos.y+'" r="3" fill="black"></circle>';
+			svg.innerHTML+='<circle id="right'+id+'" cx="'+rightPos.x+'" cy="'+rightPos.y+'" r="3" fill="black"></circle>';
+			
+			posArray.push(leftPos);
+			posArray.push(rightPos);			
+			svg.innerHTML+='<image id="img'+id+'" xlink:href="'+imgSrc+'" x="'+adjustedPos.x+'" y="'+adjustedPos.y+'" height="48" width="48"/>';// onclick="move(\''+id+'\')"/>';
+			svg.innerHTML+='<text x="'+pos.x+'" y="'+pos.y+'" id="'+"txt"+id+'" text-anchor="middle" onclick="updateValue(\''+id+'\')">'+value+" "+component.unit+'</text>';
+		}
+	}else if(moveComp){
+			var adjustedPos = new Position(pos.x-24, pos.y-48);
+			var leftPos = new Position(pos.x-24, pos.y-24);
+			var rightPos = new Position(pos.x+24, pos.y-24);
+			var leftDot = document.getElementById("left"+moveID);
+			var rightDot = document.getElementById("right"+moveID);
+			posArray[posArray.indexOf(new Position(leftDot.cx, leftDot.cy))]=leftPos;
+			posArray[posArray.indexOf(new Position(rightDot.cx, rightDot.cy))]=rightPos;
+			leftDot.cx.baseVal.value = leftPos.x;
+			leftDot.cy.baseVal.value = leftPos.y;
+			rightDot.cx.baseVal.value = rightPos.x;
+			rightDot.cy.baseVal.value = rightPos.y;
+			var text = document.getElementById("txt"+moveID);
+			text.setAttribute('x',pos.x); text.setAttribute('y', pos.y);
+			var img = document.getElementById("img"+moveID);
+			img.x.baseVal.value = adjustedPos.x; img.y.baseVal.value = adjustedPos.y;
+			moveComp=false;
+	}else{
+	var validPoint = false;
+	for(var i=0; i<lineArray.length; i++){
+		if(Math.abs(pos.x-lineArray[i][0].x)<10){
+			pos.x = lineArray[i][0].x;
+			validPoint = true;
+			break;
+		}else if(Math.abs(pos.x-lineArray[i][1].x)<10){
+			pos.x = lineArray[i][1].x;
+			validPoint = true;
+			break;
+		}else if(Math.abs(pos.y-lineArray[i][0].y)<10){
+			pos.y = lineArray[i][0].y;
+			validPoint=true;
+			break;
+		}else if(Math.abs(pos.y-lineArray[i][1].y)<10){
+			pos.y = lineArray[i][1].y;
+			validPoint=true;
+			break;
+		}
+	}
+	
+	for(var i=0; i<posArray.length; i++){
+		if(Math.abs(pos.x-posArray[i].x)<10 && Math.abs(pos.y-posArray[i].y)<10){
+			pos.x = posArray[i].x;
+			pos.y = posArray[i].y;
+			i=posArray.length;
+			validPoint = true;
+		}
+	}
+	if(validPoint){
+		if(points.length===0){
+			recordPoints = true;
+		}
+		points.push(pos);		
+	}
+	if(points.length>1){
+		recordPoints = false;
+		drawLines(points[0], points[1], mousePositions);
+		points = [];
+		mousePositions = [];
+	}
+	}
+}
+	}
+);
+</script>

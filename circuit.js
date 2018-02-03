@@ -1,46 +1,31 @@
 function Graph(){
     this.nodes = {};
-
-    this.addNode = function(index){
-        this.nodes[index] = new Node(index);
+    this.edges = {};
+    this.nodeCount = function(){
+        return Object.keys(this.nodes).length;
     }
 
-    this.addEdge = function(type, index, node1, node2){
-        node1.edges.push(new Edge(type, index, node1, node2));
-        node2.edges.push(new Edge(type, index, node1, node2));
+    this.addNode = function(id){
+        this.nodes[id] = [];
     }
 
-    this.adjacent = function(node1, node2){
-        for(var i=0; i<node1.edges.length; i++){
-            if(node2.index === node1.edges[i].node1.index || node2.index === node1.edges[i].node2.index){
-                return true;
-            }
-        }    
-        return false;
+    this.addEdge = function(id, nodeIds){
+        this.edges[id] = nodeIds;
+        this.nodes[nodeIds[0]].push(id);
+        this.nodes[nodeIds[1]].push(id);
+    }
+
+    this.removeEdge = function(id, nodeIds){
+        unset(this.nodes[nodeIds[0]], id);
+        unset(this.nodes[nodeIds[1]], id);
+        delete this.edges[id];
     }
 }
 
-function Edge(type, index, node1, node2){
-    this.type = type;
-    this.index = index;
-    this.node1 = node1;
-    this.node2 = node2;
-}
-
-function Node(index){
-    this.index = index;
-    this.edges = [];
-    this.neighbours = function(){
-        var neighbours = [];
-        for(var i=0; i<this.edges.length; i++){
-            if(this.edges[i].node1.index != this.index){
-                neighbours.push(this.edges[i].node1);
-            }else{
-                neighbours.push(this.edges[i].node2);
-            }
-        }
-        return neighbours;
-    }
+function unset(arr, value) {
+    if(arr.indexOf(value) != -1) { // Make sure the value exists
+        arr.splice(arr.indexOf(value), 1);
+    }   
 }
 
 function generateGraph(pins, lines, components){
@@ -52,48 +37,107 @@ function generateGraph(pins, lines, components){
     var edge;
     for(var i=0; i<lines.length; i++){
         edge = lines[i].split("_");
-        graph.addEdge("", i, graph.nodes[edge[0]], graph.nodes[edge[1]]);
+        graph.addEdge("lin-" + i, [parseInt(edge[0]), parseInt(edge[1])]);
     }
 
     for(var i=0; i<components.length; i++){
         edge = components[i];   
-        graph.addEdge(edge.type, edge.id, graph.nodes[edge.pins[0]], graph.nodes[edge.pins[1]]);
+        graph.addEdge(edge.type + "-" + edge.id, edge.pins);
     }
     return graph;
 }
 
-function DFS(graph){
-    var list = [];
+function spanningTree(graph){
     var tree = new Graph();
-    var node = graph.nodes[0];
-    var edge;
-    var nodeIndex;
-    var visited = {0:node};
-    for(var i=0; i<node.edges.length; i++){
-        edge = node.edges[i];
-        list.push([edge.type, edge.id, edge.node1.index, edge.node2.index]);
-    }
-    while(list.length > 0){
-        edge = list.pop();
-        if(visited[edge[2]] == undefined){
-            nodeIndex = edge[2];
-        }else if(visited[edge[3]] == undefined){
-            nodeIndex = edge[3];
-        }else{
-            continue;
-        }
-        tree.addNode(nodeIndex);
-        tree.addEdge(edge[0], edge[1], tree.nodes[edge[2]], tree.nodes[edge[3]]);
-        visited[nodeIndex] = true;
-        for(var i=0; i<graph.nodes[nodeIndex].edges.length; i++){
-            edge = graph.nodes[nodeIndex].edges[i];
-            list.push([edge.type, edge.id, edge.node1.index, edge.node2.index]);
+    tree.addNode(0);
+    var edge, nodeId2;
+    var edgeFound;
+    var edgeId;
+    while(tree.nodeCount() < graph.nodeCount()){
+        edgeFound = false;
+        for(var nodeId in tree.nodes){
+            for(var i=0; i<graph.nodes[nodeId].length; i++){
+                edgeId = graph.nodes[nodeId][i];
+                edge = graph.edges[edgeId];
+                if(edge[0] == nodeId){
+                    nodeId2 = edge[1]; 
+                }else{
+                    nodeId2 = edge[0];
+                }
+                if(tree.nodes[nodeId2] == undefined){
+                    tree.addNode(nodeId2);
+                    tree.addEdge(edgeId, [nodeId, nodeId2]);
+                    edgeFound = true;
+                    break;
+                }
+            }
+            if(edgeFound){
+                break;
+            }
         }
     }
     return tree;
 }
 
 
-function findIndependentLoops(graph){
-   // var nodes = 
+function getCycleBasis(graph){
+    var tree = spanningTree(graph);
+    var cycles = [];
+    var edges = {};
+    var edge, edgeId;
+    for(var nodeId in graph.nodes){
+        for(var i=0; i<graph.nodes[nodeId].length; i++){
+            edgeId = graph.nodes[nodeId][i];
+            if(tree.edges[edgeId] == undefined){
+                edges[edgeId] = graph.edges[edgeId];
+            }
+        }
+    }
+    
+    for(var edgeId in edges){
+        edge = edges[edgeId];
+        tree.addEdge(edgeId, edge);
+        cycles.push(findCycle(tree, edge[0]));
+        tree.removeEdge(edgeId, edge);
+    }
+    return cycles;
 }
+
+function findCycle(graph, nodeId){
+    console.log(nodeId);
+    var stack = [[undefined,nodeId]];
+    var visited = {};
+    for(var node in graph.nodes){
+        visited[node] = false;
+    }
+    visited[nodeId] = true;
+    var origin, dest;
+    var edge, edgeId;
+    var cycle = [nodeId];
+    while(stack.length>0){
+        origin = stack.pop();
+        for(var i=0; i<graph.nodes[origin[1]].length; i++){
+            edgeId = graph.nodes[origin[1]][i];
+            edge = graph.edges[edgeId];
+            if(origin[0] == edgeId){
+                continue;
+            }
+
+            if(edge[0] == origin[1]){
+                dest = edge[1];
+            }else{
+                dest = edge[0];
+            }
+            if(visited[dest]){
+                return cycle;    
+            }else{
+                stack.push([edgeId,dest]);
+                cycle.push(dest);
+                visited[dest] = true;
+            }
+        }
+    }
+}
+
+
+

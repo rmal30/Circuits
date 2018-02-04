@@ -36,6 +36,17 @@ function Graph(){
         }
         return neighbours;
     }
+
+    this.getEdge = function(nodeId1, nodeId2){
+        var edges = this.nodes[nodeId1];
+        var edge;
+        for(var i=0; i<edges.length; i++){
+            edge = this.edges[edges[i]];
+            if(edge[0] == nodeId2 || edge[1] == nodeId2){
+                return edges[i];
+            }
+        }
+    }
 }
 
 function unset(arr, value) {
@@ -47,18 +58,24 @@ function unset(arr, value) {
 function generateGraph(pins, lines, components){
     var graph = new Graph();
     for(var i=0; i<pins.length; i++){
-        graph.addNode(i);
+        if(Object.keys(pins[i]).length > 0){
+            graph.addNode(i);
+        }
     }
     
     var edge;
     for(var i=0; i<lines.length; i++){
-        edge = lines[i].split("_");
-        graph.addEdge("lin-" + i, [parseInt(edge[0]), parseInt(edge[1])]);
+        if(lines[i]!=""){
+            edge = lines[i].split("_");
+            graph.addEdge("lin-" + i, [parseInt(edge[0]), parseInt(edge[1])]);
+       } 
     }
 
     for(var i=0; i<components.length; i++){
-        edge = components[i];   
-        graph.addEdge(edge.type + "-" + edge.id, edge.pins);
+        if(Object.keys(components[i]).length>0){
+            edge = components[i];   
+            graph.addEdge(edge.type + "-" + edge.id, edge.pins);
+        }
     }
     return graph;
 }

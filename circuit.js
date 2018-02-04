@@ -20,6 +20,22 @@ function Graph(){
         unset(this.nodes[nodeIds[1]], id);
         delete this.edges[id];
     }
+
+    this.neighbours = function(nodeId){
+        var neighbours = [];
+        var edgeId;
+        var nodeId2;
+        for(var i=0; i<this.nodes[nodeId].length; i++){
+            edgeId = this.nodes[nodeId][i];
+            if(this.edges[edgeId][0] == nodeId){
+                nodeId2 = this.edges[edgeId][1];
+            }else{
+                nodeId2 = this.edges[edgeId][0];
+            }
+            neighbours.push(nodeId2);
+        }
+        return neighbours;
+    }
 }
 
 function unset(arr, value) {
@@ -66,7 +82,7 @@ function spanningTree(graph){
                 }
                 if(tree.nodes[nodeId2] == undefined){
                     tree.addNode(nodeId2);
-                    tree.addEdge(edgeId, [nodeId, nodeId2]);
+                    tree.addEdge(edgeId, [parseInt(nodeId), nodeId2]);
                     edgeFound = true;
                     break;
                 }
@@ -96,48 +112,54 @@ function getCycleBasis(graph){
     
     for(var edgeId in edges){
         edge = edges[edgeId];
-        tree.addEdge(edgeId, edge);
-        cycles.push(findCycle(tree, edge[0]));
-        tree.removeEdge(edgeId, edge);
+        //tree.addEdge(edgeId, edge);
+        cycles.push(findCycle(tree, edge));
+        //tree.removeEdge(edgeId, edge);
     }
     return cycles;
 }
 
-function findCycle(graph, nodeId){
-    console.log(nodeId);
-    var stack = [[undefined,nodeId]];
-    var visited = {};
-    for(var node in graph.nodes){
-        visited[node] = false;
-    }
-    visited[nodeId] = true;
-    var origin, dest;
-    var edge, edgeId;
-    var cycle = [nodeId];
-    while(stack.length>0){
-        origin = stack.pop();
-        for(var i=0; i<graph.nodes[origin[1]].length; i++){
-            edgeId = graph.nodes[origin[1]][i];
-            edge = graph.edges[edgeId];
-            if(origin[0] == edgeId){
-                continue;
-            }
+function findCycle(graph, edge){
+    var nodeId1 = edge[0];
+    var nodeId2 = edge[1];
+    var cycle = findPath(graph, nodeId2, nodeId1);
+    return cycle;
+}
 
-            if(edge[0] == origin[1]){
-                dest = edge[1];
-            }else{
-                dest = edge[0];
-            }
-            if(visited[dest]){
-                return cycle;    
-            }else{
-                stack.push([edgeId,dest]);
-                cycle.push(dest);
-                visited[dest] = true;
+function findPath(graph, nodeId1, nodeId2){
+    var stack = [];
+    var neighbours;
+    var ancestors = {};
+
+    stack.push(nodeId1);
+    
+    var visited = {};
+    for(var id in graph.nodes){
+        visited[id] = false;
+    }
+    
+    while(stack.length>0){
+        node = stack.pop();
+        if(node == nodeId2){
+            break;
+        }
+
+        if(!visited[node]){
+            visited[node] = true;
+            neighbours = graph.neighbours(node);
+            for(var i=0; i<neighbours.length; i++){
+                if(!visited[neighbours[i]]){
+                    ancestors[neighbours[i]] = node;
+                    stack.push(neighbours[i]);
+                }
             }
         }
     }
+    
+    var nodePath = [node];
+    while(ancestors[node] != undefined){
+        node = ancestors[node];
+        nodePath.push(node);
+    }
+    return nodePath;
 }
-
-
-

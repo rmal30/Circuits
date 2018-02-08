@@ -25,14 +25,16 @@ function Graph(){
         var neighbours = [];
         var edgeId;
         var nodeId2;
-        for(var i=0; i<this.nodes[nodeId].length; i++){
-            edgeId = this.nodes[nodeId][i];
-            if(this.edges[edgeId][0] == nodeId){
-                nodeId2 = this.edges[edgeId][1];
-            }else{
-                nodeId2 = this.edges[edgeId][0];
+        if(this.nodes[nodeId]!=undefined){
+            for(var i=0; i<this.nodes[nodeId].length; i++){
+                edgeId = this.nodes[nodeId][i];
+                if(this.edges[edgeId][0] == nodeId){
+                    nodeId2 = this.edges[edgeId][1];
+                }else{
+                    nodeId2 = this.edges[edgeId][0];
+                }
+                neighbours.push(nodeId2);
             }
-            neighbours.push(nodeId2);
         }
         return neighbours;
     }
@@ -86,7 +88,8 @@ function spanningTree(graph){
     var edge, nodeId2;
     var edgeFound;
     var edgeId;
-    while(tree.nodeCount() < graph.nodeCount()){
+    var counter = 0;
+    while(tree.nodeCount() < graph.nodeCount() && counter < 1000){
         edgeFound = false;
         for(var nodeId in tree.nodes){
             for(var i=0; i<graph.nodes[nodeId].length; i++){
@@ -108,6 +111,7 @@ function spanningTree(graph){
                 break;
             }
         }
+        counter++;
     }
     return tree;
 }
@@ -126,11 +130,14 @@ function getCycleBasis(graph){
             }
         }
     }
-    
+    var cycle; 
     for(var edgeId in edges){
         edge = edges[edgeId];
         //tree.addEdge(edgeId, edge);
-        cycles.push(findCycle(tree, edge));
+        cycle = findCycle(tree, edge);
+        if(cycle!=undefined){
+            cycles.push(cycle);
+        }
         //tree.removeEdge(edgeId, edge);
     }
     return cycles;
@@ -178,5 +185,10 @@ function findPath(graph, nodeId1, nodeId2){
         node = ancestors[node];
         nodePath.push(node);
     }
-    return nodePath;
+
+    if(nodePath[nodePath.length-1] == nodeId1 && nodePath[0] == nodeId2){
+        return nodePath;
+    }else{
+        return undefined;
+    }
 }

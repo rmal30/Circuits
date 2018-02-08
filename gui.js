@@ -18,10 +18,10 @@ var components=[];
 var res = {name:"Resistor",init: "res", prop:"Resistance", unit: '\u03A9'};
 var cap = {name:"Capacitor",init: "cap", prop:"Capacitance", unit: "F"};
 var ind = {name:"Inductor",init: "ind", prop:"Inductance", unit: "H"};
-var volt = {name:"Voltage source",init: "volt", prop:"Voltage", unit: "V"};
-var voltAC = {name:"AC voltage source",init: "voltac", prop:"Phasor voltage",unit: "V"};
-var cur = {name:"Current source",init: "cur", prop:"Current",unit: "A"};
-var info = {res:res, cap:cap, ind:ind, volt:volt, voltac:voltAC, cur:cur};
+var vdc = {name:"DC Voltage source",init: "vdc", prop:"Voltage", unit: "V"};
+var vac = {name:"AC voltage source",init: "vac", prop:"Phasor voltage",unit: "V"};
+var idc = {name:"DC Current source",init: "idc", prop:"Current",unit: "A"};
+var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc};
 
 //Prompt value from user
 function promptValue(info){

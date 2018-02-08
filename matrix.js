@@ -65,8 +65,8 @@ function s_div(mat,n){
 function multiply(mat1, mat2){
     mat3=new Array(mat1.length);
     for(var j=0; j<mat1.length; j++){
-        mat3[j]=new Array(mat2.length);
-        for(var k=0; k<mat1.length; k++){
+        mat3[j]=new Array(mat2[0].length);
+        for(var k=0; k<mat2[0].length; k++){
             mat3[j][k]=0;
             for(var l=0; l<mat2.length; l++){mat3[j][k]+=mat1[j][l]*mat2[l][k];}
         }

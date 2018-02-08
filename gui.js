@@ -267,9 +267,8 @@ function moveComponent(pos){
     text.setAttribute('x',pos2.x); text.setAttribute('y', pos2.y);
     var img = document.getElementById("img"+moveID);
     img.setAttribute("x", adjustedPos.x); img.setAttribute("y", adjustedPos.y);
-    if(comp.direction[0]===0){
-        img.setAttribute("transform", 'rotate('+90+' '+cPos.coords()+')');
-    }
+    var angle = getAngleFromDirection(comp.direction);
+    img.setAttribute("transform", 'rotate('+angle+' '+cPos.coords()+')');
 
     var lines1 = pins[comp.pins[0]].lines;
     var lines2 = pins[comp.pins[1]].lines;
@@ -353,12 +352,8 @@ function rotateComponent(id){
     var text = document.getElementById("txt"+id);
     text.setAttribute('x',pos2.x); text.setAttribute('y', pos2.y);
     var img = document.getElementById("img"+id);
-    if(comp.direction[0]===0){
-        img.setAttribute("transform", 'rotate('+90+' '+pos.coords()+')');
-    }else{
-        img.removeAttribute("transform");
-    }
-
+    var angle = getAngleFromDirection(comp.direction);
+    img.setAttribute("transform", 'rotate('+angle+' '+pos.coords()+')');
     var lines1 = pins[pinId0].lines;
     var lines2 = pins[pinId1].lines;
     pins[pinId0].pos = pos0;
@@ -375,6 +370,17 @@ function rotateComponent(id){
         var pins2 = lines[lines2[i]].split("_");
         line.setAttribute("points", findPolyStr(pins, pins2[0], pins2[1]));
     }
+}
+
+function getAngleFromDirection(direction){
+    var angle = 0;
+    switch(direction[0]*2 + direction[1]){
+        case 0*2 + 1: angle = 90; break;
+        case 0*2 - 1: angle = -90; break;
+        case 1*2 + 0: angle = 0; break;
+        case -1*2+0: angle = 180; break;
+    }
+    return angle;
 }
 
 function deleteComponent(selectId){

@@ -13,12 +13,16 @@ function getCurrents(){
     var loops = getCycleBasis(graph);
     var impComponents = getComponents(components, ["res", "cap", "ind"]);
     var sourceComponents = getComponents(components, ["vdc"]);
-    var initVoltage = sourceVoltage(loops, sourceComponents);
-    var voltMatrix = KVLMatrix(loops, impComponents);
+    var initVoltage = sourceVector(loops, sourceComponents);
     var curMatrix = loopMatrix(loops, impComponents);
+    
+    var voltMatrix = KVLMatrix(loops, impComponents);
     console.log(initVoltage, voltMatrix, curMatrix);
     var loopCurrents = solveKVL(voltMatrix, curMatrix, initVoltage);
-    console.log(loopCurrents);
+    var componentCurrents = multiply(curMatrix, transpose([loopCurrents]));
+    for(var i=0; i<impComponents.length; i++){
+        console.log(JSON.stringify(impComponents[i]) + ": " + componentCurrents[i]);
+    }
 }
 
 function solveKVL(voltMatrix, curMatrix, initVoltage){
@@ -26,25 +30,26 @@ function solveKVL(voltMatrix, curMatrix, initVoltage){
     return QRSolve(matrix, initVoltage);
 }
 
-function sourceVoltage(loops, sourceComponents){
+function sourceVector(loops, sourceComponents){
     var voltageSum;
-    var initVoltage = [];
+    var init = [];
     for(var i=0; i<loops.length; i++){
         voltageSum = 0;
         for(var j=0; j<sourceComponents.length; j++){
             voltageSum -= direction(sourceComponents[j], loops[i]) * sourceComponents[j].value;
         }
-        initVoltage.push(voltageSum);
+        init.push(voltageSum);
     }
-    return initVoltage;
+
+    return init;
 }
 
-function KVLMatrix(loops, impComponents){
+function KVLMatrix(loops2, impComponents){
     var voltMatrix = [];
-    for(var i=0; i<loops.length; i++){
+    for(var i=0; i<loops2.length; i++){
         voltMatrix[i] = [];
         for(var k=0; k<impComponents.length; k++){			
-	    voltMatrix[i][k] = direction(impComponents[k], loops[i]) * impComponents[k].value; 
+	    voltMatrix[i][k] = direction(impComponents[k], loops2[i]) * impComponents[k].value; 
         }
     }
     return voltMatrix;

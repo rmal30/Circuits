@@ -84,7 +84,10 @@ function generateGraph(pins, lines, components){
 
 function spanningTree(graph){
     var tree = new Graph();
-    tree.addNode(0);
+    for(var nodeId in graph.nodes){
+        tree.addNode(nodeId);
+        break;
+    }
     var edge, nodeId2;
     var edgeFound;
     var edgeId;

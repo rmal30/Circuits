@@ -23,17 +23,6 @@ var vac = {name:"AC voltage source",init: "vac", prop:"Phasor voltage",unit: "V"
 var idc = {name:"DC Current source",init: "idc", prop:"Current",unit: "A"};
 var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc};
 
-//Prompt value from user
-function promptValue(info){
-    var promptStr = "Please enter a "+ info.prop+" for a "+info.name+" in "+info.unit;
-    var value = prompt(promptStr);
-    while(value===""){
-        alert("Please enter a valid value");
-        value = prompt(promptStr);
-    }
-    return value;
-}
-
 //Add component to diagram
 function addComponent(type, pos){
     var compStr = "";
@@ -42,31 +31,14 @@ function addComponent(type, pos){
     var value = promptValue(newCompInfo);
     if(value!=null){
         pos = pos.offset(-pos.x%gridSize, -pos.y%gridSize);
-        var leftPos = pos.offset(-24, -imgSize/2);
-        var rightPos = pos.offset(24, -imgSize/2);
-        var topPos = pos.offset(0, -imgSize);
         var cPos = pos.offset(0, -imgSize/2);
-        var bottomPos = pos;
-        var pos1, pos2;
         var id = components.length;
-        var dir1, dir2;
-
-        if(direction === "H"){
-            pos1 = leftPos;
-            pos2 = rightPos;
-            dir1 = [-1, 0];
-            dir2 = [1, 0];
-        }else{
-            pos1 = topPos;
-            pos2 = bottomPos;
-            dir1 = [0,-1];
-            dir2 = [0,1];
-        }
-
-        components.push({id:id, type:type, value:value, direction:dir2, pins:[pinCount, pinCount+1], pos: cPos});
+        var pinDir = getPinDirections(direction);
+        var pinPos = getPinPositions(pos, direction);
+        components.push({id:id, type:type, value:value, direction:pinDir[1], pins:[pinCount, pinCount+1], pos: cPos});
         compStr = drawComponent(id, newCompInfo, direction, value, pos, pinCount);
-        pins[pinCount] = {pos: pos1, comp:id, lines:[], direction:dir1};
-        pins[pinCount+1] = {pos: pos2, comp:id, lines:[], direction:dir2};
+        pins[pinCount] = {pos: pinPos[0], comp:id, lines:[], direction:pinDir[0]};
+        pins[pinCount+1] = {pos: pinPos[1], comp:id, lines:[], direction:pinDir[1]};
         pinCount+=2;
     }
     return compStr;
@@ -147,25 +119,6 @@ function deselect(id, type){
             break;
     }
 }
-
-//Position class
-function Position(x, y){
-    this.x = x;
-    this.y = y;
-    this.show = function(){
-        return this.x+" "+this.y;
-    }
-    this.coords = function(){
-        return [this.x, this.y];
-    }
-    this.offset = function(x, y){
-        var pos = new Position(this.x, this.y);
-        pos.x+=x;
-        pos.y+=y;
-        return pos;
-    }
-}
-
 //Create a node that connects 3 or more components
 function createNode(lineID, pos){
     var lineIDs = lineID.split("_");
@@ -199,8 +152,7 @@ function move(id){
 }
 
 //Stop move
-function stopMove(){
-    
+function stopMove(){ 
     moveComp = false;
     if(moveDot){
         drawLine(moveID, false);
@@ -229,42 +181,17 @@ function moveComponent(pos){
     pos = pos.offset(-pos.x%gridSize, -pos.y%gridSize);
     var halfImgSize = imgSize/2;
     var adjustedPos = pos.offset(-halfImgSize, -imgSize);
-    var leftPos = pos.offset(-halfImgSize, -halfImgSize);
-    var rightPos = pos.offset(halfImgSize, -halfImgSize);
-    var topPos = pos.offset(0, -imgSize);
     var cPos = pos.offset(0, -halfImgSize);
-    var bottomPos = pos;
-    var pos0, pos1, pos2;
     var comp = components[moveID];
-
-    if(comp.direction[0]===0){
-        if(comp.direction[1]===1){
-            pos0 = topPos;
-            pos1 = bottomPos;
-        }else{
-            pos0 = bottomPos;
-            pos1 = topPos;
-        }
-        pos2 = rightPos.offset(8, 5);
-    }else if(comp.direction[1]===0){
-        if(comp.direction[0]===1){
-            pos0 = leftPos;
-            pos1 = rightPos;
-        }else{
-            pos0 = rightPos;
-            pos1 = leftPos;
-        }    
-        pos2 = bottomPos;
-    }
-    
+    var pplPos = getLabelPinPos(pos, comp.direction);
     var dot0 = document.getElementById("pin-"+ comp.pins[0]);
     var dot1 = document.getElementById("pin-" + comp.pins[1]);
-    dot0.setAttribute("cx",pos0.x);
-    dot0.setAttribute("cy",pos0.y);
-    dot1.setAttribute("cx", pos1.x);
-    dot1.setAttribute("cy", pos1.y);
+    dot0.setAttribute("cx", pplPos[0].x);
+    dot0.setAttribute("cy", pplPos[0].y);
+    dot1.setAttribute("cx", pplPos[1].x);
+    dot1.setAttribute("cy", pplPos[1].y);
     var text = document.getElementById("txt"+moveID);
-    text.setAttribute('x',pos2.x); text.setAttribute('y', pos2.y);
+    text.setAttribute('x',pplPos[2].x); text.setAttribute('y', pplPos[2].y);
     var img = document.getElementById("img"+moveID);
     img.setAttribute("x", adjustedPos.x); img.setAttribute("y", adjustedPos.y);
     var angle = getAngleFromDirection(comp.direction);
@@ -272,8 +199,8 @@ function moveComponent(pos){
 
     var lines1 = pins[comp.pins[0]].lines;
     var lines2 = pins[comp.pins[1]].lines;
-    pins[comp.pins[0]].pos = pos0;
-    pins[comp.pins[1]].pos = pos1;
+    pins[comp.pins[0]].pos = pplPos[0];
+    pins[comp.pins[1]].pos = pplPos[1];
     comp.pos = cPos;
     for(var i=0; i<lines1.length; i++){
         if(lines[lines1[i]]!==""){
@@ -304,60 +231,41 @@ function rotateComponent(id){
     var pos = comp.pos;
     
     var halfImgSize = imgSize/2;
-    var leftPos = pos.offset(-halfImgSize, 0);
-    var rightPos = pos.offset(halfImgSize, 0);
-    var topPos = pos.offset(0, -halfImgSize);
-    var bottomPos = pos.offset(0, halfImgSize);
-    var pos0, pos1, pos2;
     var dir1, dir2;
 
-
     if(comp.direction[0]===0){
-        comp.direction = [comp.direction[1], 0];
+        comp.direction = [-comp.direction[1], 0];
     }else if(comp.direction[1]===0){
-        comp.direction = [0, -comp.direction[0]];
+        comp.direction = [0, comp.direction[0]];
     }
 
     dir2 = comp.direction;
+    
+    var pplPos = getLabelPinPos(pos.offset(0, halfImgSize), comp.direction);
 
     if(comp.direction[0]===0){
-        if(comp.direction[1]===1){
-            pos0 = topPos;
-            pos1 = bottomPos;
-        }else{
-            pos0 = bottomPos;
-            pos1 = topPos;
-        }
-        pos2 = rightPos.offset(8, 5);
         dir1 = [0,-comp.direction[1]];
     }else if(comp.direction[1]===0){
-        if(comp.direction[0]===1){
-            pos0 = leftPos;
-            pos1 = rightPos;
-        }else{
-            pos0 = rightPos;
-            pos1 = leftPos;
-        }    
-        pos2 = bottomPos;
         dir1 = [-comp.direction[0],0];
     }
+
     var pinId0 = comp.pins[0];
     var pinId1 = comp.pins[1];
     var dot0 = document.getElementById("pin-" + pinId0);
     var dot1 = document.getElementById("pin-" + pinId1);
-    dot0.setAttribute("cx", pos0.x);
-    dot0.setAttribute("cy", pos0.y);
-    dot1.setAttribute("cx", pos1.x);
-    dot1.setAttribute("cy", pos1.y);
+    dot0.setAttribute("cx", pplPos[0].x);
+    dot0.setAttribute("cy", pplPos[0].y);
+    dot1.setAttribute("cx", pplPos[1].x);
+    dot1.setAttribute("cy", pplPos[1].y);
     var text = document.getElementById("txt"+id);
-    text.setAttribute('x',pos2.x); text.setAttribute('y', pos2.y);
+    text.setAttribute('x',pplPos[2].x); text.setAttribute('y', pplPos[2].y);
     var img = document.getElementById("img"+id);
     var angle = getAngleFromDirection(comp.direction);
     img.setAttribute("transform", 'rotate('+angle+' '+pos.coords()+')');
     var lines1 = pins[pinId0].lines;
     var lines2 = pins[pinId1].lines;
-    pins[pinId0].pos = pos0;
-    pins[pinId1].pos = pos1;
+    pins[pinId0].pos = pplPos[0];
+    pins[pinId1].pos = pplPos[1];
     pins[pinId0].direction = dir1;
     pins[pinId1].direction = dir2;
     for(var i=0; i<lines1.length; i++){
@@ -372,24 +280,18 @@ function rotateComponent(id){
     }
 }
 
-function getAngleFromDirection(direction){
-    var angle = 0;
-    switch(direction[0]*2 + direction[1]){
-        case 0*2 + 1: angle = 90; break;
-        case 0*2 - 1: angle = -90; break;
-        case 1*2 + 0: angle = 0; break;
-        case -1*2+0: angle = 180; break;
-    }
-    return angle;
-}
-
 function deleteComponent(selectId){
     var svg = document.getElementById("svg"); 
     var comp = components[selectID];
-    svg.removeChild(document.getElementById("pin-"+comp.pins[0]));
-    svg.removeChild(document.getElementById("pin-"+comp.pins[1]));
-    svg.removeChild(document.getElementById("img"+selectID));
-    svg.removeChild(document.getElementById("txt"+selectID));
+    var elements = ["pin-"+comp.pins[0], "pin-"+comp.pins[1], "img"+selectID, "txt"+selectID];
+
+    if(pointExists && (prevPointID == comp.pins[0] || prevPointID == comp.pins[1])){
+        pointExists = false;
+    }
+
+    for(var i=0; i<elements.length; i++){
+        svg.removeChild(document.getElementById(elements[i]));
+    }
     deleteLines(pins[comp.pins[0]]);
     deleteLines(pins[comp.pins[1]]);
     components[selectID] = {};
@@ -480,8 +382,7 @@ svg.addEventListener("click", function(){
     if(listen){
         var newCompType = document.getElementById("newComp").value;
         if(pointExists){
-            var prevDot = document.getElementById("pin-"+prevPointID);
-            prevDot.setAttribute("fill", "black");
+            document.getElementById("pin-"+prevPointID).setAttribute("fill", "black");
             pointExists = false;
         }else if(selectComp){
             deselect(selectID, "Component");
@@ -517,8 +418,14 @@ document.addEventListener("keydown", function (event){
 
     if(selectLine){
         if(key === 46){
-            deleteLine(lines.indexOf(selectID));
+            if(lines.indexOf(selectID)!=-1){
+                deleteLine(lines.indexOf(selectID));
+            }
             selectLine = false;
+        }
+
+        if(key === 27){
+            deselect(selectID, "Line");
         }
     }
 });

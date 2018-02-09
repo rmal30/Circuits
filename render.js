@@ -1,6 +1,101 @@
 var imgSize = 48;
 var dotSize=4;
 
+
+//Prompt value from user
+function promptValue(info){
+    var promptStr = "Please enter a "+ info.prop+" for a "+info.name+" in "+info.unit;
+    var value = prompt(promptStr);
+    while(value===""){
+        alert("Please enter a valid value");
+        value = prompt(promptStr);
+    }
+    return value;
+}
+
+function getLabelPinPos(pos, direction){
+    var pos0, pos1, pos2;
+    var halfImgSize = imgSize/2;
+    var leftPos = pos.offset(-halfImgSize, -halfImgSize);
+    var rightPos = pos.offset(halfImgSize, -halfImgSize);
+    var topPos = pos.offset(0, -imgSize); 
+    var bottomPos = pos;
+    
+    if(direction[0]===0){
+        if(direction[1]===1){
+            pos0 = topPos;
+            pos1 = bottomPos;
+        }else{
+            pos0 = bottomPos;
+            pos1 = topPos;
+        }
+        pos2 = rightPos.offset(8, 5);
+    }else if(direction[1]===0){
+        if(direction[0]===1){
+            pos0 = leftPos;
+            pos1 = rightPos;
+        }else{
+            pos0 = rightPos;
+            pos1 = leftPos;
+        }    
+        pos2 = bottomPos;
+    }
+    
+    return [pos0, pos1, pos2];
+}
+
+//Position class
+function Position(x, y){
+    this.x = x;
+    this.y = y;
+    this.show = function(){
+        return this.x+" "+this.y;
+    }
+    this.coords = function(){
+        return [this.x, this.y];
+    }
+    this.offset = function(x, y){
+        var pos = new Position(this.x, this.y);
+        pos.x+=x;
+        pos.y+=y;
+        return pos;
+    }
+}
+
+
+function getPinPositions(pos, direction){
+    var leftPos = pos.offset(-24, -imgSize/2);
+    var rightPos = pos.offset(24, -imgSize/2);
+    var topPos = pos.offset(0, -imgSize);
+    var bottomPos = pos;
+
+    if(direction==="H"){
+        return [leftPos, rightPos];
+    }else{
+        return [topPos, bottomPos];
+    }
+}
+
+function getPinDirections(direction){
+    if(direction === "H"){
+        return [[-1, 0], [1, 0]];
+    }else{
+        return [[0, -1], [0, 1]];
+    }
+}
+
+
+function getAngleFromDirection(direction){
+    var angle = 0;
+    switch(direction.toString()){
+        case "0,1": angle = 90; break;
+        case "0,-1": angle = -90; break;
+        case "1,0": angle = 0; break;
+        case "-1,0": angle = 180; break;
+    }
+    return angle;
+}
+
 function drawPolyLine(lineID, points){
     var style = "fill:none;stroke:black;stroke-width:2"
     return '<polyline id="'+lineID+'" points="'+points+'" style="'+style+'" onclick="drawLine(\''+lineID+'\', true)"/>';

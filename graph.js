@@ -119,6 +119,35 @@ function spanningTree(graph){
     return tree;
 }
 
+function mergeNodeGroups(nodeGroups, edge){
+    var nodeGroup1, nodeGroup2;
+    for(var i=0; i<nodeGroups.length; i++){
+        if(nodeGroups[i].indexOf(edge[0])!=-1){
+            nodeGroup1 = i;
+        }
+        if(nodeGroups[i].indexOf(edge[1])!=-1){
+            nodeGroup2 = i;
+        }
+    }
+    if(nodeGroup1 != nodeGroup2){
+        nodeGroups[nodeGroup1] = nodeGroups[nodeGroup1].concat(nodeGroups[nodeGroup2]);
+        nodeGroups.splice(nodeGroup2, 1);
+    }
+}
+
+function getNodeGroups(graph){
+    var nodeGroups = [];
+    for(var nodeId in graph.nodes){
+        nodeGroups.push([parseInt(nodeId)]);
+    }
+    var edge;
+    for(var edgeId in graph.edges){
+        if(edgeId.includes("lin")){
+            mergeNodeGroups(nodeGroups, graph.edges[edgeId]);
+        }
+   }
+   return nodeGroups;
+}
 
 function getCycleBasis(graph){
     var tree = spanningTree(graph);

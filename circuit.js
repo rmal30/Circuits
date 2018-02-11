@@ -12,7 +12,7 @@ function getCurrents(){
     var graph = generateGraph(pins, lines, components);
     var loops = getCycleBasis(graph);
     for(var edgeID in graph.edges){
-        if(edgeID.includes("idc")){
+        if(edgeID.includes("idc") || edgeID.includes("iac")){
             graph.removeEdge(edgeID, graph.edges[edgeID]);
         }
     }
@@ -20,8 +20,8 @@ function getCurrents(){
     var impComponents = getComponents(components, ["res", "cap", "ind"]);
     var init = voltageVector(loops2, components);
     var curMatrix = groupMatrix(loops, impComponents, "loop");
-    var voltMatrix = KVLMatrix(loops2, impComponents);
-    var kvlMatrix = multiply(voltMatrix, curMatrix);
+    var voltMatrix = lawMatrix(loops2, impComponents, "loop");
+    var kvlMatrix = multiplyM(voltMatrix, curMatrix);
     var currentComponents = getComponents(components, ["idc"]);
    
     var curMatrix2 = groupMatrix(loops, currentComponents, "loop");
@@ -30,24 +30,26 @@ function getCurrents(){
     }
 
     var loopCurrents = QRSolve(kvlMatrix, init);
-    var componentCurrents = multiply(curMatrix, transpose([loopCurrents]));
+    var componentCurrents = multiplyM(curMatrix, transpose([loopCurrents]));
     for(var i=0; i<impComponents.length; i++){
-        console.log(JSON.stringify(impComponents[i]) + ": " + componentCurrents[i]);
+        console.log(JSON.stringify(impComponents[i]) + ": " + printComplex(componentCurrents[i][0]));
     }
 }
 
+function printComplex(z){
+    return roundNum(z[0], 8) + " + " + roundNum(z[1], 8)+"j";
+}
 
 function getVoltages(){
     var graph = generateGraph(pins, lines, components);
     var nodes = getNodeGroups(graph);
-    nodes.pop();
     var edge;
     var count = 0;
     for(var edgeID in graph.edges){
-        if(edgeID.includes("vdc")){
+        if(edgeID.includes("vdc") || edgeID.includes("vac")){
             edge = graph.edges[edgeID];
             graph.removeEdge(edgeID, edge);
-            graph.addEdge("lin-"+(100+count), edge);
+            graph.addEdge("lin-x"+(components.length + count), edge);
             count++;
         }
     }
@@ -56,19 +58,23 @@ function getVoltages(){
     var impComponents = getComponents(components, ["res", "cap", "ind"]);
     var init = currentVector(nodes2, components);
     var voltMatrix = groupMatrix(nodes, impComponents, "node");
-    var curMatrix = KCLMatrix(nodes2, impComponents);
-    var kclMatrix = multiply(curMatrix, voltMatrix);
-    var voltageComponents = getComponents(components, ["vdc"]);
+    var curMatrix = lawMatrix(nodes2, impComponents, "node");
+    var kclMatrix = multiplyM(curMatrix, voltMatrix);
+    var voltageComponents = getComponents(components, ["vdc", "vac"]);
    
     var voltMatrix2 = groupMatrix(nodes, voltageComponents, "node");
     for(var i=0; i<voltMatrix2.length; i++){
         kclMatrix.push(voltMatrix2[i]);
     }
-
+    var groundNodes = [1];
+    for(var i=1; i<nodes.length; i++){
+        groundNodes.push(0);
+    }
+    kclMatrix.push(groundNodes);
     var nodeVoltages = QRSolve(kclMatrix, init);
-    var componentVoltages = multiply(voltMatrix, transpose([nodeVoltages]));
+    var componentVoltages = multiplyM(voltMatrix, transpose([nodeVoltages]));
     for(var i=0; i<impComponents.length; i++){
-        console.log(JSON.stringify(impComponents[i]) + ": " + componentVoltages[i]);
+        console.log(JSON.stringify(impComponents[i]) + ": " + printComplex(componentVoltages[i][0]));
     }
 }
 
@@ -76,8 +82,8 @@ function getVoltages(){
 function voltageVector(loops2, components){
     var voltageSum;
     var init = [];
-    var voltageComponents = getComponents(components, ["vdc"]);
-    var currentComponents = getComponents(components, ["idc"]);
+    var voltageComponents = getComponents(components, ["vdc", "vac"]);
+    var currentComponents = getComponents(components, ["idc", "iac"]);
     for(var i=0; i<loops2.length; i++){
         voltageSum = 0;
         for(var j=0; j<voltageComponents.length; j++){
@@ -88,48 +94,57 @@ function voltageVector(loops2, components){
     for(var i=0; i<currentComponents.length; i++){
         init.push(-currentComponents[i].value);
     }
-
     return init;
 }
 
 function currentVector(nodes2, components){
     var currentSum;
     var init = [];
-    var voltageComponents = getComponents(components, ["vdc"]);
-    var currentComponents = getComponents(components, ["idc"]);
+    var voltageComponents = getComponents(components, ["vdc", "vac"]);
+    var currentComponents = getComponents(components, ["idc", "iac"]);
     for(var i=0; i<nodes2.length; i++){
         currentSum = 0;
         for(var j=0; j<currentComponents.length; j++){
-            currentSum -= direction(currentComponents[j], nodes2[i], "node") * currentComponents[j].value;
+            currentSum -=  direction(currentComponents[j], nodes2[i], "node") * currentComponents[j].value;
         }
         init.push(currentSum);
     }
     for(var i=0; i<voltageComponents.length; i++){
         init.push(-voltageComponents[i].value);
     }
+    init.push(0);
     return init;
 }
 
-function KVLMatrix(loops2, impComponents){
-    var voltMatrix = [];
-    for(var i=0; i<loops2.length; i++){
-        voltMatrix[i] = [];
-        for(var k=0; k<impComponents.length; k++){			
-	    voltMatrix[i][k] = direction(impComponents[k], loops2[i], "loop") * impComponents[k].value; 
+function lawMatrix(groups2, impComponents, type){
+    var matrix = [];
+    var compDirection;
+    for(var i=0; i<groups2.length; i++){
+        matrix[i] = [];
+        for(var k=0; k<impComponents.length; k++){
+            compDirection = direction(impComponents[k], groups2[i], type);
+	    if(type=="loop"){
+                matrix[i][k] = multiplyC(compDirection, impedance(impComponents[k])); 
+            }else if(type=="node"){
+                matrix[i][k] = divideC(compDirection, impedance(impComponents[k]));
+            }
         }
     }
-    return voltMatrix;
+    return matrix;
 }
 
-function KCLMatrix(nodes2, impComponents){
-    var curMatrix = [];
-    for(var i=0; i<nodes2.length; i++){
-        curMatrix[i] = [];
-        for(var k=0; k<impComponents.length; k++){
-            curMatrix[i][k] = direction(impComponents[k], nodes2[i], "node")/impComponents[k].value;
-        }
+function impedance(component){
+    var value = component.value;
+    var freq = hertz * Math.PI * 2;
+    if(component.type == "res"){
+        return [parseFloat(value), 0];
+    }else if(component.type == "cap"){
+        return [0, - Math.pow(10, 6)/(value*freq)];
+    }else if(component.type=="ind"){
+        return [0, Math.pow(10, -3)*value*freq];
+    }else{
+        return [0, 0];
     }
-    return curMatrix;
 }
 
 function groupMatrix(groups, impComponents, type){

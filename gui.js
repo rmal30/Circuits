@@ -10,6 +10,49 @@ var moveID, prevPointID, selectID;
 var pointExists;
 var components=[];
 
+chooseMode();
+
+function chooseMode(){
+    var mode = document.getElementById("mode");
+    var freq2 = document.getElementById("freq2");
+   
+    var compList = document.getElementById("newComp");
+
+    var acComponents = [["Capacitor", "cap"], ["Inductor", "ind"], ["AC Voltage", "vac"], ["AC Current", "iac"]];
+    var dcComponents = [["DC Voltage", "vdc"], ["DC Current", "idc"]];
+    compList.options.length = 2; 
+    if(mode.value === "ac"){
+        freq2.className= freq2.className.replace(" is-disabled", "");
+        document.getElementById("freq").disabled = false;
+        for(var i=0; i<acComponents.length; i++){
+            compList.options[2 + i] = new Option(acComponents[i][0], acComponents[i][1]);
+        }
+        
+        for(var i=0; i<components.length; i++){
+            if(components[i].type === "vdc" || components[i].type === "idc"){
+                deleteComponent(i);
+            }
+        }
+
+    }else{
+        freq2.className+=" is-disabled";
+        document.getElementById("freq").disabled = true;
+        for(var i=0; i<dcComponents.length; i++){
+            compList.options[2 + i] = new Option(dcComponents[i][0], dcComponents[i][1]);
+        }
+
+        for(var i=0; i<components.length; i++){
+            if(components[i].type === "vac" || components[i].type === "iac" || components[i].type === "cap" || components[i].type==="ind"){
+                deleteComponent(i);
+            }
+        }
+    }
+}
+
+function changeFreq(value){
+    hertz = parseFloat(value);
+}
+
 //Add component to diagram
 function addComponent(type, pos){
     var compStr = "";
@@ -193,9 +236,9 @@ function rotateComponent(id){
     }
 }
 
-function deleteComponent(selectId){
-    var comp = components[selectID];
-    var elements = ["pin-"+comp.pins[0], "pin-"+comp.pins[1], "img"+selectID, "txt"+selectID];
+function deleteComponent(id){
+    var comp = components[id];
+    var elements = ["pin-"+comp.pins[0], "pin-"+comp.pins[1], "img"+id, "txt"+id];
 
     if(pointExists && (prevPointID == comp.pins[0] || prevPointID == comp.pins[1])){
         pointExists = false;
@@ -206,7 +249,7 @@ function deleteComponent(selectId){
     }
     deleteLines(pins[comp.pins[0]]);
     deleteLines(pins[comp.pins[1]]);
-    components[selectID] = {};
+    components[id] = {};
     selectComp = false;
 }
 
@@ -240,7 +283,7 @@ function updateValue(id){
 
 //Drag component
 svg.addEventListener("mousemove", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY);
+    var pos = new Position(window.event.clientX, window.event.clientY-40);
     if(moveComp){
         moveComponent(pos);
     }else if(moveDot){
@@ -250,7 +293,7 @@ svg.addEventListener("mousemove", function(){
 
 //Add component
 svg.addEventListener("click", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -30);
+    var pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -70);
     var listen = true;
     var image;
     var pin;
@@ -293,7 +336,7 @@ svg.addEventListener("click", function(){
         }else if(selectComp){
             deselect(selectID, "Component"); 
             selectComp = false;
-        }else if(newCompType!==""){
+        }else if(newCompType!==" "){
             svg.innerHTML+= addComponent(newCompType, pos);
         }
     }

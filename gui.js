@@ -1,28 +1,14 @@
 var svg = document.getElementById("svg");
 var pins = [];
 var lines = [];
-var moveComp = false;
-var moveDot = false;
-var selectComp = false;
-var selectNode = false;
-var selectLine = false;
+var moveComp = false, moveDot = false;
+var selectComp = false, selectNode = false, selectLine = false;
 var pinCount = 0;
-var imgSize = 48;
-var gridSize = 6;
-var dotSize = 4;
+var imgSize = 48, gridSize = 6, dotSize = 4;
 var hertz = 60;
-var moveID;
-var prevPointID;
-var selectID;
+var moveID, prevPointID, selectID;
 var pointExists;
 var components=[];
-var res = {name:"Resistor",init: "res", prop:"Resistance", unit: '\u03A9'};
-var cap = {name:"Capacitor",init: "cap", prop:"Capacitance", unit: "\u00B5F"};
-var ind = {name:"Inductor",init: "ind", prop:"Inductance", unit: "mH"};
-var vdc = {name:"DC Voltage source",init: "vdc", prop:"Voltage", unit: "V"};
-var vac = {name:"AC voltage source",init: "vac", prop:"Phasor voltage",unit: "V"};
-var idc = {name:"DC Current source",init: "idc", prop:"Current",unit: "A"};
-var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc};
 
 //Add component to diagram
 function addComponent(type, pos){
@@ -57,77 +43,51 @@ function handleNode(id){
 //Draw line between two components
 function drawLine(id, createNewNode){
     if(pointExists){
-        var prevDot = document.getElementById("pin-"+prevPointID);
-        prevDot.setAttribute("fill", "black");
+        deselect(prevPointID, "Node");
         pointExists = false;
         if(id!==prevPointID){
             if(createNewNode){
-                var lineIDs = id.split("_");
-                if(lineIDs[0]===prevPointID || lineIDs[1]===prevPointID){
+                if(id.split("_").indexOf(prevPointID) !== -1){
                     return;
                 }else{
-                    var xPos = event.clientX-10;
-                    var yPos = event.clientY-28;
-                    var pos = new Position(xPos, yPos).offset(-xPos%gridSize, -yPos%gridSize);
+                    var pos = new Position(event.clientX, event.clientY).offset(-10, -28);
+                    pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
                     id = createNode(id, pos);
                 }
             }
             var lineID = prevPointID+'_'+id;
             if(lines.indexOf(lineID)===-1){
-                var polyStr = findPolyStr(pins, prevPointID, id);
                 lines.push(lineID);
                 pins[prevPointID].lines.push(lines.length-1);
                 pins[id].lines.push(lines.length-1);
-                svg.innerHTML += drawPolyLine(lineID, polyStr);
+                svg.innerHTML += drawPolyLine(lineID, findPolyStr(pins, prevPointID, id));
             }
         }
     }else if(!createNewNode){
-        var dot = document.getElementById("pin-"+id);
-        dot.setAttribute("fill", "blue");
+        select(id, "Node"); 
         prevPointID = id;
         pointExists = true;
     }else{
-        var line = document.getElementById(id);
-        line.style.stroke =  "blue";
         if(selectComp){
-            deselect(selectID, "Component");
-        }
+            deselect(selectID, "Component"); 
+            selectComp = false;
+       }
+
         if(selectNode){
             deselect(selectID, "Node");
+            selectNode = false;
         }
+
+        select(id, "Line");
         selectLine = true;
         selectID = id;
     }
 }    
 
-//Deselect component or line
-function deselect(id, type){
-    switch(type){
-        case "Line":
-            var line = document.getElementById(id);
-            line.style.stroke =  "black";
-            selectLine = false;
-            break;
-        case "Component":
-            document.getElementById("img"+id).removeAttribute("opacity");
-            selectComp = false;
-            break;
-        case "Node":
-            var dot = document.getElementById("pin-"+id);
-            dot.setAttribute("fill", "black");
-            pointExists = false;
-            selectNode = false;
-            break;
-    }
-}
 //Create a node that connects 3 or more components
 function createNode(lineID, pos){
     var lineIDs = lineID.split("_");
     var line1 = document.getElementById(lineID);
-    var pin0 = document.getElementById("pin-"+lineIDs[0]);
-    var pin1 = document.getElementById("pin-"+lineIDs[1]);
-    var pos0 = new Position(pin0.cx.baseVal.value, pin0.cy.baseVal.value);
-    var pos1 = new Position(pin1.cx.baseVal.value, pin1.cy.baseVal.value);
     var lineID1 = lineIDs[0]+"_"+pinCount;
     var lineID2 = lineIDs[1]+"_"+pinCount;
     line1.setAttribute("id", lineID1);
@@ -140,8 +100,7 @@ function createNode(lineID, pos){
     pins[pinCount] = {pos: pos, comp:"",lines: [lineIndex1, lineIndex2], direction:""};
     line1.setAttribute("onclick", 'drawLine(\''+lineID1+'\', true)');
     line1.setAttribute("points", findPolyStr(pins, lineIDs[0], pinCount));
-    svg.innerHTML+= drawPolyLine(lineID2, findPolyStr(pins, lineIDs[1], pinCount));
-    svg.innerHTML+= drawNode(pinCount, pos);
+    svg.innerHTML+= drawPolyLine(lineID2, findPolyStr(pins, lineIDs[1], pinCount)) + drawNode(pinCount, pos);
     pinCount++;
     return (pinCount-1);
 }
@@ -165,15 +124,11 @@ function stopMove(){
 function moveNode(pos){
     var cPos = pos.offset(-dotSize, -imgSize/2-3);
     cPos = cPos.offset(-cPos.x%gridSize,-cPos.y%gridSize);
-    var dot0 = document.getElementById("pin-"+moveID);
-    dot0.setAttribute("cx",cPos.x);
-    dot0.setAttribute("cy",cPos.y);
+    movePin(moveID, cPos);
     var lines1 = pins[moveID].lines;
     pins[moveID].pos = cPos;
     for(var i=0; i<lines1.length; i++){
-        var line = document.getElementById(lines[lines1[i]]);
-        var lineID = lines[lines1[i]].split("_");
-        line.setAttribute("points", findPolyStr(pins, lineID[0],lineID[1]));
+        adjustLine(pins, lines[lines1[i]]);
     }
 }
 
@@ -181,50 +136,22 @@ function moveNode(pos){
 function moveComponent(pos){
     pos = pos.offset(-pos.x%gridSize, -pos.y%gridSize);
     var halfImgSize = imgSize/2;
-    var adjustedPos = pos.offset(-halfImgSize, -imgSize);
-    var cPos = pos.offset(0, -halfImgSize);
     var comp = components[moveID];
     var pplPos = getLabelPinPos(pos, comp.direction);
-    var dot0 = document.getElementById("pin-"+ comp.pins[0]);
-    var dot1 = document.getElementById("pin-" + comp.pins[1]);
-    dot0.setAttribute("cx", pplPos[0].x);
-    dot0.setAttribute("cy", pplPos[0].y);
-    dot1.setAttribute("cx", pplPos[1].x);
-    dot1.setAttribute("cy", pplPos[1].y);
-    var text = document.getElementById("txt"+moveID);
-    text.setAttribute('x',pplPos[2].x); text.setAttribute('y', pplPos[2].y);
-    var img = document.getElementById("img"+moveID);
-    img.setAttribute("x", adjustedPos.x); img.setAttribute("y", adjustedPos.y);
-    var angle = getAngleFromDirection(comp.direction);
-    img.setAttribute("transform", 'rotate('+angle+' '+cPos.coords()+')');
-
+    var cPos = pos.offset(0, -halfImgSize);
+    changeComponentPosition(comp, moveID, pos, pplPos);
     var lines1 = pins[comp.pins[0]].lines;
     var lines2 = pins[comp.pins[1]].lines;
     pins[comp.pins[0]].pos = pplPos[0];
     pins[comp.pins[1]].pos = pplPos[1];
     comp.pos = cPos;
     for(var i=0; i<lines1.length; i++){
-        if(lines[lines1[i]]!==""){
-            var line = document.getElementById(lines[lines1[i]]);
-            var pins1 = lines[lines1[i]].split("_");
-            line.setAttribute("points", findPolyStr(pins, pins1[0], pins1[1]));
-        }else{
-            lines1.splice(i, 1);
-            if(i>0){i--;}
-        }
+        adjustLine(pins, lines[lines1[i]]);
     }
     for(var i=0; i<lines2.length; i++){
-        if(lines[lines2[i]]!==""){
-            var line = document.getElementById(lines[lines2[i]]);
-            var pins2 = lines[lines2[i]].split("_");
-            line.setAttribute("points", findPolyStr(pins, pins2[0], pins2[1]));
-        }else{
-            lines2.splice(i, 1);
-            if(i>0){i--;}
-        }
+        adjustLine(pins, lines[lines2[i]]);
     }
 }
-
 
 //Rotate a component
 function rotateComponent(id){
@@ -249,40 +176,24 @@ function rotateComponent(id){
     }else if(comp.direction[1]===0){
         dir1 = [-comp.direction[0],0];
     }
-
-    var pinId0 = comp.pins[0];
-    var pinId1 = comp.pins[1];
-    var dot0 = document.getElementById("pin-" + pinId0);
-    var dot1 = document.getElementById("pin-" + pinId1);
-    dot0.setAttribute("cx", pplPos[0].x);
-    dot0.setAttribute("cy", pplPos[0].y);
-    dot1.setAttribute("cx", pplPos[1].x);
-    dot1.setAttribute("cy", pplPos[1].y);
-    var text = document.getElementById("txt"+id);
-    text.setAttribute('x',pplPos[2].x); text.setAttribute('y', pplPos[2].y);
-    var img = document.getElementById("img"+id);
-    var angle = getAngleFromDirection(comp.direction);
-    img.setAttribute("transform", 'rotate('+angle+' '+pos.coords()+')');
-    var lines1 = pins[pinId0].lines;
-    var lines2 = pins[pinId1].lines;
-    pins[pinId0].pos = pplPos[0];
-    pins[pinId1].pos = pplPos[1];
-    pins[pinId0].direction = dir1;
-    pins[pinId1].direction = dir2;
+    
+    changeComponentPosition(comp, id, pos.offset(0, halfImgSize), pplPos);
+    var pinIds = comp.pins;
+    var lines1 = pins[pinIds[0]].lines;
+    var lines2 = pins[pinIds[1]].lines;
+    pins[pinIds[0]].pos = pplPos[0];
+    pins[pinIds[1]].pos = pplPos[1];
+    pins[pinIds[0]].direction = dir1;
+    pins[pinIds[1]].direction = dir2;
     for(var i=0; i<lines1.length; i++){
-        var line = document.getElementById(lines[lines1[i]]);
-        var pins1 = lines[lines1[i]].split("_");
-        line.setAttribute("points", findPolyStr(pins, pins1[0], pins1[1]));
+        adjustLine(pins, lines[lines1[i]]);
     }
     for(var i=0; i<lines2.length; i++){
-        var line = document.getElementById(lines[lines2[i]]);
-        var pins2 = lines[lines2[i]].split("_");
-        line.setAttribute("points", findPolyStr(pins, pins2[0], pins2[1]));
+        adjustLine(pins, lines[lines2[i]]);
     }
 }
 
 function deleteComponent(selectId){
-    var svg = document.getElementById("svg"); 
     var comp = components[selectID];
     var elements = ["pin-"+comp.pins[0], "pin-"+comp.pins[1], "img"+selectID, "txt"+selectID];
 
@@ -309,12 +220,12 @@ function deleteLines(pin){
 }
 
 function deleteLine(lineIndex){ 
-    var svg = document.getElementById("svg");
     svg.removeChild(document.getElementById(lines[lineIndex]));
     var linePins = lines[lineIndex].split("_");
     lines[lineIndex] = "";
-    pins[linePins[0]].lines.splice(pins[linePins[0]].lines.indexOf(lineIndex), 1);
-    pins[linePins[1]].lines.splice(pins[linePins[1]].lines.indexOf(lineIndex), 1);
+    var pinLines = [pins[linePins[0]].lines, pins[linePins[1]].lines];
+    pinLines[0].splice(pinLines[0].indexOf(lineIndex), 1);
+    pinLines[1].splice(pinLines[1].indexOf(lineIndex), 1);
 }
 
 //Update component value
@@ -325,14 +236,6 @@ function updateValue(id){
         components[id].value = value;
         document.getElementById("txt"+id).innerHTML = value+" "+compInfo.unit;
     }
-}
-
-//Select component
-function selectComponent(id){
-    var image = document.getElementById("img"+id);
-    image.setAttribute("opacity", "0.7");
-    selectComp = true;
-    selectID = id;
 }
 
 //Drag component
@@ -361,13 +264,15 @@ svg.addEventListener("click", function(){
             dy = Math.abs(pos.y - image.y.baseVal.value);
             if(dx < imgSize * 0.8 && dy < imgSize * 0.8){
                 listen = false;
-                if(selectComp){ 
-                    document.getElementById("img"+selectID).removeAttribute("opacity");
-                }
-                if(!selectComp || selectID!==i){
-                    selectComponent(i);
-                }else{
+                if(selectComp && selectID != i){
+                    deselect(selectID, "Component");
                     selectComp = false;
+                }
+
+                if(!selectComp){
+                    select(i, "Component");
+                    selectComp = true;
+                    selectID = i;
                 }
             }
         }
@@ -383,10 +288,11 @@ svg.addEventListener("click", function(){
     if(listen){
         var newCompType = document.getElementById("newComp").value;
         if(pointExists){
-            document.getElementById("pin-"+prevPointID).setAttribute("fill", "black");
+            deselect(prevPointID, "Node");
             pointExists = false;
         }else if(selectComp){
-            deselect(selectID, "Component");
+            deselect(selectID, "Component"); 
+            selectComp = false;
         }else if(newCompType!==""){
             svg.innerHTML+= addComponent(newCompType, pos);
         }
@@ -396,7 +302,6 @@ svg.addEventListener("click", function(){
 //Detect keys to rotate and delete components
 document.addEventListener("keydown", function (event){
     var key = event.keyCode ? event.keyCode : event.which;
-    var svg = document.getElementById("svg");
     if(selectNode){
         if(key === 46){
             svg.removeChild(document.getElementById("pin-"+selectID));
@@ -427,6 +332,7 @@ document.addEventListener("keydown", function (event){
 
         if(key === 27){
             deselect(selectID, "Line");
+            selectLine = false;
         }
     }
 });

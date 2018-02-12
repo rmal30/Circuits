@@ -1,6 +1,14 @@
 var imgSize = 48;
 var dotSize=4;
 
+var res = {name:"Resistor",init: "res", prop:"Resistance", unit: '\u03A9'};
+var cap = {name:"Capacitor",init: "cap", prop:"Capacitance", unit: "\u00B5F"};
+var ind = {name:"Inductor",init: "ind", prop:"Inductance", unit: "mH"};
+var vdc = {name:"DC Voltage source",init: "vdc", prop:"Voltage", unit: "V"};
+var vac = {name:"AC voltage source",init: "vac", prop:"Phasor voltage",unit: "V"};
+var idc = {name:"DC Current source",init: "idc", prop:"Current",unit: "A"};
+var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc};
+
 
 //Prompt value from user
 function promptValue(info){
@@ -12,6 +20,13 @@ function promptValue(info){
     }
     return value;
 }
+
+function adjustLine(pins, lineId){
+    var line = document.getElementById(lineId);
+    var linePins = lineId.split("_");
+    line.setAttribute("points", findPolyStr(pins, linePins[0], linePins[1]));
+}
+
 
 function getLabelPinPos(pos, direction){
     var pos0, pos1, pos2;
@@ -97,7 +112,7 @@ function getAngleFromDirection(direction){
 }
 
 function drawPolyLine(lineID, points){
-    var style = "fill:none;stroke:black;stroke-width:2"
+    var style = "fill:none;stroke:black;stroke-width:2;";
     return '<polyline id="'+lineID+'" points="'+points+'" style="'+style+'" onclick="drawLine(\''+lineID+'\', true)"/>';
 }
 
@@ -256,3 +271,47 @@ function findPolyStr(pins, pinId0, pinId1){
     return polyStr;
 }
 
+function changeComponentPosition(comp, id, pos, pplPos){
+    var halfImgSize = imgSize/2;
+    var adjustedPos = pos.offset(-halfImgSize, -imgSize);
+    var cPos = pos.offset(0, -halfImgSize);
+    
+    movePin(comp.pins[0], pplPos[0]);
+    movePin(comp.pins[1], pplPos[1]);
+    
+    var text = document.getElementById("txt"+id);
+    text.setAttribute('x',pplPos[2].x); 
+    text.setAttribute('y', pplPos[2].y);
+    
+    var img = document.getElementById("img"+id);
+    img.setAttribute("x", adjustedPos.x); 
+    img.setAttribute("y", adjustedPos.y);
+    
+    var angle = getAngleFromDirection(comp.direction);
+    img.setAttribute("transform", 'rotate('+angle+' '+cPos.coords()+')');
+}
+
+
+//Deselect component or line
+function deselect(id, type){
+    switch(type){
+        case "Line":        document.getElementById(id).style.stroke =  "black"; break;
+        case "Component":   document.getElementById("img"+id).removeAttribute("opacity"); break;
+        case "Node":        document.getElementById("pin-"+id).setAttribute("fill", "black"); break;
+    }
+}
+
+//select component or line
+function select(id, type){
+    switch(type){
+        case "Line":        document.getElementById(id).style.stroke =  "blue"; break;
+        case "Component":   document.getElementById("img"+id).setAttribute("opacity", "0.7"); break;
+        case "Node":        document.getElementById("pin-"+id).setAttribute("fill", "blue"); break;
+    }
+}
+
+function movePin(pinID, pos){
+    var dot0 = document.getElementById("pin-"+pinID);
+    dot0.setAttribute("cx",pos.x);
+    dot0.setAttribute("cy",pos.y);
+}

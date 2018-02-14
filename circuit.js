@@ -22,7 +22,7 @@ function getCurrents(){
     var curMatrix = groupMatrix(loops, impComponents, "loop");
     var voltMatrix = lawMatrix(loops2, impComponents, "loop");
     var kvlMatrix = multiplyM(voltMatrix, curMatrix);
-    var currentComponents = getComponents(components, ["idc"]);
+    var currentComponents = getComponents(components, ["idc", "iac"]);
    
     var curMatrix2 = groupMatrix(loops, currentComponents, "loop");
     for(var i=0; i<curMatrix2.length; i++){

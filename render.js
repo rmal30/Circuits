@@ -7,7 +7,8 @@ var ind = {name:"Inductor",init: "ind", prop:"Inductance", unit: "mH"};
 var vdc = {name:"DC Voltage source",init: "vdc", prop:"Voltage", unit: "V"};
 var vac = {name:"AC voltage source",init: "vac", prop:"Phasor voltage",unit: "V"};
 var idc = {name:"DC Current source",init: "idc", prop:"Current",unit: "A"};
-var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc};
+var iac = {name:"AC Current source",init: "iac", prop:"Phasor Current",unit: "A"};
+var info = {res:res, cap:cap, ind:ind, vdc:vdc, vac:vac, idc:idc, iac:iac};
 
 
 //Prompt value from user

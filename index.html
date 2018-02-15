@@ -2,42 +2,61 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-blue.min.css">
+        <link rel="stylesheet" href="style.css">
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<title> Circuits </title>
+<div class="mdl-layout__header mdl-layout--header-scroll">
+    <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title"> Circuits </span>
+        <div class="mdl-layout-spacer"> </div>
+    <div id="controls">
+        <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <label class="mdl-textfield__label" style="color:white">Mode</label>
+            <select id="mode" class="mdl-textfield__input" onchange="chooseMode()">
+    	        <option value="dc">DC</option>
+	        <option value="ac">AC</option>
+            </select>
+        </div>
 
-<main class="mdl-layout-content">
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <label class="mdl-textfield__label">Mode:</label>
-        <select id="mode" class="mdl-textfield__input" onchange="chooseMode()">
-	    <option value="dc">DC power</option>
-	    <option value="ac">AC power</option>
-        </select>
+
+        <div id="freq2" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
+            <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
+            <input disabled id="freq" class="mdl-textfield__input" type="number" value="60" onchange="changeFreq(this.value)"></input>
+        </div>
+
+        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <label class="mdl-textfield__label" style="color:white">Add</label>
+            <select class="mdl-textfield__input" id="newComp">
+                <option value=" ">None</option>
+                <option value="res">Resistor</option>
+            </select>
+        </div>
+
+        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <label class="mdl-textfield__label" style="color:white;">Orientation</label> 
+            <select class="mdl-textfield__input" id="newCompDir">
+                <option value="H">Horizontal</option>
+                <option value="V">Vertical</option>
+            </select>
+        </div>
     </div>
+    
+    <nav class="white mdl-navigation">
+        <input class="white mdl-button mdl-js-button" type="button" onclick="simulate()" value="Simulate"/>
+        <input class="white mdl-button mdl-js-button" type="button" onclick="save()" value="Save"/>
+        <input class="white mdl-button mdl-js-button" type="button" onclick="load()" value="Load"/>
+    </nav>
 
-
-    <div id="freq2" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
-        <label class="mdl-textfield__label">AC frequency(Hertz):</label>
-        <input disabled id="freq" class="mdl-textfield__input" type="number" value="60" onchange="changeFreq(this.value)"></input>
     </div>
-
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <label class="mdl-textfield__label">Add component:</label>
-        <select class="mdl-textfield__input" id="newComp">
-	    <option value=" ">None</option>
-	    <option value="res">Resistor</option>
-	</select>
-    </div>
-
-<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <label class="mdl-textfield__label">Orientation:</label> 
-    <select class="mdl-textfield__input" id="newCompDir">
-	<option value="H">Horizontal</option>
-	<option value="V">Vertical</option>
-    </select>
 </div>
-
-<svg id = "svg" width="95%" height="90%" style="user-select:none;"></svg>
+<main class="mdl-layout__content"> 
+    <svg id = "svg" width="95%" height="100%"></svg>
 </main>
+</div>
+</body>
 </HTML>
 <script src="math.js"></script>
 <script src="render.js"></script>

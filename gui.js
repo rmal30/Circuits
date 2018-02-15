@@ -283,7 +283,7 @@ function updateValue(id){
 
 //Drag component
 svg.addEventListener("mousemove", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY-40);
+    var pos = new Position(window.event.clientX, window.event.clientY-34);
     if(moveComp){
         moveComponent(pos);
     }else if(moveDot){
@@ -293,7 +293,7 @@ svg.addEventListener("mousemove", function(){
 
 //Add component
 svg.addEventListener("click", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -70);
+    var pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -64);
     var listen = true;
     var image;
     var pin;

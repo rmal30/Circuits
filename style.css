@@ -1,0 +1,30 @@
+#controls{
+    margin-top:5px;
+    width: 470px;
+    color:#fff;
+}
+
+.mdl-layout-title, .mdl-textfield__label, .white{
+    color:#fff;
+}
+
+.control{
+    width: 100px;
+    margin-left: 5px;
+}
+
+.small_control{
+    width: 50px;
+}
+
+.mdl-textfield__input{
+    background-color:#4caf50;
+    border-color:#fff;
+}
+
+#svg{
+    user-select:none;
+    position:absolute;
+    top:0px;
+    z-index:-1;
+}

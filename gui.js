@@ -12,6 +12,24 @@ var components=[];
 
 chooseMode();
 
+function simulate(){
+    var infoDiv = document.getElementById("info");
+    infoDiv.innerHTML="";
+    infoDiv.innerHTML+="Mesh analysis:<br/>";
+    infoDiv.innerHTML+=getCurrents();
+    
+    infoDiv.innerHTML+="<br/><br/> Nodal analysis:<br/>";
+    infoDiv.innerHTML+=getVoltages();
+
+    infoDiv.innerHTML+="<br/><br/> Component list:<br/>";
+
+    var impComponents = getComponents(components, ["res", "cap", "ind"]);
+    for(var i=0; i<impComponents.length; i++){
+        infoDiv.innerHTML += impComponents[i].type+"_"+impComponents[i].id+": "+JSON.stringify(impComponents[i])+"<br/>";
+    }
+
+}
+
 function chooseMode(){
     var mode = document.getElementById("mode");
     var freq2 = document.getElementById("freq2");

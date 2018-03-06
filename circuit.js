@@ -31,13 +31,19 @@ function getCurrents(){
 
     var loopCurrents = QRSolve(kvlMatrix, init);
     var componentCurrents = multiplyM(curMatrix, transpose([loopCurrents]));
+    var infoStr = "";
     for(var i=0; i<impComponents.length; i++){
-        console.log(JSON.stringify(impComponents[i]) + ": " + printComplex(componentCurrents[i][0]));
+        infoStr+= impComponents[i].type+"_"+impComponents[i].id + ": " + printComplex(componentCurrents[i][0])+"A <br/>";
     }
+    return infoStr;
 }
 
 function printComplex(z){
-    return roundNum(z[0], 8) + " + " + roundNum(z[1], 8)+"j";
+    if(z[1]!=0){
+        return roundNum(z[0], 8) + " + " + roundNum(z[1], 8)+"j";
+    }else{
+        return roundNum(z[0], 8);
+    }
 }
 
 function getVoltages(){
@@ -73,9 +79,11 @@ function getVoltages(){
     kclMatrix.push(groundNodes);
     var nodeVoltages = QRSolve(kclMatrix, init);
     var componentVoltages = multiplyM(voltMatrix, transpose([nodeVoltages]));
+    var infoStr = "";
     for(var i=0; i<impComponents.length; i++){
-        console.log(JSON.stringify(impComponents[i]) + ": " + printComplex(componentVoltages[i][0]));
+        infoStr += impComponents[i].type+"_"+impComponents[i].id + ": " + printComplex(componentVoltages[i][0])+"V<br/>";
     }
+    return infoStr;
 }
 
 

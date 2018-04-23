@@ -125,7 +125,7 @@ function find_q(mat){
 function QRSolve(matrix,vector){
     var q = find_q(matrix);
     var r = multiplyM(conjTranspose(q),matrix);
-    return solve_ru_matrix(r,transpose(multiplyM(transpose(q),transpose([vector])))[0]);
+    return solve_ru_matrix(r,transpose(multiplyM(conjTranspose(q),transpose([vector])))[0]);
 }
 
 //Part of QR decomposition

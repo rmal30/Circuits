@@ -118,13 +118,13 @@ function find_q(mat){
         u[i] = s_div([u[i]],norm(u[i]))[0];
     }
     q_mat = transpose(u);
-    return q_mat;
+    return s_mult(q_mat, -1);
 }
 
 //Solve the matrix equation using QR decomposition
 function QRSolve(matrix,vector){
     var q = find_q(matrix);
-    var r = multiplyM(transpose(q),matrix);
+    var r = multiplyM(conjTranspose(q),matrix);
     return solve_ru_matrix(r,transpose(multiplyM(transpose(q),transpose([vector])))[0]);
 }
 

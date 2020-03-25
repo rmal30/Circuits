@@ -99,17 +99,18 @@ function getPinDirections(direction){
 function getAngleFromDirection(direction){
     var angle = 0;
     switch(direction.toString()){
-        case "0, 1": angle = 90; break;
-        case "0, -1": angle = -90; break;
-        case "1, 0": angle = 0; break;
-        case "-1, 0": angle = 180; break;
+        case "0,1": angle = 90; break;
+        case "0,-1": angle = -90; break;
+        case "1,0": angle = 0; break;
+        case "-1,0": angle = 180; break;
+        default: throw new Error("Invalid direction");
     }
     return angle;
 }
 
 function drawPolyLine(lineID, points){
     var style = "fill:none;stroke:black;stroke-width:2;";
-    return '<polyline id="' + lineID + '" points="' + points + '" style="' + style + '" onclick="drawLine(\'' + lineID + '\', true)"/>';
+    return generateXML("polyline", {id: lineID, points: points, style: style, onclick: `drawLine('${lineID}', true)`}, null);
 }
 
 function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
@@ -134,15 +135,39 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
         angle = 90;
     }
 
-    var compStr = '<image id="img' + id + '" xlink:href="images/' + newCompInfo.init + '.png' + '" x="' + adjustedPos.x + '" y="' + adjustedPos.y + '" height="' + imgSize + '" width="' + imgSize + '" onmousedown="move(\'' + id + '\')" onmouseup="stopMove()" transform="rotate(' + angle + " " + cPos.coords() + ')"/>';
-    compStr += '<text x="' + pos3.x + '" y="' + pos3.y + '" id="' + "txt" + id + '" text-anchor="middle" style="user-select:none;" onclick="updateValue(\'' + id + '\')">' + value + " " + newCompInfo.unit + '</text>';
-    compStr += '<circle id="pin-' + pinCount + '" cx="' + pos1.x + '" cy="' + pos1.y + '" r="' + dotSize + '" fill="black" onclick="drawLine(\'' + pinCount + '\', false)"></circle>';
-    compStr += '<circle id="pin-' + (pinCount + 1) + '" cx="' + pos2.x + '" cy="' + pos2.y + '" r="' + dotSize + '" fill="black" onclick="drawLine(\'' + (pinCount + 1) + '\', false)"></circle>';
+    var compStr = "";
+    compStr += generateXML("image", {
+        id: "img" + id,
+        "xlink:href": "images/" + newCompInfo.init + ".png",
+        x: adjustedPos.x,
+        y: adjustedPos.y,
+        height: imgSize,
+        width: imgSize,
+        onmousedown: `startMove('${id}')`,
+        onmouseup: "stopMove()",
+        transform: "rotate(" + angle + " " + cPos.coords() + ")"
+    }, null);
+    compStr += generateXML("text", {x: pos3.x, y: pos3.y, id: "txt" + id, "text-anchor": "middle", style: "user-select:none;", onclick: "updateValue('" + id + "')"}, value + " " + newCompInfo.unit);
+    compStr += generateXML("circle", {id: "pin-" + pinCount, cx: pos1.x, cy: pos1.y, r: dotSize, fill: "black", onclick: "drawLine('" + pinCount + "', false)"}, null);
+    compStr += generateXML("circle", {id: "pin-" + (pinCount + 1), cx: pos2.x, cy: pos2.y, r: dotSize, fill: "black", onclick: "drawLine('" + (pinCount + 1) + "', false)"}, null);
     return compStr;
 }
 
+function generateXML(tag, properties, value){
+    var xml = `<${tag}`;
+    for(var prop in properties){
+        xml += " " + prop + "=\"" + properties[prop] + "\"";
+    }
+    if(value){
+        xml += ">" + value + `</${tag}>`;
+    }else{
+        xml += "/>";
+    }
+    return xml;
+}
+
 function drawNode(id, pos){
-    return '<circle id="pin-' + id + '" cx="' + pos.x + '" cy="' + pos.y + '" r="' + 4 + '" fill="black" onmousedown="handleNode(\'' + id + '\')" onmouseup="stopMove()"></circle>';
+    return generateXML("circle", {id: `pin-${id}`, cx: pos.x, cy: pos.y, r: 4, fill: "black", onmousedown: `handleNode('${id}')`, onmouseup: "stopMove()"}, null);
 }
 
 // Plan a line which can connect two components

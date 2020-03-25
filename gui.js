@@ -1,11 +1,8 @@
 var svg = document.getElementById("svg");
 var pins = [];
 var lines = [];
-var moveComp = false;
-var moveDot = false;
-var selectComp = false;
-var selectNode = false;
-var selectLine = false;
+var moving = {comp: false, dot: false};
+var selected = {comp: false, node: false, line: false};
 var pinCount = 0;
 var imgSize = 48;
 var gridSize = 6;
@@ -80,7 +77,7 @@ function addComponent(type, pos){
     var newCompInfo = info[type];
     var direction = document.getElementById("newCompDir").value;
     var value = promptValue(newCompInfo);
-    if(value != null){
+    if(value !== null){
         pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
         var cPos = pos.offset(0, -imgSize / 2);
         var id = components.length;
@@ -97,9 +94,9 @@ function addComponent(type, pos){
 
 // Handle node selection
 function handleNode(id){
-    moveDot = true;
-    selectNode = true;
-    selectComp = false;
+    moving.dot = true;
+    selected.node = true;
+    selected.comp = false;
     moveID = id;
     selectID = id;
 }
@@ -132,18 +129,18 @@ function drawLine(id, createNewNode){
         prevPointID = id;
         pointExists = true;
     }else{
-        if(selectComp){
+        if(selected.comp){
             deselect(selectID, "Component");
-            selectComp = false;
         }
+        selected.comp = false;
 
-        if(selectNode){
+        if(selected.node){
             deselect(selectID, "Node");
-            selectNode = false;
         }
+        selected.node = false;
 
         select(id, "Line");
-        selectLine = true;
+        selected.line = true;
         selectID = id;
     }
 }
@@ -170,18 +167,18 @@ function createNode(lineID, pos){
 }
 
 // Start move
-function move(id){
-    moveComp = true;
+function startMove(id){
+    moving.comp = true;
     moveID = id;
 }
 
 // Stop move
 function stopMove(){
-    moveComp = false;
-    if(moveDot){
+    moving.comp = false;
+    if(moving.dot){
         drawLine(moveID, false);
     }
-    moveDot = false;
+    moving.dot = false;
 }
 
 // Move node
@@ -271,7 +268,7 @@ function deleteComponent(id){
     deleteLines(pins[comp.pins[0]]);
     deleteLines(pins[comp.pins[1]]);
     components[id] = {};
-    selectComp = false;
+    selected.comp = false;
 }
 
 function deleteLines(pin){
@@ -305,9 +302,9 @@ function updateValue(id){
 // Drag component
 svg.addEventListener("mousemove", function(){
     var pos = new Position(window.event.clientX, window.event.clientY - 34);
-    if(moveComp){
+    if(moving.comp){
         moveComponent(pos);
-    }else if(moveDot){
+    }else if(moving.dot){
         moveNode(pos);
     }
 });
@@ -319,8 +316,8 @@ svg.addEventListener("click", function(){
     var image;
     var pin;
     var dx, dy;
-    moveComp = false;
-    moveDot = false;
+    moving.comp = false;
+    moving.dot = false;
     for(var i = 0; i < components.length; i++){
         if(Object.keys(components[i]).length > 0){
             image = document.getElementById("img" + i);
@@ -328,14 +325,14 @@ svg.addEventListener("click", function(){
             dy = Math.abs(pos.y - image.y.baseVal.value);
             if(dx < imgSize * 0.8 && dy < imgSize * 0.8){
                 listen = false;
-                if(selectComp && selectID !== i){
+                if(selected.comp && selectID !== i){
                     deselect(selectID, "Component");
-                    selectComp = false;
+                    selected.comp = false;
                 }
 
-                if(!selectComp){
+                if(!selected.comp){
                     select(i, "Component");
-                    selectComp = true;
+                    selected.comp = true;
                     selectID = i;
                 }
             }
@@ -354,9 +351,9 @@ svg.addEventListener("click", function(){
         if(pointExists){
             deselect(prevPointID, "Node");
             pointExists = false;
-        }else if(selectComp){
+        }else if(selected.comp){
             deselect(selectID, "Component");
-            selectComp = false;
+            selected.comp = false;
         }else if(newCompType !== " "){
             svg.innerHTML += addComponent(newCompType, pos);
         }
@@ -366,7 +363,7 @@ svg.addEventListener("click", function(){
 // Detect keys to rotate and delete components
 document.addEventListener("keydown", function(event){
     var key = event.keyCode ? event.keyCode : event.which;
-    if(selectNode){
+    if(selected.node){
         if(key === 46){
             svg.removeChild(document.getElementById("pin-" + selectID));
             var pin = pins[selectID];
@@ -374,11 +371,11 @@ document.addEventListener("keydown", function(event){
                 deleteLine(pin.lines[0]);
             }
             pins[selectID] = {};
-            selectNode = false;
+            selected.node = false;
             pointExists = false;
         }
     }
-    if(selectComp){
+    if(selected.comp){
         if(key === 82){
             rotateComponent(selectID);
         }else if(key === 46){
@@ -386,17 +383,17 @@ document.addEventListener("keydown", function(event){
         }
     }
 
-    if(selectLine){
+    if(selected.line){
         if(key === 46){
             if(lines.indexOf(selectID) !== -1){
                 deleteLine(lines.indexOf(selectID));
             }
-            selectLine = false;
+            selected.line = false;
         }
 
         if(key === 27){
             deselect(selectID, "Line");
-            selectLine = false;
+            selected.line = false;
         }
     }
 });

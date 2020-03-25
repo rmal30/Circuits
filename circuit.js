@@ -94,9 +94,7 @@ function voltageVector(loops2, components){
         }
         init.push(voltageSum);
     }
-    for(var i = 0; i < currentComponents.length; i++){
-        init.push(-currentComponents[i].value);
-    }
+    init = init.concat(currentComponents.map(component => -component.value));
     return init;
 }
 
@@ -112,9 +110,7 @@ function currentVector(nodes2, components){
         }
         init.push(currentSum);
     }
-    for(var i = 0; i < voltageComponents.length; i++){
-        init.push(-voltageComponents[i].value);
-    }
+    init = init.concat(voltageComponents.map(component => -component.value));
     init.push(0);
     return init;
 }
@@ -139,14 +135,11 @@ function lawMatrix(groups2, impComponents, type){
 function impedance(component){
     var value = component.value;
     var freq = hertz * Math.PI * 2;
-    if(component.type === "res"){
-        return [parseFloat(value), 0];
-    }else if(component.type === "cap"){
-        return [0, -Math.pow(10, 6) / (value * freq)];
-    }else if(component.type === "ind"){
-        return [0, Math.pow(10, -3) * value * freq];
-    }else{
-        return [0, 0];
+    switch(component.type){
+        case "res": return [parseFloat(value), 0];
+        case "cap": return [0, -Math.pow(10, 6) / (value * freq)];
+        case "ind": return [0, Math.pow(10, -3) * value * freq];
+        default: return [0, 0];
     }
 }
 

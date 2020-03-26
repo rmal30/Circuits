@@ -312,38 +312,49 @@ function changeComponentPosition(comp, id, pos, pplPos){
     img.setAttribute("transform", 'rotate(' + angle + ' ' + cPos.coords() + ')');
 }
 
+function getElement(id, type){
+    var prefixes = {
+        Line: "",
+        Component: "img",
+        Node: "pin-"
+    };
+    return document.getElementById(prefixes[type] + id);
+}
+
 // Deselect component or line
 function deselect(id, type){
+    var element = getElement(id, type);
     switch(type){
         case "Line":
-            document.getElementById(id).style.stroke = "black";
+            element.style.stroke = "black";
             break;
         case "Component":
-            document.getElementById("img" + id).removeAttribute("opacity");
+            element.removeAttribute("opacity");
             break;
         case "Node":
-            document.getElementById("pin-" + id).setAttribute("fill", "black");
+            element.setAttribute("fill", "black");
             break;
     }
 }
 
 // Select component or line
 function select(id, type){
+    var element = getElement(id, type);
     switch(type){
         case "Line":
-            document.getElementById(id).style.stroke = "blue";
+            element.style.stroke = "blue";
             break;
         case "Component":
-            document.getElementById("img" + id).setAttribute("opacity", "0.7");
+            element.setAttribute("opacity", "0.7");
             break;
         case "Node":
-            document.getElementById("pin-" + id).setAttribute("fill", "blue");
+            element.setAttribute("fill", "blue");
             break;
     }
 }
 
 function movePin(pinID, pos){
-    var dot0 = document.getElementById("pin-" + pinID);
+    var dot0 = getElement(pinID, "Node");
     dot0.setAttribute("cx", pos.x);
     dot0.setAttribute("cy", pos.y);
 }

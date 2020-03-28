@@ -15,17 +15,52 @@ var components = [];
 chooseMode();
 
 function simulate(){
+    var currentSets = getCurrents();
+    var voltageSets = getVoltages();
+    var impComponents = getComponents(components, ["res", "cap", "ind", "dio"]);
+    var diodeCount;
+    var validIndex;
+    var valid;
+    for(var i=0; i<currentSets.length; i++){
+        diodeCount = 0;
+        valid = true;
+        for(var j=0; j<currentSets[i].length; j++){
+            if(impComponents[j].type === "dio"){
+                var state = (i & (1 << diodeCount)) !== 0;
+                if(!state && (currentSets[i][j][0] !== 0 || voltageSets[i][j][0] < 0)){
+                    valid = false;
+                }else if(state && (currentSets[i][j][0] < 0 || voltageSets[i][j][0] > 0)){
+                    valid = false;
+                }else if(isNaN(currentSets[i][j]) || isNaN(voltageSets[i][j])){
+                    valid = false;
+                }
+                diodeCount++;
+            }
+        }
+        if(valid){
+            validIndex = i;
+            break;
+        }
+    }
+
+    var diodes = getComponents(components, ["dio"]);
+    for(var i=0; i<diodes.length; i++){
+        diodes[i].value = (validIndex & (1 << i)) !== 0;
+    }
+
     var infoDiv = document.getElementById("info");
     infoDiv.innerHTML = "";
-    infoDiv.innerHTML += "Mesh analysis:<br/>";
-    infoDiv.innerHTML += getCurrents();
-
     infoDiv.innerHTML += "<br/><br/> Nodal analysis:<br/>";
-    infoDiv.innerHTML += getVoltages();
+    for(var i = 0; i < impComponents.length; i++){
+        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + currentSets[validIndex][i] + "A<br/>";
+    }
 
-    infoDiv.innerHTML += "<br/><br/> Component list:<br/>";
+    infoDiv.innerHTML += "<br/> Mesh analysis:<br/>";
+    for(var i = 0; i < impComponents.length; i++){
+        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + voltageSets[validIndex][i] + "V<br/>";
+    }
 
-    var impComponents = getComponents(components, ["res", "cap", "ind"]);
+    infoDiv.innerHTML += "<br/><br/> Component list:<br/>";;
     for(var i = 0; i < impComponents.length; i++){
         infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + JSON.stringify(impComponents[i]) + "<br/>";
     }
@@ -38,7 +73,7 @@ function chooseMode(){
     var compList = document.getElementById("newComp");
 
     var acComponents = [["Capacitor", "cap"], ["Inductor", "ind"], ["AC Voltage", "vac"], ["AC Current", "iac"]];
-    var dcComponents = [["DC Voltage", "vdc"], ["DC Current", "idc"]];
+    var dcComponents = [["DC Voltage", "vdc"], ["DC Current", "idc"], ["Diode", "dio"]];
     compList.options.length = 2;
     if(mode.value === "ac"){
         freq2.className = freq2.className.replace(" is-disabled", "");
@@ -76,19 +111,23 @@ function addComponent(type, pos){
     var compStr = "";
     var newCompInfo = info[type];
     var direction = document.getElementById("newCompDir").value;
-    var value = promptValue(newCompInfo);
-    if(value !== null){
-        pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
-        var cPos = pos.offset(0, -imgSize / 2);
-        var id = components.length;
-        var pinDir = getPinDirections(direction);
-        var pinPos = getPinPositions(pos, direction);
-        components.push({id: id, type: type, value: value, direction: pinDir[1], pins: [pinCount, pinCount + 1], pos: cPos});
-        compStr = drawComponent(id, newCompInfo, direction, value, pos, pinCount);
-        pins[pinCount] = {pos: pinPos[0], comp: id, lines: [], direction: pinDir[0]};
-        pins[pinCount + 1] = {pos: pinPos[1], comp: id, lines: [], direction: pinDir[1]};
-        pinCount += 2;
+    var value;
+    if(newCompInfo.prop){
+        value = promptValue(newCompInfo);
+        if(value === null){
+            return;
+        }
     }
+    pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
+    var cPos = pos.offset(0, -imgSize / 2);
+    var id = components.length;
+    var pinDir = getPinDirections(direction);
+    var pinPos = getPinPositions(pos, direction);
+    components.push({id: id, type: type, value: value, direction: pinDir[1], pins: [pinCount, pinCount + 1], pos: cPos});
+    compStr = drawComponent(id, newCompInfo, direction, value, pos, pinCount);
+    pins[pinCount] = {pos: pinPos[0], comp: id, lines: [], direction: pinDir[0]};
+    pins[pinCount + 1] = {pos: pinPos[1], comp: id, lines: [], direction: pinDir[1]};
+    pinCount += 2;
     return compStr;
 }
 

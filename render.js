@@ -4,11 +4,12 @@ var dotSize = 4;
 var res = {name: "Resistor", init: "res", prop: "Resistance", unit: "\u03A9"};
 var cap = {name: "Capacitor", init: "cap", prop: "Capacitance", unit: "\u00B5F"};
 var ind = {name: "Inductor", init: "ind", prop: "Inductance", unit: "mH"};
+var dio = {name: "Diode", init: "dio"};
 var vdc = {name: "DC Voltage source", init: "vdc", prop: "Voltage", unit: "V"};
 var vac = {name: "AC voltage source", init: "vac", prop: "Phasor voltage", unit: "V"};
 var idc = {name: "DC Current source", init: "idc", prop: "Current", unit: "A"};
 var iac = {name: "AC Current source", init: "iac", prop: "Phasor Current", unit: "A"};
-var info = {res: res, cap: cap, ind: ind, vdc: vdc, vac: vac, idc: idc, iac: iac};
+var info = {res: res, cap: cap, ind: ind, vdc: vdc, vac: vac, idc: idc, iac: iac, dio: dio};
 
 // Prompt value from user
 function promptValue(info){
@@ -147,7 +148,15 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
         onmouseup: "stopMove()",
         transform: "rotate(" + angle + " " + cPos.coords() + ")"
     }, null);
-    compStr += generateXML("text", {x: pos3.x, y: pos3.y, id: "txt" + id, "text-anchor": "middle", style: "user-select:none;", onclick: "updateValue('" + id + "')"}, value + " " + newCompInfo.unit);
+    compStr += generateXML("text", {
+        x: pos3.x,
+        y: pos3.y,
+        id: "txt" + id,
+        "text-anchor": "middle",
+        style: "user-select:none;",
+        onclick: "updateValue('" + id + "')"
+    }, value ? (value + " " + newCompInfo.unit) : "");
+
     compStr += generateXML("circle", {id: "pin-" + pinCount, cx: pos1.x, cy: pos1.y, r: dotSize, fill: "black", onclick: "drawLine('" + pinCount + "', false)"}, null);
     compStr += generateXML("circle", {id: "pin-" + (pinCount + 1), cx: pos2.x, cy: pos2.y, r: dotSize, fill: "black", onclick: "drawLine('" + (pinCount + 1) + "', false)"}, null);
     return compStr;

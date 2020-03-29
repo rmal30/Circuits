@@ -90,7 +90,7 @@ function getVoltages(){
         }
         kclMatrix.push(groundNodes);
         var nodeVoltages = gaussianElimination(kclMatrix, init);
-        voltages.push(multiplyM(voltMatrix, transpose([nodeVoltages])));
+        voltages.push(scalarMultiply(multiplyM(voltMatrix, transpose([nodeVoltages])), -1));
     }
 
     return voltages;

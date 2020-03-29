@@ -21,15 +21,15 @@ function simulate(){
     var diodeCount;
     var validIndex;
     var valid;
-    for(var i=0; i<currentSets.length; i++){
+    for(var i = 0; i < currentSets.length; i++){
         diodeCount = 0;
         valid = true;
-        for(var j=0; j<currentSets[i].length; j++){
+        for(var j = 0; j < currentSets[i].length; j++){
             if(impComponents[j].type === "dio"){
                 var state = (i & (1 << diodeCount)) !== 0;
-                if(!state && (currentSets[i][j][0] !== 0 || voltageSets[i][j][0] < 0)){
+                if(!state && (currentSets[i][j][0] !== 0 || voltageSets[i][j][0] > 0)){
                     valid = false;
-                }else if(state && (currentSets[i][j][0] < 0 || voltageSets[i][j][0] > 0)){
+                }else if(state && (currentSets[i][j][0] < 0 || voltageSets[i][j][0] < 0)){
                     valid = false;
                 }else if(isNaN(currentSets[i][j]) || isNaN(voltageSets[i][j])){
                     valid = false;
@@ -44,7 +44,7 @@ function simulate(){
     }
 
     var diodes = getComponents(components, ["dio"]);
-    for(var i=0; i<diodes.length; i++){
+    for(var i = 0; i < diodes.length; i++){
         diodes[i].value = (validIndex & (1 << i)) !== 0;
     }
 
@@ -52,15 +52,15 @@ function simulate(){
     infoDiv.innerHTML = "";
     infoDiv.innerHTML += "<br/><br/> Nodal analysis:<br/>";
     for(var i = 0; i < impComponents.length; i++){
-        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + currentSets[validIndex][i] + "A<br/>";
+        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + voltageSets[validIndex][i] + "V<br/>";
     }
 
     infoDiv.innerHTML += "<br/> Mesh analysis:<br/>";
     for(var i = 0; i < impComponents.length; i++){
-        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + voltageSets[validIndex][i] + "V<br/>";
+        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + currentSets[validIndex][i] + "A<br/>";
     }
 
-    infoDiv.innerHTML += "<br/><br/> Component list:<br/>";;
+    infoDiv.innerHTML += "<br/><br/> Component list:<br/>";
     for(var i = 0; i < impComponents.length; i++){
         infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + JSON.stringify(impComponents[i]) + "<br/>";
     }
@@ -340,7 +340,7 @@ function updateValue(id){
 
 // Drag component
 svg.addEventListener("mousemove", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY - 34);
+    var pos = new Position(window.event.clientX, window.event.clientY - 32);
     if(moving.comp){
         moveComponent(pos);
     }else if(moving.dot){
@@ -350,7 +350,7 @@ svg.addEventListener("mousemove", function(){
 
 // Add component
 svg.addEventListener("click", function(){
-    var pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -64);
+    var pos = new Position(window.event.clientX, window.event.clientY).offset(0, -32);
     var listen = true;
     var image;
     var pin;
@@ -360,9 +360,9 @@ svg.addEventListener("click", function(){
     for(var i = 0; i < components.length; i++){
         if(Object.keys(components[i]).length > 0){
             image = document.getElementById("img" + i);
-            dx = Math.abs(pos.x - image.x.baseVal.value);
-            dy = Math.abs(pos.y - image.y.baseVal.value);
-            if(dx < imgSize * 0.8 && dy < imgSize * 0.8){
+            dx = Math.abs(pos.x - image.x.baseVal.value - 24);
+            dy = Math.abs(pos.y - image.y.baseVal.value - 48);
+            if(dx < imgSize * 0.4 && dy < imgSize * 0.4){
                 listen = false;
                 if(selected.comp && selectID !== i){
                     deselect(selectID, "Component");
@@ -380,7 +380,7 @@ svg.addEventListener("click", function(){
     for(var i = 0; i < pins.length; i++){
         if(Object.keys(pins[i]).length > 0){
             pin = document.getElementById("pin-" + i);
-            if(Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value) < 20){
+            if(Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - 24) < 20){
                 listen = false;
             }
         }

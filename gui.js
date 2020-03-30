@@ -49,53 +49,48 @@ function simulate(){
     }
 
     var infoDiv = document.getElementById("info");
+    if(!valid){
+        infoDiv.innerHTML = "No solution found";
+        return;
+    }
     infoDiv.innerHTML = "";
-    infoDiv.innerHTML += "<br/><br/> Nodal analysis:<br/>";
-    for(var i = 0; i < impComponents.length; i++){
-        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + voltageSets[validIndex][i] + "V<br/>";
-    }
-
-    infoDiv.innerHTML += "<br/> Mesh analysis:<br/>";
-    for(var i = 0; i < impComponents.length; i++){
-        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + currentSets[validIndex][i] + "A<br/>";
-    }
-
-    infoDiv.innerHTML += "<br/><br/> Component list:<br/>";
-    for(var i = 0; i < impComponents.length; i++){
-        infoDiv.innerHTML += impComponents[i].type + "_" + impComponents[i].id + ": " + JSON.stringify(impComponents[i]) + "<br/>";
-    }
+    infoDiv.innerHTML += "<br/><br/> Nodal analysis:<br/>" + impComponents.map((value, i) => `${value.type}_${value.id}: ${printComplex(voltageSets[validIndex][i][0])}V`).join("<br/>");
+    infoDiv.innerHTML += "<br/><br/> Mesh analysis:<br/>" + impComponents.map((value, i) => `${value.type}_${value.id}: ${printComplex(currentSets[validIndex][i][0])}A`).join("<br/>");
+    infoDiv.innerHTML += "<br/><br/> Component list:<br/>" + impComponents.map((value, i) => `${value.type}_${value.id}: ${JSON.stringify(impComponents[i])}`).join("<br/>");
 }
 
 function chooseMode(){
     var mode = document.getElementById("mode");
     var freq2 = document.getElementById("freq2");
-
     var compList = document.getElementById("newComp");
 
-    var acComponents = [["Capacitor", "cap"], ["Inductor", "ind"], ["AC Voltage", "vac"], ["AC Current", "iac"]];
-    var dcComponents = [["DC Voltage", "vdc"], ["DC Current", "idc"], ["Diode", "dio"]];
+    var componentsList = {
+        ac: {cap: "Capacitor", ind: "Inductor", vac: "AC Voltage", iac: "AC Current"},
+        dc: {vdc: "DC Voltage", idc: "DC Current", dio: "Diode"}
+    };
+
     compList.options.length = 2;
     if(mode.value === "ac"){
         freq2.className = freq2.className.replace(" is-disabled", "");
         document.getElementById("freq").disabled = false;
-        for(var i = 0; i < acComponents.length; i++){
-            compList.options[2 + i] = new Option(acComponents[i][0], acComponents[i][1]);
+        for(var acComp in componentsList.ac){
+            compList.options[compList.options.length] = (new Option(componentsList.ac[acComp], acComp));
         }
 
         for(var i = 0; i < components.length; i++){
-            if(components[i].type === "vdc" || components[i].type === "idc"){
+            if(components[i].type in componentsList.dc){
                 deleteComponent(i);
             }
         }
     }else{
         freq2.className += " is-disabled";
         document.getElementById("freq").disabled = true;
-        for(var i = 0; i < dcComponents.length; i++){
-            compList.options[2 + i] = new Option(dcComponents[i][0], dcComponents[i][1]);
+        for(var dcComp in componentsList.dc){
+            compList.options[compList.options.length] = new Option(componentsList.dc[dcComp], dcComp);
         }
 
         for(var i = 0; i < components.length; i++){
-            if(["vac", "iac", "cap", "ind"].includes(components[i].type)){
+            if(components[i].type in componentsList.ac){
                 deleteComponent(i);
             }
         }
@@ -115,7 +110,7 @@ function addComponent(type, pos){
     if(newCompInfo.prop){
         value = promptValue(newCompInfo);
         if(value === null){
-            return;
+            return "";
         }
     }
     pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
@@ -198,7 +193,7 @@ function createNode(lineID, pos){
     var lines2 = pins[lineIDs[1]].lines;
     lines2[lines2.indexOf(lineIndex1)] = lineIndex2;
     pins[pinCount] = {pos: pos, comp: "", lines: [lineIndex1, lineIndex2], direction: ""};
-    line1.setAttribute("onclick", "drawLine('" + lineID1 + "', true)");
+    line1.setAttribute("onclick", `drawLine('${lineID1}', true)`);
     line1.setAttribute("points", findPolyStr(pins, lineIDs[0], pinCount));
     svg.innerHTML += drawPolyLine(lineID2, findPolyStr(pins, lineIDs[1], pinCount)) + drawNode(pinCount, pos);
     pinCount++;
@@ -360,8 +355,8 @@ svg.addEventListener("click", function(){
     for(var i = 0; i < components.length; i++){
         if(Object.keys(components[i]).length > 0){
             image = document.getElementById("img" + i);
-            dx = Math.abs(pos.x - image.x.baseVal.value - 24);
-            dy = Math.abs(pos.y - image.y.baseVal.value - 48);
+            dx = Math.abs(pos.x - image.x.baseVal.value - (imgSize / 2));
+            dy = Math.abs(pos.y - image.y.baseVal.value - imgSize);
             if(dx < imgSize * 0.4 && dy < imgSize * 0.4){
                 listen = false;
                 if(selected.comp && selectID !== i){
@@ -380,7 +375,7 @@ svg.addEventListener("click", function(){
     for(var i = 0; i < pins.length; i++){
         if(Object.keys(pins[i]).length > 0){
             pin = document.getElementById("pin-" + i);
-            if(Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - 24) < 20){
+            if(Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - (imgSize / 2)) < 20){
                 listen = false;
             }
         }
@@ -415,10 +410,9 @@ document.addEventListener("keydown", function(event){
         }
     }
     if(selected.comp){
-        if(key === 82){
-            rotateComponent(selectID);
-        }else if(key === 46){
-            deleteComponent(selectID);
+        switch(key){
+            case 82: rotateComponent(selectID); break;
+            case 46: deleteComponent(selectID); break;
         }
     }
 

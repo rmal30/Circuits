@@ -11,9 +11,28 @@ var idc = {name: "DC Current source", init: "idc", prop: "Current", unit: "A"};
 var iac = {name: "AC Current source", init: "iac", prop: "Phasor Current", unit: "A"};
 var info = {res: res, cap: cap, ind: ind, vdc: vdc, vac: vac, idc: idc, iac: iac, dio: dio};
 
+var styles = {
+    select: {
+        Line: {stroke: "blue"},
+        Component: {opacity: 0.7},
+        Node: {fill: "blue"}
+    },
+    deselect: {
+        Line: {stroke: "black"},
+        Component: {opacity: 1},
+        Node: {fill: "black"}
+    }
+};
+
+var defaultLineStyle = {
+    fill: "none",
+    stroke: "black",
+    "stroke-width": 2
+};
+
 // Prompt value from user
 function promptValue(info){
-    var promptStr = "Please enter a " + info.prop + " for a " + info.name + " in " + info.unit;
+    var promptStr = `Please enter a ${info.prop} for a ${info.name} in ${info.unit}`;
     var value = prompt(promptStr);
     while(value === ""){
         alert("Please enter a valid value");
@@ -29,7 +48,7 @@ function adjustLine(pins, lineId){
 }
 
 function getLabelPinPos(pos, direction){
-    var pos0, pos1, pos2;
+    var points;
     var halfImgSize = imgSize / 2;
     var leftPos = pos.offset(-halfImgSize, -halfImgSize);
     var rightPos = pos.offset(halfImgSize, -halfImgSize);
@@ -38,24 +57,21 @@ function getLabelPinPos(pos, direction){
 
     if(direction[0] === 0){
         if(direction[1] === 1){
-            pos0 = topPos;
-            pos1 = bottomPos;
+            points = [topPos, bottomPos];
         }else{
-            pos0 = bottomPos;
-            pos1 = topPos;
+            points = [bottomPos, topPos];
         }
-        pos2 = rightPos.offset(8, 5);
+        points.push(rightPos.offset(8, 5));
     }else if(direction[1] === 0){
         if(direction[0] === 1){
-            pos0 = leftPos;
-            pos1 = rightPos;
+            points = [leftPos, rightPos];
         }else{
-            pos0 = rightPos;
-            pos1 = leftPos;
+            points = [rightPos, leftPos];
         }
-        pos2 = bottomPos;
+        points.push(bottomPos);
     }
-    return [pos0, pos1, pos2];
+
+    return points;
 }
 
 // Position class
@@ -77,8 +93,8 @@ function Position(x, y){
 }
 
 function getPinPositions(pos, direction){
-    var leftPos = pos.offset(-24, -imgSize / 2);
-    var rightPos = pos.offset(24, -imgSize / 2);
+    var leftPos = pos.offset(-imgSize / 2, -imgSize / 2);
+    var rightPos = pos.offset(imgSize / 2, -imgSize / 2);
     var topPos = pos.offset(0, -imgSize);
     var bottomPos = pos;
 
@@ -110,14 +126,17 @@ function getAngleFromDirection(direction){
 }
 
 function drawPolyLine(lineID, points){
-    var style = "fill:none;stroke:black;stroke-width:2;";
+    var style = "";
+    for(var prop in defaultLineStyle){
+        style += `${prop}:${defaultLineStyle[prop]};`;
+    }
     return generateXML("polyline", {id: lineID, points: points, style: style, onclick: `drawLine('${lineID}', true)`}, null);
 }
 
 function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
     var adjustedPos = pos.offset(-imgSize / 2, -imgSize);
-    var leftPos = pos.offset(-24, -imgSize / 2);
-    var rightPos = pos.offset(24, -imgSize / 2);
+    var leftPos = pos.offset(-imgSize / 2, -imgSize / 2);
+    var rightPos = pos.offset(imgSize / 2, -imgSize / 2);
     var topPos = pos.offset(0, -imgSize);
     var cPos = pos.offset(0, -imgSize / 2);
     var bottomPos = pos;
@@ -139,14 +158,14 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
     var compStr = "";
     compStr += generateXML("image", {
         id: "img" + id,
-        "xlink:href": "images/" + newCompInfo.init + ".png",
+        "xlink:href": `images/${newCompInfo.init}.png`,
         x: adjustedPos.x,
         y: adjustedPos.y,
         height: imgSize,
         width: imgSize,
         onmousedown: `startMove('${id}')`,
         onmouseup: "stopMove()",
-        transform: "rotate(" + angle + " " + cPos.coords() + ")"
+        transform: `rotate(${angle} ${cPos.coords()})`
     }, null);
     compStr += generateXML("text", {
         x: pos3.x,
@@ -157,18 +176,18 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
         onclick: "updateValue('" + id + "')"
     }, value ? (value + " " + newCompInfo.unit) : "");
 
-    compStr += generateXML("circle", {id: "pin-" + pinCount, cx: pos1.x, cy: pos1.y, r: dotSize, fill: "black", onclick: "drawLine('" + pinCount + "', false)"}, null);
-    compStr += generateXML("circle", {id: "pin-" + (pinCount + 1), cx: pos2.x, cy: pos2.y, r: dotSize, fill: "black", onclick: "drawLine('" + (pinCount + 1) + "', false)"}, null);
+    compStr += generateXML("circle", {id: "pin-" + pinCount, cx: pos1.x, cy: pos1.y, r: dotSize, onclick: "drawLine('" + pinCount + "', false)"}, null);
+    compStr += generateXML("circle", {id: "pin-" + (pinCount + 1), cx: pos2.x, cy: pos2.y, r: dotSize, onclick: "drawLine('" + (pinCount + 1) + "', false)"}, null);
     return compStr;
 }
 
 function generateXML(tag, properties, value){
     var xml = `<${tag}`;
     for(var prop in properties){
-        xml += " " + prop + "=\"" + properties[prop] + "\"";
+        xml += ` ${prop}="${properties[prop]}"`;
     }
     if(value){
-        xml += ">" + value + `</${tag}>`;
+        xml += `>${value}</${tag}>`;
     }else{
         xml += "/>";
     }
@@ -176,7 +195,7 @@ function generateXML(tag, properties, value){
 }
 
 function drawNode(id, pos){
-    return generateXML("circle", {id: `pin-${id}`, cx: pos.x, cy: pos.y, r: 4, fill: "black", onmousedown: `handleNode('${id}')`, onmouseup: "stopMove()"}, null);
+    return generateXML("circle", {id: `pin-${id}`, cx: pos.x, cy: pos.y, r: 4, onmousedown: `handleNode('${id}')`, onmouseup: "stopMove()"}, null);
 }
 
 // Plan a line which can connect two components
@@ -295,10 +314,7 @@ function findPolyStr(pins, pinId0, pinId1){
     polyLinePoints.push(origin.coords());
     polyLinePoints = polyLinePoints.concat(midPoints);
     polyLinePoints.push(dest.coords());
-    for(var i = 0; i < polyLinePoints.length; i++){
-        polyStr += polyLinePoints[i][0] + ", " + polyLinePoints[i][1] + " ";
-    }
-    return polyStr;
+    return polyLinePoints.map(point => point.join(", ")).join(" ");
 }
 
 function changeComponentPosition(comp, id, pos, pplPos){
@@ -318,7 +334,7 @@ function changeComponentPosition(comp, id, pos, pplPos){
     img.setAttribute("y", adjustedPos.y);
 
     var angle = getAngleFromDirection(comp.direction);
-    img.setAttribute("transform", 'rotate(' + angle + ' ' + cPos.coords() + ')');
+    img.setAttribute("transform", `rotate(${angle} ${cPos.coords()})`);
 }
 
 function getElement(id, type){
@@ -332,34 +348,12 @@ function getElement(id, type){
 
 // Deselect component or line
 function deselect(id, type){
-    var element = getElement(id, type);
-    switch(type){
-        case "Line":
-            element.style.stroke = "black";
-            break;
-        case "Component":
-            element.removeAttribute("opacity");
-            break;
-        case "Node":
-            element.setAttribute("fill", "black");
-            break;
-    }
+    Object.assign(getElement(id, type).style, styles.deselect[type]);
 }
 
 // Select component or line
 function select(id, type){
-    var element = getElement(id, type);
-    switch(type){
-        case "Line":
-            element.style.stroke = "blue";
-            break;
-        case "Component":
-            element.setAttribute("opacity", "0.7");
-            break;
-        case "Node":
-            element.setAttribute("fill", "blue");
-            break;
-    }
+    Object.assign(getElement(id, type).style, styles.select[type]);
 }
 
 function movePin(pinID, pos){

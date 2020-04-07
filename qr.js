@@ -34,6 +34,5 @@ function solveRUMatrix(matrix, vector){
         }
         solutionSet[j] = divideC(sol, matrix[j][j]);
     }
-    console.log(matrix, vector, solutionSet);
     return solutionSet;
 }

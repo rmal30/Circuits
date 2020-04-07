@@ -127,7 +127,6 @@ function addComponent(type, pos){
     var id = components.length;
     var pinDir = getPinDirections(direction, info[type].pinCount);
     var pinPos = getPinPositions(pos, direction, info[type].pinCount);
-    console.log(pinPos, pinDir);
     components.push({id: id, type: type, value: value, direction: pinDir[0], pins: range(pinCount, pinCount + info[type].pinCount), pos: cPos});
     compStr = drawComponent(id, newCompInfo, directionStr, value, pos, pinCount);
     for(var i=0; i<info[type].pinCount; i++){
@@ -259,7 +258,6 @@ function rotateComponent(id){
     var comp = components[id];
     var halfImgSize = imgSize / 2;
     comp.direction = rotateVector(comp.direction);
-    console.log(comp.direction);
     var pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
     changeComponentPosition(comp, id, comp.pos.offset(0, halfImgSize), pplPos);
     var directions = getPinDirections(comp.direction, comp.pins.length);

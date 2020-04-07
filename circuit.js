@@ -12,7 +12,7 @@ function getCurrents(){
     var graph = generateGraph(pins, lines, components);
     var loops = getCycleBasis(graph);
     for(var edgeID in graph.edges){
-        if(edgeID.includes("idc") || edgeID.includes("iac")){
+        if(edgeID.includes("idc") || edgeID.includes("iac") || edgeID.includes("cs-")){
             graph.removeEdge(edgeID, graph.edges[edgeID]);
         }
     }
@@ -34,6 +34,14 @@ function getCurrents(){
         var currentComponents = getComponents(components, ["idc", "iac"]);
         var curMatrix2 = groupMatrix(loops, currentComponents, "loop");
         kvlMatrix = kvlMatrix.concat(curMatrix2);
+
+        var currentAmpComponents = getComponents(components, ["cccs"]);
+        var currentAmpMatrix = groupMatrix2(loops, currentAmpComponents, "loop");
+        for(var i = 0; i < currentAmpMatrix.length; i++){
+            kvlMatrix.push(currentAmpMatrix[i]);
+            init.push(0);
+        }
+
         var loopCurrents = gaussianElimination(kvlMatrix, init);
         currents.push(multiplyM(curMatrix, transpose([loopCurrents])));
     }
@@ -55,10 +63,10 @@ function getVoltages(){
     var edge;
     var count = 0;
     for(var edgeID in graph.edges){
-        if(edgeID.includes("vdc") || edgeID.includes("vac")){
+        if(edgeID.includes("vdc") || edgeID.includes("vac") || edgeID.includes("vs-")){
             edge = graph.edges[edgeID];
             graph.removeEdge(edgeID, edge);
-            graph.addEdge("lin-x" + (components.length + count), edge);
+            graph.addEdge("lin-" + (lines.length + count), edge);
             count++;
         }
     }
@@ -84,6 +92,14 @@ function getVoltages(){
         for(var i = 0; i < voltMatrix2.length; i++){
             kclMatrix.push(voltMatrix2[i]);
         }
+
+        var voltageAmpComponents = getComponents(components, ["vcvs"]);
+        var voltageAmpMatrix = groupMatrix2(nodes, voltageAmpComponents, "node");
+        for(var i = 0; i < voltageAmpMatrix.length; i++){
+            kclMatrix.push(voltageAmpMatrix[i]);
+            init.push(0);
+        }
+
         var groundNodes = [1];
         for(var i = 1; i < nodes.length; i++){
             groundNodes.push(0);
@@ -104,7 +120,7 @@ function voltageVector(loops2, components){
     for(var i = 0; i < loops2.length; i++){
         voltageSum = 0;
         for(var j = 0; j < voltageComponents.length; j++){
-            voltageSum -= direction(voltageComponents[j], loops2[i], "loop") * voltageComponents[j].value;
+            voltageSum -= direction(voltageComponents[j].pins, loops2[i], "loop") * voltageComponents[j].value;
         }
         init.push(voltageSum);
     }
@@ -120,7 +136,7 @@ function currentVector(nodes2, components){
     for(var i = 0; i < nodes2.length; i++){
         currentSum = 0;
         for(var j = 0; j < currentComponents.length; j++){
-            currentSum -= direction(currentComponents[j], nodes2[i], "node") * currentComponents[j].value;
+            currentSum -= direction(currentComponents[j].pins, nodes2[i], "node") * currentComponents[j].value;
         }
         init.push(currentSum);
     }
@@ -135,7 +151,7 @@ function lawMatrix(groups2, impComponents, type){
     for(var i = 0; i < groups2.length; i++){
         matrix[i] = [];
         for(var k = 0; k < impComponents.length; k++){
-            compDirection = direction(impComponents[k], groups2[i], type);
+            compDirection = direction(impComponents[k].pins, groups2[i], type);
             if(type === "loop"){
                 matrix[i][k] = multiplyC(compDirection, impedance(impComponents[k]));
             }else if(type === "node"){
@@ -163,23 +179,39 @@ function groupMatrix(groups, impComponents, type){
     for(var j = 0; j < impComponents.length; j++){
         compMatrix[j] = [];
         for(var k = 0; k < groups.length; k++){
-            compMatrix[j].push(direction(impComponents[j], groups[k], type));
+            compMatrix[j].push(direction(impComponents[j].pins, groups[k], type));
         }
     }
     return compMatrix;
 }
 
-function direction(component, group, type){
+function groupMatrix2(groups, impComponents, type){
+    var compMatrix = [];
+    for(var j = 0; j < impComponents.length; j++){
+        compMatrix[j] = [];
+        var componentPins = impComponents[j].pins;
+        var dir = (type === "loop") ? -1 : 1;
+        for(var k = 0; k < groups.length; k++){
+            compMatrix[j].push(
+                impComponents[j].value * direction([componentPins[0], componentPins[2]], groups[k], type) -
+                dir * direction([componentPins[1], componentPins[3]], groups[k], type)
+            );
+        }
+    }
+    return compMatrix;
+}
+
+function direction(pins, group, type){
     if(type === "loop"){
-        return loopDirection(component, group);
+        return loopDirection(pins, group);
     }else{
-        return nodeDirection(component, group);
+        return nodeDirection(pins, group);
     }
 }
 
-function loopDirection(component, loop){
-    var pin1 = loop.indexOf(component.pins[0]);
-    var pin2 = loop.indexOf(component.pins[1]);
+function loopDirection(pins, loop){
+    var pin1 = loop.indexOf(pins[0]);
+    var pin2 = loop.indexOf(pins[1]);
     if(pin2 === -1 || pin1 === -1){
         return 0;
     }else if(pin2 - pin1 === 1 || (pin1 === loop.length - 1 && pin2 === 0)){
@@ -191,9 +223,9 @@ function loopDirection(component, loop){
     }
 }
 
-function nodeDirection(component, node){
-    var pin1 = node.indexOf(component.pins[0]);
-    var pin2 = node.indexOf(component.pins[1]);
+function nodeDirection(pins, node){
+    var pin1 = node.indexOf(pins[0]);
+    var pin2 = node.indexOf(pins[1]);
 
     if(pin1 !== -1 && pin2 === -1){
         return -1;

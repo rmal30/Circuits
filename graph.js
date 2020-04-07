@@ -73,10 +73,19 @@ function generateGraph(pins, lines, components){
         }
     }
 
+    var count = 0;
     for(var i = 0; i < components.length; i++){
         if(Object.keys(components[i]).length > 0){
             edge = components[i];
-            graph.addEdge(edge.type + "-" + edge.id, edge.pins);
+            if(edge.pins.length == 2){
+                graph.addEdge(edge.type + "-" + edge.id, edge.pins);
+            }else{
+                graph.addEdge(edge.type + "-" + edge.id, [edge.pins[1], edge.pins[3]]);
+                if(edge.type === "cccs" || edge.type === "ccvs"){
+                    graph.addEdge("lin-" + (lines.length + count), [edge.pins[0], edge.pins[2]]);
+                    count++;
+                }
+            }
         }
     }
     return graph;

@@ -1,15 +1,19 @@
 var imgSize = 48;
 var dotSize = 4;
 
-var res = {name: "Resistor", init: "res", prop: "Resistance", unit: "\u03A9"};
-var cap = {name: "Capacitor", init: "cap", prop: "Capacitance", unit: "\u00B5F"};
-var ind = {name: "Inductor", init: "ind", prop: "Inductance", unit: "mH"};
-var dio = {name: "Diode", init: "dio"};
-var vdc = {name: "DC Voltage source", init: "vdc", prop: "Voltage", unit: "V"};
-var vac = {name: "AC voltage source", init: "vac", prop: "Phasor voltage", unit: "V"};
-var idc = {name: "DC Current source", init: "idc", prop: "Current", unit: "A"};
-var iac = {name: "AC Current source", init: "iac", prop: "Phasor Current", unit: "A"};
-var info = {res: res, cap: cap, ind: ind, vdc: vdc, vac: vac, idc: idc, iac: iac, dio: dio};
+var res = {name: "Resistor", init: "res", prop: "Resistance", unit: "\u03A9", pinCount: 2};
+var cap = {name: "Capacitor", init: "cap", prop: "Capacitance", unit: "\u00B5F", pinCount: 2};
+var ind = {name: "Inductor", init: "ind", prop: "Inductance", unit: "mH", pinCount: 2};
+var dio = {name: "Diode", init: "dio", pinCount: 2};
+var vdc = {name: "DC Voltage source", init: "vdc", prop: "Voltage", unit: "V", pinCount: 2};
+var vac = {name: "AC voltage source", init: "vac", prop: "Phasor voltage", unit: "V", pinCount: 2};
+var idc = {name: "DC Current source", init: "idc", prop: "Current", unit: "A", pinCount: 2};
+var iac = {name: "AC Current source", init: "iac", prop: "Phasor Current", unit: "A", pinCount: 2};
+var vcvs = {name: "Voltage controlled voltage source", init: "vcvs", prop: "Gain", unit: "", pinCount: 4};
+var ccvs = {name: "Current controlled voltage source", init: "ccvs", prop: "Gain", unit: "\u03A9", pinCount: 4};
+var vccs = {name: "Voltage controlled current source", init: "vccs", prop: "Gain", unit: "S", pinCount: 4};
+var cccs = {name: "Current controlled current source", init: "cccs", prop: "Gain", unit: "", pinCount: 4};
+var info = {res: res, cap: cap, ind: ind, vdc: vdc, vac: vac, idc: idc, iac: iac, dio: dio, vcvs: vcvs, ccvs: ccvs, vccs: vccs, cccs: cccs};
 
 var styles = {
     select: {
@@ -30,6 +34,11 @@ var defaultLineStyle = {
     "stroke-width": 2
 };
 
+var directions = {
+    "H": [1, 0],
+    "V": [0, 1]
+}
+
 // Prompt value from user
 function promptValue(info){
     var promptStr = `Please enter a ${info.prop} for a ${info.name} in ${info.unit}`;
@@ -47,27 +56,13 @@ function adjustLine(pins, lineId){
     line.setAttribute("points", findPolyStr(pins, linePins[0], linePins[1]));
 }
 
-function getLabelPinPos(pos, direction){
-    var points;
-    var halfImgSize = imgSize / 2;
-    var leftPos = pos.offset(-halfImgSize, -halfImgSize);
-    var rightPos = pos.offset(halfImgSize, -halfImgSize);
-    var topPos = pos.offset(0, -imgSize);
-    var bottomPos = pos;
-
+function getLabelPinPos(pos, direction, count){
+    var rightPos = pos.offset(imgSize / 2, -imgSize / 2);
+    var bottomPos = pos.offset(0, imgSize / 8);
+    var points = getPinPositions(pos, direction, count);
     if(direction[0] === 0){
-        if(direction[1] === 1){
-            points = [topPos, bottomPos];
-        }else{
-            points = [bottomPos, topPos];
-        }
         points.push(rightPos.offset(8, 5));
     }else if(direction[1] === 0){
-        if(direction[0] === 1){
-            points = [leftPos, rightPos];
-        }else{
-            points = [rightPos, leftPos];
-        }
         points.push(bottomPos);
     }
 
@@ -92,25 +87,22 @@ function Position(x, y){
     };
 }
 
-function getPinPositions(pos, direction){
-    var leftPos = pos.offset(-imgSize / 2, -imgSize / 2);
-    var rightPos = pos.offset(imgSize / 2, -imgSize / 2);
-    var topPos = pos.offset(0, -imgSize);
-    var bottomPos = pos;
-
-    if(direction === "H"){
-        return [leftPos, rightPos];
-    }else{
-        return [topPos, bottomPos];
-    }
+function getPinPositions(pos, direction, count){
+    var centerPos = pos.offset(0, -imgSize / 2);
+    var posTemplate = {
+        1: [0, 0],
+        2: [[0.5, 0], [-0.5, 0]],
+        4: [[0.5, 0.25], [0.5, -0.25], [-0.5, 0.25], [-0.5, -0.25]]
+    };
+    return posTemplate[count].map(point => centerPos.offset.apply(centerPos, multiplyC(imgSize, multiplyC(point, direction))));
 }
 
-function getPinDirections(direction){
-    if(direction === "H"){
-        return [[-1, 0], [1, 0]];
-    }else{
-        return [[0, -1], [0, 1]];
-    }
+function getPinDirections(direction, count){
+    var dirTemplate = {
+        2: [[1, 0], [-1, 0]],
+        4: [[1, 0], [1, 0], [-1, 0], [-1, 0]]
+    };
+    return dirTemplate[count].map(point => multiplyC(point, direction));
 }
 
 function getAngleFromDirection(direction){
@@ -133,24 +125,19 @@ function drawPolyLine(lineID, points){
     return generateXML("polyline", {id: lineID, points: points, style: style, onclick: `drawLine('${lineID}', true)`}, null);
 }
 
-function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
+function drawComponent(id, newCompInfo, directionStr, value, pos, pinCount){
     var adjustedPos = pos.offset(-imgSize / 2, -imgSize);
-    var leftPos = pos.offset(-imgSize / 2, -imgSize / 2);
     var rightPos = pos.offset(imgSize / 2, -imgSize / 2);
-    var topPos = pos.offset(0, -imgSize);
     var cPos = pos.offset(0, -imgSize / 2);
     var bottomPos = pos;
-    var pos1, pos2, pos3;
+    var pos3;
     var angle;
 
-    if(direction === "H"){
-        pos1 = leftPos;
-        pos2 = rightPos;
-        pos3 = bottomPos;
+    var direction = directions[directionStr];
+    if(directionStr === "H"){
+        pos3 = bottomPos.offset(0, imgSize/8);
         angle = 0;
     }else{
-        pos1 = topPos;
-        pos2 = bottomPos;
         pos3 = rightPos.offset(8, 5);
         angle = 90;
     }
@@ -167,6 +154,7 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
         onmouseup: "stopMove()",
         transform: `rotate(${angle} ${cPos.coords()})`
     }, null);
+
     compStr += generateXML("text", {
         x: pos3.x,
         y: pos3.y,
@@ -176,8 +164,16 @@ function drawComponent(id, newCompInfo, direction, value, pos, pinCount){
         onclick: "updateValue('" + id + "')"
     }, value ? (value + " " + newCompInfo.unit) : "");
 
-    compStr += generateXML("circle", {id: "pin-" + pinCount, cx: pos1.x, cy: pos1.y, r: dotSize, onclick: "drawLine('" + pinCount + "', false)"}, null);
-    compStr += generateXML("circle", {id: "pin-" + (pinCount + 1), cx: pos2.x, cy: pos2.y, r: dotSize, onclick: "drawLine('" + (pinCount + 1) + "', false)"}, null);
+    var pinPositions = getPinPositions(pos, direction, newCompInfo.pinCount);
+    for(var i = 0; i < pinPositions.length; i++){
+        compStr += generateXML("circle", {
+            id: "pin-" + (pinCount + i),
+            cx: pinPositions[i].x,
+            cy: pinPositions[i].y,
+            r: dotSize,
+            onclick: "drawLine('" + (pinCount + i) + "', false)"
+        }, null);
+    }
     return compStr;
 }
 
@@ -195,12 +191,18 @@ function generateXML(tag, properties, value){
 }
 
 function drawNode(id, pos){
-    return generateXML("circle", {id: `pin-${id}`, cx: pos.x, cy: pos.y, r: 4, onmousedown: `handleNode('${id}')`, onmouseup: "stopMove()"}, null);
+    return generateXML("circle", {
+        id: `pin-${id}`,
+        cx: pos.x,
+        cy: pos.y,
+        r: dotSize,
+        onmousedown: `handleNode('${id}')`,
+        onmouseup: "stopMove()"
+    }, null);
 }
 
 // Plan a line which can connect two components
 function findPolyStr(pins, pinId0, pinId1){
-    var polyStr = "";
     var pin0 = pins[pinId0];
     var pin1 = pins[pinId1];
     var origin = pin0.pos;
@@ -217,7 +219,6 @@ function findPolyStr(pins, pinId0, pinId1){
     var halfImgSize = imgSize / 2;
     if(!dir0){ dir0 = [dx * Math.abs(dir1[1]), dy * Math.abs(dir1[0])]; }
     if(!dir1){ dir1 = [-dx * Math.abs(dir0[1]), -dy * Math.abs(dir0[0])]; }
-    var kx = dx * dir0[0] > 0 && dx * dir1[0] < 0;
     var sx = dir1[0] * dir0[0] > 0;
     if(dir0 && dir1){
         if(dir0[1] === 0 && dir1[1] === 0){
@@ -322,12 +323,13 @@ function changeComponentPosition(comp, id, pos, pplPos){
     var adjustedPos = pos.offset(-halfImgSize, -imgSize);
     var cPos = pos.offset(0, -halfImgSize);
 
-    movePin(comp.pins[0], pplPos[0]);
-    movePin(comp.pins[1], pplPos[1]);
+    for(var i=0; i<comp.pins.length; i++){
+        movePin(comp.pins[i], pplPos[i]);
+    }
 
     var text = document.getElementById("txt" + id);
-    text.setAttribute("x", pplPos[2].x);
-    text.setAttribute("y", pplPos[2].y);
+    text.setAttribute("x", pplPos.slice(-1)[0].x);
+    text.setAttribute("y", pplPos.slice(-1)[0].y);
 
     var img = document.getElementById("img" + id);
     img.setAttribute("x", adjustedPos.x);

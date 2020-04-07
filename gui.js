@@ -27,9 +27,9 @@ function simulate(){
         for(var j = 0; j < currentSets[i].length; j++){
             if(impComponents[j].type === "dio"){
                 var state = (i & (1 << diodeCount)) !== 0;
-                if(!state && (currentSets[i][j][0] !== 0 || voltageSets[i][j][0] > 0)){
-                    valid = false;
-                }else if(state && (currentSets[i][j][0] < 0 || voltageSets[i][j][0] < 0)){
+                var invalidOffState = !state && (currentSets[i][j][0] !== 0 || voltageSets[i][j][0] > 0);
+                var invalidOnState = state && (currentSets[i][j][0] < 0 || voltageSets[i][j][0] < 0);
+                if(invalidOffState || invalidOnState){
                     valid = false;
                 }else if(isNaN(currentSets[i][j]) || isNaN(voltageSets[i][j])){
                     valid = false;
@@ -66,7 +66,15 @@ function chooseMode(){
 
     var componentsList = {
         ac: {cap: "Capacitor", ind: "Inductor", vac: "AC Voltage", iac: "AC Current"},
-        dc: {vdc: "DC Voltage", idc: "DC Current", dio: "Diode"}
+        dc: {
+            vdc: "DC Voltage",
+            idc: "DC Current",
+            dio: "Diode",
+            vccs: "Voltage controlled current source",
+            cccs: "Current controlled current source",
+            vcvs: "Voltage controlled voltage source",
+            ccvs: "Current controlled voltage source"
+        }
     };
 
     compList.options.length = 2;
@@ -105,7 +113,8 @@ function changeFreq(value){
 function addComponent(type, pos){
     var compStr = "";
     var newCompInfo = info[type];
-    var direction = document.getElementById("newCompDir").value;
+    var directionStr = document.getElementById("newCompDir").value;
+    var direction = directions[directionStr];
     var value;
     if(newCompInfo.prop){
         value = promptValue(newCompInfo);
@@ -116,13 +125,15 @@ function addComponent(type, pos){
     pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
     var cPos = pos.offset(0, -imgSize / 2);
     var id = components.length;
-    var pinDir = getPinDirections(direction);
-    var pinPos = getPinPositions(pos, direction);
-    components.push({id: id, type: type, value: value, direction: pinDir[1], pins: [pinCount, pinCount + 1], pos: cPos});
-    compStr = drawComponent(id, newCompInfo, direction, value, pos, pinCount);
-    pins[pinCount] = {pos: pinPos[0], comp: id, lines: [], direction: pinDir[0]};
-    pins[pinCount + 1] = {pos: pinPos[1], comp: id, lines: [], direction: pinDir[1]};
-    pinCount += 2;
+    var pinDir = getPinDirections(direction, info[type].pinCount);
+    var pinPos = getPinPositions(pos, direction, info[type].pinCount);
+    console.log(pinPos, pinDir);
+    components.push({id: id, type: type, value: value, direction: pinDir[0], pins: range(pinCount, pinCount + info[type].pinCount), pos: cPos});
+    compStr = drawComponent(id, newCompInfo, directionStr, value, pos, pinCount);
+    for(var i=0; i<info[type].pinCount; i++){
+        pins[pinCount + i] = {pos: pinPos[i], comp: id, lines: [], direction: pinDir[i]};
+    }
+    pinCount += info[type].pinCount;
     return compStr;
 }
 
@@ -220,87 +231,72 @@ function moveNode(pos){
     var cPos = pos.offset(-dotSize, -imgSize / 2 - 3);
     cPos = cPos.offset(-cPos.x % gridSize, -cPos.y % gridSize);
     movePin(moveID, cPos);
-    var lines1 = pins[moveID].lines;
     pins[moveID].pos = cPos;
-    for(var i = 0; i < lines1.length; i++){
-        adjustLine(pins, lines[lines1[i]]);
-    }
+    pins[moveID].lines.forEach(line => adjustLine(pins, lines[line]));
 }
 
 // Move component
 function moveComponent(pos){
     pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
-    var halfImgSize = imgSize / 2;
     var comp = components[moveID];
-    var pplPos = getLabelPinPos(pos, comp.direction);
+    var halfImgSize = imgSize / 2;
+    var pplPos = getLabelPinPos(pos, comp.direction, comp.pins.length);
     var cPos = pos.offset(0, -halfImgSize);
     changeComponentPosition(comp, moveID, pos, pplPos);
-    var lines1 = pins[comp.pins[0]].lines;
-    var lines2 = pins[comp.pins[1]].lines;
-    pins[comp.pins[0]].pos = pplPos[0];
-    pins[comp.pins[1]].pos = pplPos[1];
     comp.pos = cPos;
-    for(var i = 0; i < lines1.length; i++){
-        adjustLine(pins, lines[lines1[i]]);
+
+    for(var i=0; i<pplPos.length - 1; i++){
+        pins[comp.pins[i]].pos = pplPos[i];
     }
-    for(var i = 0; i < lines2.length; i++){
-        adjustLine(pins, lines[lines2[i]]);
+    var componentLines = comp.pins.map(pinId => pins[pinId].lines);
+    for(var i = 0; i < componentLines.length; i++){
+        componentLines[i].forEach(line => adjustLine(pins, lines[line]));
     }
 }
 
 // Rotate a component
 function rotateComponent(id){
     var comp = components[id];
-    var pos = comp.pos;
-
     var halfImgSize = imgSize / 2;
-    var dir1, dir2;
-
-    if(comp.direction[0] === 0){
-        comp.direction = [-comp.direction[1], 0];
-    }else if(comp.direction[1] === 0){
-        comp.direction = [0, comp.direction[0]];
+    comp.direction = rotateVector(comp.direction);
+    console.log(comp.direction);
+    var pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
+    changeComponentPosition(comp, id, comp.pos.offset(0, halfImgSize), pplPos);
+    var directions = getPinDirections(comp.direction, comp.pins.length);
+    for(var i=0; i<comp.pins.length; i++){
+        pins[comp.pins[i]].direction = directions[i];
     }
 
-    dir2 = comp.direction;
-
-    var pplPos = getLabelPinPos(pos.offset(0, halfImgSize), comp.direction);
-
-    if(comp.direction[0] === 0){
-        dir1 = [0, -comp.direction[1]];
-    }else if(comp.direction[1] === 0){
-        dir1 = [-comp.direction[0], 0];
+    for(var i=0; i<pplPos.length - 1; i++){
+        pins[comp.pins[i]].pos = pplPos[i];
     }
+    var componentLines = comp.pins.map(pinId => pins[pinId].lines);
+    for(var i = 0; i < componentLines.length; i++){
+        componentLines[i].forEach(line => adjustLine(pins, lines[line]));
+    }
+}
 
-    changeComponentPosition(comp, id, pos.offset(0, halfImgSize), pplPos);
-    var pinIds = comp.pins;
-    var lines1 = pins[pinIds[0]].lines;
-    var lines2 = pins[pinIds[1]].lines;
-    pins[pinIds[0]].pos = pplPos[0];
-    pins[pinIds[1]].pos = pplPos[1];
-    pins[pinIds[0]].direction = dir1;
-    pins[pinIds[1]].direction = dir2;
-    for(var i = 0; i < lines1.length; i++){
-        adjustLine(pins, lines[lines1[i]]);
+function rotateVector(vec){
+    return [-vec[1], vec[0]];
+}
+
+function deleteNode(id){
+    svg.removeChild(document.getElementById("pin-" + id));
+    var pin = pins[id];
+    while(pin.lines.length > 0){
+        deleteLine(pin.lines[0]);
     }
-    for(var i = 0; i < lines2.length; i++){
-        adjustLine(pins, lines[lines2[i]]);
-    }
+    pins[id] = {};
+    selected.node = false;
+    pointExists = false;
 }
 
 function deleteComponent(id){
     var comp = components[id];
-    var elements = ["pin-" + comp.pins[0], "pin-" + comp.pins[1], "img" + id, "txt" + id];
-
-    if(pointExists && (prevPointID === comp.pins[0] || prevPointID === comp.pins[1])){
-        pointExists = false;
-    }
-
-    for(var i = 0; i < elements.length; i++){
-        svg.removeChild(document.getElementById(elements[i]));
-    }
-    deleteLines(pins[comp.pins[0]]);
-    deleteLines(pins[comp.pins[1]]);
+    var elements = comp.pins.map(pinId => "pin-" + pinId).concat(["img" + id, "txt" + id]);
+    pointExists = pointExists && (!comp.pins.includes(prevPointID));
+    elements.forEach(element => svg.removeChild(document.getElementById(element)));
+    comp.pins.forEach(pin => deleteLines(pins[pin]));
     components[id] = {};
     selected.comp = false;
 }
@@ -399,14 +395,7 @@ document.addEventListener("keydown", function(event){
     var key = event.keyCode ? event.keyCode : event.which;
     if(selected.node){
         if(key === 46){
-            svg.removeChild(document.getElementById("pin-" + selectID));
-            var pin = pins[selectID];
-            while(pin.lines.length > 0){
-                deleteLine(pin.lines[0]);
-            }
-            pins[selectID] = {};
-            selected.node = false;
-            pointExists = false;
+            deleteNode(selectID);
         }
     }
     if(selected.comp){

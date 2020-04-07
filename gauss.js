@@ -6,26 +6,15 @@ function range(a, b){
     return arr;
 }
 
-// Create an array with zeros
-function zeros(num){
-    var arr = [];
-    for(var i = 0; i < num; i++){
-        arr.push(0);
-    }
-    return arr;
-}
-
-function swapRows(aug){
+function partialPivot(aug, p){
     var temp;
     var n = aug.length;
-    for(var i = 0; i < n; i++){
-        if(aug[i][i] === 0){
-            for(var j = 0; j < n; j++){
-                if(j !== i && aug[i][j] !== 0 && aug[j][i] !== 0){
-                    temp = aug[i];
-                    aug[i] = aug[j];
-                    aug[j] = temp;
-                }
+    if(aug[p][p] === 0){
+        for(var r = p + 1; r < n; r++){
+            if(aug[r][p] !== 0){
+                temp = aug[p];
+                aug[p] = aug[r];
+                aug[r] = temp;
             }
         }
     }
@@ -35,6 +24,7 @@ function swapRows(aug){
 function forwardElimination(aug){
     var n = aug.length;
     for(var p = 0; p < n - 1; p++){
+        aug = partialPivot(aug, p);
         for(var r = p + 1; r < n; r++){
             var factor = divideC(aug[r][p], aug[p][p]);
             for(var i = p; i <= n; i++){
@@ -58,7 +48,6 @@ function backSubstitution(aug){
 
 function gaussianElimination(matrix, vector){
     var aug = range(0, matrix.length).map((i) => matrix[i].concat([vector[i]]));
-    aug = swapRows(aug);
     aug = forwardElimination(aug);
     return backSubstitution(aug);
 }

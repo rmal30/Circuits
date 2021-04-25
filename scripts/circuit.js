@@ -31,7 +31,12 @@ class Circuit {
             pos: pos.offset(0, -IMAGE_SIZE / 2)
         });
         for (let i = 0; i < COMPONENT_DEFINITIONS[type].pinCount; i++) {
-            this.pins[pinCount + i] = {pos: pinPos[i], comp: id, lines: [], direction: pinDir[i]};
+            this.pins[pinCount + i] = {
+                comp: id,
+                direction: pinDir[i],
+                lines: [],
+                pos: pinPos[i]
+            };
         }
     }
 
@@ -85,6 +90,6 @@ class Circuit {
     }
 
     setComponentValue(id, value) {
-        circuit.components[id].value = value;
+        this.components[id].value = value;
     }
 }

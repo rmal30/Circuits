@@ -30,22 +30,25 @@ class Render {
         }
     }
 
-    static drawPolyLine(lineID, points){
+    static drawPolyLine(lineID, points) {
         const svg = document.getElementById("svg");
         let style = "";
-    
+
         for (const prop in defaultLineStyle) {
             style += `${prop}:${defaultLineStyle[prop]};`;
         }
-        svg.innerHTML += generateXML("polyline", {id: lineID, points: points, style: style, onclick: `drawLine('${lineID}', true)`}, null);
+        svg.innerHTML += generateXML("polyline", {
+            id: lineID,
+            points: points,
+            onclick: `drawLine('${lineID}', true)`,
+            style: style
+        }, null);
     }
-
-
 
     static drawComponent(id, newCompInfo, directionStr, value, pos, pinCount) {
         const svg = document.getElementById("svg");
-        const adjustedPos = pos.offset( -IMAGE_SIZE / 2,  -IMAGE_SIZE);
-        const rightPos = pos.offset(IMAGE_SIZE / 2,  -IMAGE_SIZE / 2);
+        const adjustedPos = pos.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE);
+        const rightPos = pos.offset(IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
         const cPos = pos.offset(0, -IMAGE_SIZE / 2);
         const bottomPos = pos;
         let pos3;
@@ -53,7 +56,7 @@ class Render {
 
         const direction = directions[directionStr];
         if (directionStr === "H") {
-            pos3 = bottomPos.offset(0, IMAGE_SIZE/8);
+            pos3 = bottomPos.offset(0, IMAGE_SIZE / 8);
             angle = 0;
         } else {
             pos3 = rightPos.offset(8, 5);
@@ -73,7 +76,7 @@ class Render {
             onmouseup: "stopMove()",
             transform: `rotate(${angle} ${cPos.coords()})`
         }, null);
-    
+
         compStr += generateXML("text", {
             x: pos3.x,
             y: pos3.y,
@@ -83,9 +86,9 @@ class Render {
             ondragstart: "ignoreEvent(e)",
             onclick: `updateValue('${id}')`
         }, value ? (value + " " + newCompInfo.unit) : "");
-    
+
         const pinPositions = getPinPositions(pos, direction, newCompInfo.pinCount);
-        for(let i = 0; i < pinPositions.length; i++){
+        for (let i = 0; i < pinPositions.length; i++) {
             compStr += generateXML("circle", {
                 id: getElementId(pinCount + i, "Node"),
                 cx: pinPositions[i].x,
@@ -114,7 +117,7 @@ class Render {
         const adjustedPos = pos.offset(-halfImgSize, -IMAGE_SIZE);
         const cPos = pos.offset(0, -halfImgSize);
 
-        for (let i=0; i<comp.pins.length; i++) {
+        for (let i = 0; i < comp.pins.length; i++) {
             Render.movePin(comp.pins[i], pplPos[i]);
         }
 

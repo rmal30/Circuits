@@ -85,7 +85,7 @@ class Controller {
         const invalidElements = comp.pins.map(pinId => getElementId(pinId, "Node")).concat([`img${id}`, `txt${id}`]);
         this.model.pointExists = this.model.pointExists && (!comp.pins.includes(this.model.prevPointID));
         invalidElements.forEach(element => Render.removeElement(element));
-        comp.pins.forEach(pin => this.deleteLines(this.model.circuit.pins[pin]));
+        comp.pins.forEach((pin) => this.deleteLines(this.model.circuit.pins[pin]));
         this.model.circuit.components[id] = {};
         this.model.selected.comp = false;
     }
@@ -133,34 +133,29 @@ class Controller {
 
     onCanvasClick(pos) {
         let listen = true;
-        let dx, dy;
         this.model.moving.comp = false;
         this.model.moving.dot = false;
-        for (const i in this.model.circuit.components) {
-            if (Object.keys(this.model.circuit.components[i]).length > 0) {
-                const image = document.getElementById(getElementId(i, "Component"));
-                dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
-                dy = Math.abs(pos.y - image.y.baseVal.value - IMAGE_SIZE);
-                if (dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4) {
+        for (const id in this.model.circuit.components) {
+            if (Object.keys(this.model.circuit.components[id]).length > 0) {
+                if (this.view.inImageBounds(id, pos)) {
                     listen = false;
-                    if (this.model.selected.comp && this.model.selectID !== i) {
+                    if (this.model.selected.comp && this.model.selectID !== id) {
                         Render.setSelected(false, this.model.selectID, "Component");
                         this.model.selected.comp = false;
                     }
 
                     if (!this.model.selected.comp) {
-                        Render.setSelected(true, i, "Component");
+                        Render.setSelected(true, id, "Component");
                         this.model.selected.comp = true;
-                        this.model.selectID = i;
+                        this.model.selectID = id;
                     }
                 }
             }
         }
 
-        for (const i in this.model.circuit.pins) {
-            if (Object.keys(this.model.circuit.pins[i]).length > 0) {
-                const pin = document.getElementById(getElementId(i, "Node"));
-                if (Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - (IMAGE_SIZE / 2)) < 20) {
+        for (const pinIndex in this.model.circuit.pins) {
+            if (Object.keys(this.model.circuit.pins[pinIndex]).length > 0) {
+                if (this.view.inPinBounds(pinIndex, pos)) {
                     listen = false;
                 }
             }
@@ -254,13 +249,6 @@ class Controller {
         }
     }
 
-    selectOnlyLine(id) {
-        this.clearSelection();
-        this.model.selected.line = true;
-        Render.setSelected(true, id, "Line", );
-        this.model.selectID = id;
-    }
-
     // Draw line between two components
     drawLine(id, createNewNode) {
         if (this.model.pointExists) {
@@ -270,7 +258,10 @@ class Controller {
                 this.addLine(id, createNewNode);
             }
         } else if (createNewNode) {
-            this.selectOnlyLine(id);
+            this.clearSelection();
+            this.model.selected.line = true;
+            Render.setSelected(true, id, "Line");
+            this.model.selectID = id;
         } else {
             Render.setSelected(true, id, "Node");
             this.model.prevPointID = id;
@@ -292,7 +283,7 @@ class Controller {
         let cPos = pos.offset(-dotSize, -IMAGE_SIZE / 2 - 3);
         cPos = cPos.offset(-cPos.x % gridSize, -cPos.y % gridSize);
         this.model.circuit.moveNode(this.model.moveID, cPos);
-        this.view.moveNode(this.model.circuit, this.model.moveID, cPos)
+        this.view.moveNode(this.model.circuit, this.model.moveID, cPos);
     }
 
     // Move component

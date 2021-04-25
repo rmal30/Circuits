@@ -54,7 +54,7 @@ class View {
         const pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
         Render.changeComponentPosition(comp, id, comp.pos.offset(0, halfImgSize), pplPos);
         const componentLines = comp.pins.map(pinId => circuit.pins[pinId].lines);
-    
+
         for (const i in componentLines) {
             componentLines[i].forEach(line => Render.adjustLine(circuit.pins, circuit.lines[line]));
         }
@@ -85,17 +85,29 @@ class View {
         Render.drawNode(pinCount, pos);
     }
 
-    getNewComponentDirection(){
+    getNewComponentDirection() {
         return document.getElementById("newCompDir").value;
     }
 
-    getNewComponentType(){
+    getNewComponentType() {
         return document.getElementById("newComp").value;
     }
 
-    showSolution(currentSets, voltageSets, impComponents, valid, validIndex){
+    showSolution(currentSets, voltageSets, impComponents, valid, validIndex) {
         const solutionOutput = getSolutionOutput(currentSets, voltageSets, impComponents, valid, validIndex);
         Render.setInformation(solutionOutput);
+    }
+
+    inImageBounds(componentId, pos) {
+        const image = document.getElementById(getElementId(componentId, "Component"));
+        const dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
+        const dy = Math.abs(pos.y - image.y.baseVal.value - IMAGE_SIZE);
+        return (dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4);
+    }
+
+    inPinBounds(pinId, pos) {
+        const pin = document.getElementById(getElementId(pinId, "Node"));
+        return Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - (IMAGE_SIZE / 2)) < 20;
     }
 }
 

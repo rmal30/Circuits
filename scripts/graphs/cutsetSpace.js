@@ -2,7 +2,7 @@
 
 class CutsetSpace {
 
-    static mergeNodeGroups(nodeGroups, edge) { 
+    static mergeNodeGroups(nodeGroups, edge) {
         let nodeGroup1, nodeGroup2;
 
         for (let i = 0; i < nodeGroups.length; i++) {
@@ -28,7 +28,7 @@ class CutsetSpace {
         }
 
         for (const edgeId in graph.edges) {
-            if(edgeId.includes("lin")) {
+            if (edgeId.includes("lin")) {
                 CutsetSpace.mergeNodeGroups(nodeGroups, graph.edges[edgeId]);
             }
         }

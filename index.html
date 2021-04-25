@@ -1,5 +1,7 @@
+<!DOCTYPE html>
 <HTML>
     <head>
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-blue.min.css"/>
         <link rel="stylesheet" href="style.css"/>
@@ -15,7 +17,7 @@
     <div id="controls">
         <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
             <label class="mdl-textfield__label" style="color:white">Mode</label>
-            <select id="mode" class="mdl-textfield__input" onchange="chooseMode()">
+            <select id="mode" class="mdl-textfield__input">
     	        <option value="dc">DC</option>
 	        <option value="ac">AC</option>
             </select>
@@ -24,7 +26,7 @@
 
         <div id="freq2" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
             <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
-            <input disabled id="freq" class="mdl-textfield__input" type="number" step="any" value="60" onchange="changeFreq(this.value)"></input>
+            <input disabled id="freq" class="mdl-textfield__input" type="number" step="any" value="60"></input>
         </div>
 
         <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -45,9 +47,9 @@
     </div>
 
     <nav class="white mdl-navigation">
-        <input class="white mdl-button mdl-js-button" type="button" onclick="simulate()" value="Simulate"/>
-        <input class="white mdl-button mdl-js-button" type="button" onclick="save()" value="Save"/>
-        <input class="white mdl-button mdl-js-button" type="button" onclick="load()" value="Load"/>
+        <input class="white mdl-button mdl-js-button" type="button" id="simulate" value="Simulate"/>
+        <input class="white mdl-button mdl-js-button" type="button" id="save" value="Save"/>
+        <input class="white mdl-button mdl-js-button" type="button" id="load" value="Load"/>
     </nav>
 
     </div>
@@ -58,10 +60,43 @@
 </main>
 </div>
 </body>
+<script src="scripts/common.js"></script>
+
+<script src="scripts/math/utils.js"></script>
+<script src="scripts/math/complex.js"></script>
+<script src="scripts/math/complex_vector.js"></script>
+<script src="scripts/math/complex_matrix.js"></script>
+<script src="scripts/math/gaussian_elimination.js"></script>
+<script src="scripts/math/qr.js"></script>
+
+<script src="scripts/graphs/graph.js"></script>
+<script src="scripts/graphs/pathFinding.js"></script>
+<script src="scripts/graphs/spanningTree.js"></script>
+<script src="scripts/graphs/cycleSpace.js"></script>
+<script src="scripts/graphs/cutsetSpace.js"></script>
+
+<script src="scripts/analysis/directions.js"></script>
+<script src="scripts/analysis/generateGraph.js"></script>
+<script src="scripts/analysis/impedance.js"></script>
+<script src="scripts/analysis/equations.js"></script>
+<script src="scripts/analysis/mesh.js"></script>
+<script src="scripts/analysis/nodal.js"></script>
+<script src="scripts/analysis/simulate.js"></script>
+
+<script src="scripts/rendering/position.js"></script>
+<script src="scripts/rendering/polyline.js"></script>
+<script src="scripts/rendering/utils.js"></script>
+<script src="scripts/rendering/render.js"></script>
+
+<script src="scripts/style.js"></script>
+<script src="scripts/components.js"></script>
+<script src="scripts/circuit.js"></script>
+
+<script src="scripts/model.js"></script>
+<script src="scripts/view.js"></script>
+<script src="scripts/controller.js"></script>
+<script src="scripts/callbacks.js"></script>
+<script src="scripts/main.js"></script>
+
+
 </HTML>
-<script src="math.js"></script>
-<script src="gauss.js"></script>
-<script src="render.js"></script>
-<script src="graph.js"></script>
-<script src="gui.js"></script>
-<script src="circuit.js"></script>

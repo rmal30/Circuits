@@ -1,7 +1,7 @@
 "use strict";
 
 class CycleSpace {
-    
+
     static findCycleWithEdge(graph, edge) {
         return PathFinding.dfs(graph, edge[1], edge[0]);
     }
@@ -10,11 +10,10 @@ class CycleSpace {
         const tree = SpanningTree.getSpanningTree(graph);
         const cycles = [];
         const edges = {};
-        let edgeId;
 
         for (const nodeId in graph.nodes) {
             for (let i = 0; i < graph.nodes[nodeId].length; i++) {
-                edgeId = graph.nodes[nodeId][i];
+                const edgeId = graph.nodes[nodeId][i];
                 if (!tree.edges[edgeId]) {
                     edges[edgeId] = graph.edges[edgeId];
                 }
@@ -23,7 +22,7 @@ class CycleSpace {
 
         for (const edgeId in edges) {
             const cycle = CycleSpace.findCycleWithEdge(tree, edges[edgeId]);
-            if(cycle !== undefined) {
+            if (cycle) {
                 cycles.push(cycle);
             }
         }

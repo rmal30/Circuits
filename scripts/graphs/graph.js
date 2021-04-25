@@ -1,6 +1,6 @@
 "use strict";
 
-class Graph{
+class Graph {
     constructor() {
         this.nodes = {};
         this.edges = {};
@@ -21,8 +21,8 @@ class Graph{
     }
 
     removeEdge(id, nodeIds) {
-        unset(this.nodes[nodeIds[0]], id);
-        unset(this.nodes[nodeIds[1]], id);
+        removeValueFromArray(this.nodes[nodeIds[0]], id);
+        removeValueFromArray(this.nodes[nodeIds[1]], id);
         delete this.edges[id];
     }
 
@@ -30,7 +30,7 @@ class Graph{
         const neighbours = [];
 
         if (this.nodes[nodeId] !== undefined) {
-            for(const edgeId of this.nodes[nodeId]){
+            for (const edgeId of this.nodes[nodeId]) {
                 let nodeId2;
                 if (this.edges[edgeId][0] === parseInt(nodeId)) {
                     nodeId2 = this.edges[edgeId][1];
@@ -49,7 +49,7 @@ class Graph{
 
         for (const edgeId of edges) {
             const edge = this.edges[edgeId];
-            if(edge.some((node) => node === parseInt(nodeId2))){
+            if (edge.some((node) => node === parseInt(nodeId2))) {
                 return edgeId;
             }
         }

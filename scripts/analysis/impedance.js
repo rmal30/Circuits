@@ -2,7 +2,7 @@
  * Get impedance of component
  * @param {float} hertz - Frequency of voltage/current sources
  * @param {any} component - Component
- * @returns {[float, float] or float} - Impedance of component
+ * @returns {[float, float] | float} - Impedance of component
  */
 function getImpedance(hertz, component) {
     const value = component.value;

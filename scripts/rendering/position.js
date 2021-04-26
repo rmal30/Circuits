@@ -7,7 +7,7 @@ class Position {
     }
 
     show() {
-        return this.x + " " + this.y;
+        return `${this.x} ${this.y}`;
     }
 
     coords() {
@@ -15,9 +15,6 @@ class Position {
     }
 
     offset(x, y) {
-        const pos = new Position(this.x, this.y);
-        pos.x += x;
-        pos.y += y;
-        return pos;
+        return new Position(this.x + x, this.y + y);
     }
 }

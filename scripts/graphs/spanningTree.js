@@ -26,9 +26,14 @@ class SpanningTree {
                         break;
                     }
                 }
+
                 if (edgeFound) {
                     break;
                 }
+            }
+
+            if (!edgeFound) {
+                return null;
             }
         }
 

@@ -112,8 +112,8 @@ class View {
 
     nearPin(pinId, pos) {
         const pin = document.getElementById(getElementId(pinId, "Node"));
-        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < (IMAGE_SIZE / 2);
-        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < (IMAGE_SIZE / 2);
+        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < IMAGE_SIZE;
+        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < IMAGE_SIZE;
         return nearPinX && nearPinY;
     }
 }

@@ -4,6 +4,7 @@ class View {
         this.chooseMode = document.getElementById("mode");
         this.svg = document.getElementById("svg");
         this.freq = document.getElementById("freq");
+        this.header = document.getElementById("header");
         this.doc = document;
     }
 
@@ -27,9 +28,11 @@ class View {
     }
 
     bindMouseMove(onMouseMove) {
+        const height = this.header.clientHeight;
+
         // Drag component or node
-        this.svg.addEventListener("mousemove", () => {
-            const pos = new Position(window.event.clientX, window.event.clientY).offset(0, -32);
+        this.svg.addEventListener("mousemove", (event) => {
+            const pos = new Position(event.clientX, event.clientY).offset(0, -height);
             onMouseMove(pos);
         });
     }
@@ -42,8 +45,10 @@ class View {
     }
 
     bindCanvasClick(onCanvasClick) {
+        const height = this.header.clientHeight;
+
         this.svg.addEventListener("click", () => {
-            const pos = new Position(window.event.clientX, window.event.clientY).offset(0, -32);
+            const pos = new Position(window.event.clientX, window.event.clientY).offset(0, -height);
             onCanvasClick(pos);
         });
     }
@@ -51,9 +56,8 @@ class View {
 
     rotateComponent(circuit, id) {
         const comp = circuit.components[id];
-        const halfImgSize = IMAGE_SIZE / 2;
-        const pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
-        Render.changeComponentPosition(comp, id, comp.pos.offset(0, halfImgSize), pplPos);
+        const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
+        Render.changeComponentPosition(comp, id, comp.pos, pplPos);
         const componentLines = comp.pins.map((pinId) => circuit.pins[pinId].lines);
 
         for (const i in componentLines) {
@@ -102,14 +106,14 @@ class View {
     inImageBounds(componentId, pos) {
         const image = document.getElementById(getElementId(componentId, "Component"));
         const dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
-        const dy = Math.abs(pos.y - image.y.baseVal.value - IMAGE_SIZE);
+        const dy = Math.abs(pos.y - image.y.baseVal.value - (IMAGE_SIZE / 2));
         return dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4;
     }
 
     nearPin(pinId, pos) {
         const pin = document.getElementById(getElementId(pinId, "Node"));
         const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < (IMAGE_SIZE / 2);
-        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value - (IMAGE_SIZE / 2)) < (IMAGE_SIZE / 2);
+        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < (IMAGE_SIZE / 2);
         return nearPinX && nearPinY;
     }
 }

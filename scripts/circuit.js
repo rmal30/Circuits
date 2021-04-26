@@ -28,7 +28,7 @@ class Circuit {
             value: value,
             direction: pinDir[0],
             pins: range(pinCount, pinCount + COMPONENT_DEFINITIONS[type].pinCount),
-            pos: pos.offset(0, -IMAGE_SIZE / 2)
+            pos: pos
         });
         for (let i = 0; i < COMPONENT_DEFINITIONS[type].pinCount; i++) {
             this.pins[pinCount + i] = {
@@ -61,9 +61,8 @@ class Circuit {
 
     rotateComponent(id) {
         const comp = this.components[id];
-        const halfImgSize = IMAGE_SIZE / 2;
         comp.direction = rotateVector(comp.direction);
-        const pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
+        const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
         const directions = getPinDirections(comp.direction, comp.pins.length);
 
         for (const pinId in comp.pins) {
@@ -77,9 +76,8 @@ class Circuit {
 
     moveComponent(id, pos) {
         const comp = this.components[id];
-        const halfImgSize = IMAGE_SIZE / 2;
         const pplPos = getLabelPinPos(pos, comp.direction, comp.pins.length);
-        comp.pos = pos.offset(0, -halfImgSize);
+        comp.pos = pos;
         for (let i = 0; i < pplPos.length - 1; i++) {
             this.pins[comp.pins[i]].pos = pplPos[i];
         }

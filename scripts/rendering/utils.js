@@ -8,8 +8,8 @@ function rotateVector(vec) {
 }
 
 function getLabelPinPos(pos, direction, count) {
-    const rightPos = pos.offset(IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
-    const bottomPos = pos.offset(0, IMAGE_SIZE / 8);
+    const rightPos = pos.offset(IMAGE_SIZE / 2, 0);
+    const bottomPos = pos.offset(0, 5 * IMAGE_SIZE / 8);
     const points = getPinPositions(pos, direction, count);
     if (direction[0] === 0) {
         points.push(rightPos.offset(8, 5));
@@ -21,13 +21,12 @@ function getLabelPinPos(pos, direction, count) {
 }
 
 function getPinPositions(pos, direction, count) {
-    const centerPos = pos.offset(0, -IMAGE_SIZE / 2);
     const posTemplate = {
         1: [0, 0],
         2: [[0.5, 0], [-0.5, 0]],
         4: [[0.5, 0.25], [0.5, -0.25], [-0.5, 0.25], [-0.5, -0.25]]
     };
-    return posTemplate[count].map(point => centerPos.offset.apply(centerPos, Complex.multiply(IMAGE_SIZE, Complex.multiply(point, direction))));
+    return posTemplate[count].map(point => pos.offset.apply(pos, Complex.multiply(IMAGE_SIZE, Complex.multiply(point, direction))));
 }
 
 function getPinDirections(direction, count) {

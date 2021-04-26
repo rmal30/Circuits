@@ -221,7 +221,7 @@ class Controller {
             if (id.split("_").includes(this.model.prevPointID)) {
                 return;
             }
-            let pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -28);
+            let pos = new Position(window.event.clientX, window.event.clientY);
             pos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
             id = this.createNode(id, pos);
         }
@@ -280,8 +280,7 @@ class Controller {
 
     // Move node
     moveNode(pos) {
-        let cPos = pos.offset(-DOT_SIZE, -(IMAGE_SIZE / 2) - 3);
-        cPos = cPos.offset(-cPos.x % GRID_SIZE, -cPos.y % GRID_SIZE);
+        const cPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
         this.model.circuit.moveNode(this.model.moveID, cPos);
         this.view.moveNode(this.model.circuit, this.model.moveID, cPos);
     }

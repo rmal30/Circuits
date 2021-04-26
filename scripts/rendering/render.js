@@ -47,10 +47,9 @@ class Render {
 
     static drawComponent(id, newCompInfo, directionStr, value, pos, pinCount) {
         const svg = document.getElementById("svg");
-        const adjustedPos = pos.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE);
-        const rightPos = pos.offset(IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
-        const cPos = pos.offset(0, -IMAGE_SIZE / 2);
-        const bottomPos = pos;
+        const adjustedPos = pos.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
+        const rightPos = pos.offset(IMAGE_SIZE / 2, 0);
+        const bottomPos = pos.offset(0, IMAGE_SIZE / 2);
         let pos3;
         let angle;
 
@@ -74,7 +73,7 @@ class Render {
             ondragstart: "ignoreEvent(e)",
             onmousedown: `startComponentMove('${id}')`,
             onmouseup: "stopMove()",
-            transform: `rotate(${angle} ${cPos.coords()})`
+            transform: `rotate(${angle} ${pos.coords()})`
         }, null);
 
         compStr += generateXML("text", {
@@ -114,8 +113,7 @@ class Render {
 
     static changeComponentPosition(comp, id, pos, pplPos) {
         const halfImgSize = IMAGE_SIZE / 2;
-        const adjustedPos = pos.offset(-halfImgSize, -IMAGE_SIZE);
-        const cPos = pos.offset(0, -halfImgSize);
+        const adjustedPos = pos.offset(-halfImgSize, -halfImgSize);
 
         for (let i = 0; i < comp.pins.length; i++) {
             Render.movePin(comp.pins[i], pplPos[i]);
@@ -131,7 +129,7 @@ class Render {
         img.setAttribute("y", adjustedPos.y);
 
         const angle = getAngleFromDirection(comp.direction);
-        img.setAttribute("transform", `rotate(${angle} ${cPos.coords()})`);
+        img.setAttribute("transform", `rotate(${angle} ${pos.coords()})`);
         img.setAttribute("ondragstart", "ignoreEvent(e)");
     }
 

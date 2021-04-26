@@ -47,27 +47,18 @@ class Render {
 
     static drawComponent(id, newCompInfo, directionStr, value, pos, pinCount) {
         const svg = document.getElementById("svg");
-        const adjustedPos = pos.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
-        const rightPos = pos.offset(IMAGE_SIZE / 2, 0);
-        const bottomPos = pos.offset(0, IMAGE_SIZE / 2);
-        let pos3;
-        let angle;
-
+        const imagePos = pos.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
         const direction = directions[directionStr];
-        if (directionStr === "H") {
-            pos3 = bottomPos.offset(0, IMAGE_SIZE / 8);
-            angle = 0;
-        } else {
-            pos3 = rightPos.offset(8, 5);
-            angle = 90;
-        }
+        const [dlx, dly] = labelPositions[directionStr];
+        const labelPos = pos.offset(dlx, dly);
+        const angle = directionAngles[directionStr];
 
         let compStr = "";
         compStr += generateXML("image", {
             id: "img" + id,
             "xlink:href": `images/${newCompInfo.init}.png`,
-            x: adjustedPos.x,
-            y: adjustedPos.y,
+            x: imagePos.x,
+            y: imagePos.y,
             height: IMAGE_SIZE,
             width: IMAGE_SIZE,
             ondragstart: "ignoreEvent(e)",
@@ -77,8 +68,8 @@ class Render {
         }, null);
 
         compStr += generateXML("text", {
-            x: pos3.x,
-            y: pos3.y,
+            x: labelPos.x,
+            y: labelPos.y,
             id: "txt" + id,
             "text-anchor": "middle",
             style: "user-select:none;",

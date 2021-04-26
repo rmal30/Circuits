@@ -99,22 +99,46 @@ class View {
     }
 
     showSolution(currentSets, voltageSets, impComponents, valid, validIndex) {
-        const solutionOutput = getSolutionOutput(currentSets, voltageSets, impComponents, valid, validIndex);
+        let solutionOutput = null;
+        if (valid) {
+            const displayVoltage = (component, index) => `${component.type}_${component.id}: ${Complex.print(voltageSets[validIndex][index][0])}V`;
+            const displayCurrent = (component, index) => `${component.type}_${component.id}: ${Complex.print(currentSets[validIndex][index][0])}A`;
+            solutionOutput = [
+                "Nodal analysis:<br/>" + impComponents.map(displayVoltage).join("<br/>"),
+                "Mesh analysis:<br/>" + impComponents.map(displayCurrent).join("<br/>"),
+                "Component list:<br/>" + impComponents.map((value, i) => `${value.type}_${value.id}: ${JSON.stringify(impComponents[i])}`).join("<br/>")
+            ].join("<br/><br/>");
+
+        } else {
+            solutionOutput = "No solution found";
+        }
         Render.setInformation(solutionOutput);
     }
 
-    inImageBounds(componentId, pos) {
+    inImageBounds(componentId, pos, tolerance) {
         const image = document.getElementById(getElementId(componentId, "Component"));
         const dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
         const dy = Math.abs(pos.y - image.y.baseVal.value - (IMAGE_SIZE / 2));
-        return dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4;
+        return dx < IMAGE_SIZE * tolerance && dy < IMAGE_SIZE * tolerance;
     }
 
     nearPin(pinId, pos) {
         const pin = document.getElementById(getElementId(pinId, "Node"));
-        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < IMAGE_SIZE;
-        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < IMAGE_SIZE;
+        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < 0.5 * IMAGE_SIZE;
+        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < 0.5 * IMAGE_SIZE;
         return nearPinX && nearPinY;
     }
+
+    // Prompt value from user
+    promptComponentValue(info) {
+        const promptStr = `Please enter a ${info.prop} for a ${info.name} in ${info.unit}`;
+        let value = prompt(promptStr);
+        while (value === "") {
+            alert("Please enter a valid value");
+            value = prompt(promptStr);
+        }
+        return value;
+    }
+
 }
 

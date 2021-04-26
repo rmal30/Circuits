@@ -11,12 +11,12 @@ class Complex {
         }
     }
 
-    static print(z) {
+    static print(z, numPlaces = 8) {
         if (z.constructor === Array) {
-            const [realString, imaginaryString] = z.map((c) => roundNum(c, 8));
+            const [realString, imaginaryString] = z.map((c) => roundNum(c, numPlaces));
             return `${realString} + ${imaginaryString}j`;
         } else {
-            return roundNum(z, 8);
+            return roundNum(z, numPlaces);
         }
     }
 

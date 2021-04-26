@@ -40,7 +40,7 @@ class Controller {
     // Update component value
     updateValue(id) {
         const compInfo = COMPONENT_DEFINITIONS[this.model.circuit.components[id].type];
-        const value = promptComponentValue(compInfo);
+        const value = this.view.promptComponentValue(compInfo);
         if (value !== null) {
             this.model.circuit.setComponentValue(id, value);
             Render.setLabel(id, value, compInfo.unit);
@@ -137,7 +137,7 @@ class Controller {
         this.model.moving.dot = false;
         for (const id in this.model.circuit.components) {
             if (Object.keys(this.model.circuit.components[id]).length > 0) {
-                if (this.view.inImageBounds(id, pos)) {
+                if (this.view.inImageBounds(id, pos, 0.4)) {
                     listen = false;
                     if (this.model.selected.comp && this.model.selectID !== id) {
                         Render.setSelected(false, this.model.selectID, "Component");
@@ -158,6 +158,12 @@ class Controller {
                 if (this.view.nearPin(pinIndex, pos)) {
                     listen = false;
                 }
+            }
+        }
+
+        for (const id in this.model.circuit.components) {
+            if (this.view.inImageBounds(id, pos, 0.7)) {
+                listen = false;
             }
         }
 
@@ -194,7 +200,7 @@ class Controller {
         let value;
         const newCompInfo = COMPONENT_DEFINITIONS[type];
         if (newCompInfo.prop) {
-            value = promptComponentValue(newCompInfo);
+            value = this.view.promptComponentValue(newCompInfo);
             if (value === null) {
                 return;
             }

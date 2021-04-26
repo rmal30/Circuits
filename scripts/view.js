@@ -4,6 +4,7 @@ class View {
         this.chooseMode = document.getElementById("mode");
         this.svg = document.getElementById("svg");
         this.freq = document.getElementById("freq");
+        this.doc = document;
     }
 
     bindFreqChange(onFreqChange) {
@@ -35,7 +36,7 @@ class View {
 
     bindKeyPress(onKeyPress) {
         // Detect keys to rotate and delete components
-        document.addEventListener("keydown", (event) => {
+        this.doc.addEventListener("keydown", (event) => {
             onKeyPress(event.key);
         });
     }
@@ -53,10 +54,10 @@ class View {
         const halfImgSize = IMAGE_SIZE / 2;
         const pplPos = getLabelPinPos(comp.pos.offset(0, halfImgSize), comp.direction, comp.pins.length);
         Render.changeComponentPosition(comp, id, comp.pos.offset(0, halfImgSize), pplPos);
-        const componentLines = comp.pins.map(pinId => circuit.pins[pinId].lines);
+        const componentLines = comp.pins.map((pinId) => circuit.pins[pinId].lines);
 
         for (const i in componentLines) {
-            componentLines[i].forEach(line => Render.adjustLine(circuit.pins, circuit.lines[line]));
+            componentLines[i].forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
         }
     }
 
@@ -64,16 +65,16 @@ class View {
         const comp = circuit.components[id];
         const pplPos = getLabelPinPos(pos, comp.direction, comp.pins.length);
         Render.changeComponentPosition(comp, id, pos, pplPos);
-        const componentLines = comp.pins.map(pinId => circuit.pins[pinId].lines);
+        const componentLines = comp.pins.map((pinId) => circuit.pins[pinId].lines);
 
         for (const componentLine of componentLines) {
-            componentLine.forEach(line => Render.adjustLine(circuit.pins, circuit.lines[line]));
+            componentLine.forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
         }
     }
 
     moveNode(circuit, id, cPos) {
         Render.movePin(id, cPos);
-        circuit.pins[id].lines.forEach(line => Render.adjustLine(circuit.pins, circuit.lines[line]));
+        circuit.pins[id].lines.forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
     }
 
     splitLine(pins, lineID, pos, pinCount) {
@@ -102,12 +103,14 @@ class View {
         const image = document.getElementById(getElementId(componentId, "Component"));
         const dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
         const dy = Math.abs(pos.y - image.y.baseVal.value - IMAGE_SIZE);
-        return (dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4);
+        return dx < IMAGE_SIZE * 0.4 && dy < IMAGE_SIZE * 0.4;
     }
 
-    inPinBounds(pinId, pos) {
+    nearPin(pinId, pos) {
         const pin = document.getElementById(getElementId(pinId, "Node"));
-        return Math.abs(pos.x - pin.cx.baseVal.value) < 20 && Math.abs(pos.y - pin.cy.baseVal.value - (IMAGE_SIZE / 2)) < 20;
+        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < (IMAGE_SIZE / 2);
+        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value - (IMAGE_SIZE / 2)) < (IMAGE_SIZE / 2);
+        return nearPinX && nearPinY;
     }
 }
 

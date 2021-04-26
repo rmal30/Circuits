@@ -24,11 +24,11 @@ class CutsetSpace {
         const nodeGroups = [];
 
         for (const nodeId in graph.nodes) {
-            nodeGroups.push([parseInt(nodeId)]);
+            nodeGroups.push([parseInt(nodeId, 10)]);
         }
 
         for (const edgeId in graph.edges) {
-            if (edgeId.includes("lin")) {
+            if (edgeId.includes(COMPONENT_TYPES.LINE)) {
                 CutsetSpace.mergeNodeGroups(nodeGroups, graph.edges[edgeId]);
             }
         }

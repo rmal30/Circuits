@@ -11,6 +11,7 @@ class ComplexMatrix {
                 resultMatrix[i].push(Complex.conjugate(mat[j][i]));
             }
         }
+
         return resultMatrix;
     }
 
@@ -23,6 +24,7 @@ class ComplexMatrix {
                 resultMatrix[i].push(mat[j][i]);
             }
         }
+
         return resultMatrix;
     }
 
@@ -35,6 +37,7 @@ class ComplexMatrix {
                 mat3[j][k] = Complex.add(mat1[j][k], mat2[j][k]);
             }
         }
+
         return mat3;
     }
 
@@ -47,6 +50,7 @@ class ComplexMatrix {
                 nmat[j][k] = Complex.multiply(n, mat[j][k]);
             }
         }
+
         return nmat;
     }
 
@@ -59,6 +63,7 @@ class ComplexMatrix {
                 nmat[j][k] = Complex.divide(mat[j][k], n);
             }
         }
+
         return nmat;
     }
 
@@ -74,6 +79,7 @@ class ComplexMatrix {
                 }
             }
         }
+
         return mat3;
     }
 }

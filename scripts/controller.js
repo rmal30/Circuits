@@ -82,9 +82,9 @@ class Controller {
 
     deleteComponent(id) {
         const comp = this.model.circuit.components[id];
-        const invalidElements = comp.pins.map(pinId => getElementId(pinId, "Node")).concat([`img${id}`, `txt${id}`]);
+        const invalidElements = comp.pins.map((pinId) => getElementId(pinId, "Node")).concat([`img${id}`, `txt${id}`]);
         this.model.pointExists = this.model.pointExists && (!comp.pins.includes(this.model.prevPointID));
-        invalidElements.forEach(element => Render.removeElement(element));
+        invalidElements.forEach((element) => Render.removeElement(element));
         comp.pins.forEach((pin) => this.deleteLines(this.model.circuit.pins[pin]));
         this.model.circuit.components[id] = {};
         this.model.selected.comp = false;
@@ -155,7 +155,7 @@ class Controller {
 
         for (const pinIndex in this.model.circuit.pins) {
             if (Object.keys(this.model.circuit.pins[pinIndex]).length > 0) {
-                if (this.view.inPinBounds(pinIndex, pos)) {
+                if (this.view.nearPin(pinIndex, pos)) {
                     listen = false;
                 }
             }
@@ -199,7 +199,7 @@ class Controller {
                 return;
             }
         }
-        pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
+        pos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
         const directionStr = this.view.getNewComponentDirection();
         const id = this.model.circuit.components.length;
         Render.drawComponent(id, newCompInfo, directionStr, value, pos, this.model.pinCount);
@@ -222,7 +222,7 @@ class Controller {
                 return;
             }
             let pos = new Position(window.event.clientX, window.event.clientY).offset(-10, -28);
-            pos = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
+            pos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
             id = this.createNode(id, pos);
         }
         const lineID = `${this.model.prevPointID}_${id}`;
@@ -280,15 +280,15 @@ class Controller {
 
     // Move node
     moveNode(pos) {
-        let cPos = pos.offset(-dotSize, -IMAGE_SIZE / 2 - 3);
-        cPos = cPos.offset(-cPos.x % gridSize, -cPos.y % gridSize);
+        let cPos = pos.offset(-DOT_SIZE, -(IMAGE_SIZE / 2) - 3);
+        cPos = cPos.offset(-cPos.x % GRID_SIZE, -cPos.y % GRID_SIZE);
         this.model.circuit.moveNode(this.model.moveID, cPos);
         this.view.moveNode(this.model.circuit, this.model.moveID, cPos);
     }
 
     // Move component
     moveComponent(pos) {
-        const pos2 = pos.offset(-pos.x % gridSize, -pos.y % gridSize);
+        const pos2 = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
         this.model.circuit.moveComponent(this.model.moveID, pos2);
         this.view.moveComponent(this.model.circuit, this.model.moveID, pos2);
     }

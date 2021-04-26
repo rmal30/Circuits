@@ -85,7 +85,7 @@ class Render {
             style: "user-select:none;",
             ondragstart: "ignoreEvent(e)",
             onclick: `updateValue('${id}')`
-        }, value ? (value + " " + newCompInfo.unit) : "");
+        }, value ? `${value} ${newCompInfo.unit}` : "");
 
         const pinPositions = getPinPositions(pos, direction, newCompInfo.pinCount);
         for (let i = 0; i < pinPositions.length; i++) {
@@ -93,8 +93,8 @@ class Render {
                 id: getElementId(pinCount + i, "Node"),
                 cx: pinPositions[i].x,
                 cy: pinPositions[i].y,
-                r: dotSize,
-                onclick: `drawLine(${(pinCount + i)}, false)`
+                r: DOT_SIZE,
+                onclick: `drawLine(${pinCount + i}, false)`
             }, null);
         }
         svg.innerHTML += compStr;
@@ -106,7 +106,7 @@ class Render {
             id: getElementId(id, "Node"),
             cx: pos.x,
             cy: pos.y,
-            r: dotSize,
+            r: DOT_SIZE,
             onmousedown: `handleNode('${id}')`,
             onmouseup: "stopMove()"
         }, null);
@@ -122,8 +122,9 @@ class Render {
         }
 
         const text = document.getElementById("txt" + id);
-        text.setAttribute("x", pplPos.slice(-1)[0].x);
-        text.setAttribute("y", pplPos.slice(-1)[0].y);
+        const labelPos = pplPos.slice(-1)[0];
+        text.setAttribute("x", labelPos.x);
+        text.setAttribute("y", labelPos.y);
 
         const img = document.getElementById("img" + id);
         img.setAttribute("x", adjustedPos.x);

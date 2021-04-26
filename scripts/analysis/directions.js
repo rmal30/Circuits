@@ -1,8 +1,12 @@
+
 function getDirection(pins, group, type) {
-    if (type === EQUATION_TYPES.LOOP) {
-        return getLoopDirection(pins, group);
-    } else {
-        return getNodeDirection(pins, group);
+    switch (type) {
+        case EQUATION_TYPES.LOOP:
+            return getLoopDirection(pins, group);
+        case EQUATION_TYPES.NODE:
+            return getNodeDirection(pins, group);
+        default:
+            throw new Error("Invalid type");
     }
 }
 

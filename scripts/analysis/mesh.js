@@ -8,20 +8,11 @@
 function meshAnalysis(circuit) {
 
     const
-        constantCurrentSources = [
-            COMPONENT_TYPES.DC_CURRENT_SOURCE,
-            COMPONENT_TYPES.AC_CURRENT_SOURCE
-        ],
-        currentSources = [
-            COMPONENT_TYPES.DC_CURRENT_SOURCE,
-            COMPONENT_TYPES.AC_CURRENT_SOURCE,
-            "cs-"
-        ],
         graph = generateGraphFromCircuit(circuit),
         loops = CycleSpace.getBasis(graph);
 
     for (const edgeID in graph.edges) {
-        if (currentSources.some((prefix) => edgeID.includes(prefix))) {
+        if (CURRENT_SOURCE_TYPES.some((prefix) => edgeID.includes(prefix))) {
             graph.removeEdge(edgeID, graph.edges[edgeID]);
         }
     }
@@ -44,7 +35,7 @@ function meshAnalysis(circuit) {
         const curMatrix = groupMatrix(loops, impComponents, EQUATION_TYPES.LOOP);
         const voltMatrix = lawMatrix(circuit.hertz, loops2, impComponents, EQUATION_TYPES.LOOP);
         let kvlMatrix = ComplexMatrix.multiply(voltMatrix, curMatrix);
-        const currentComponents = getComponents(circuit.components, constantCurrentSources);
+        const currentComponents = getComponents(circuit.components, INDEPENDENT_CURRENT_SOURCE_TYPES);
         const curMatrix2 = groupMatrix(loops, currentComponents, EQUATION_TYPES.LOOP);
         kvlMatrix = kvlMatrix.concat(curMatrix2);
         const currentAmpComponents = getComponents(

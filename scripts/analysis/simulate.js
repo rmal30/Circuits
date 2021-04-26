@@ -1,5 +1,10 @@
 "use strict";
 
+/**
+ * Analyse and simulate circuit with nodal and mesh analysis
+ * @param {Circuit} circuit The circuit to analyse
+ * @returns {any} currents Currents, voltages, valid diode configuration if used
+ */
 function simulate(circuit) {
     const currentSets = meshAnalysis(circuit);
     const voltageSets = nodalAnalysis(circuit);
@@ -29,10 +34,10 @@ function simulate(circuit) {
         }
     }
 
-    const diodes = getComponents(circuit.components, ["dio"]);
+    const diodes = getComponents(circuit.components, [COMPONENT_TYPES.DIODE]);
     for (let i = 0; i < diodes.length; i++) {
         diodes[i].value = (validIndex & (1 << i)) !== 0;
     }
 
-    return [currentSets, voltageSets, impComponents, valid, validIndex]
+    return [currentSets, voltageSets, impComponents, valid, validIndex];
 }

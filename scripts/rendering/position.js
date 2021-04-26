@@ -1,15 +1,15 @@
 // Position class
-class Position{
+class Position {
 
-    constructor(x, y){
+    constructor(x, y) {
         this.x = x;
         this.y = y;
     }
-    
+
     show() {
         return this.x + " " + this.y;
     }
-    
+
     coords() {
         return [this.x, this.y];
     }

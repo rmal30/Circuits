@@ -11,16 +11,15 @@ class CycleSpace {
         const cycles = [];
         const edges = {};
 
-        for (const nodeId in graph.nodes) {
-            for (let i = 0; i < graph.nodes[nodeId].length; i++) {
-                const edgeId = graph.nodes[nodeId][i];
+        for (const nodeId of Object.keys(graph.nodes)) {
+            for (const edgeId of graph.nodes[nodeId]) {
                 if (!tree.edges[edgeId]) {
                     edges[edgeId] = graph.edges[edgeId];
                 }
             }
         }
 
-        for (const edgeId in edges) {
+        for (const edgeId of Object.keys(edges)) {
             const cycle = CycleSpace.findCycleWithEdge(tree, edges[edgeId]);
             if (cycle) {
                 cycles.push(cycle);

@@ -43,21 +43,24 @@ const CURRENT_SOURCE_TYPES = INDEPENDENT_CURRENT_SOURCE_TYPES.concat([COMPONENT_
 const VOLTAGE_SOURCE_TYPES = INDEPENDENT_VOLTAGE_SOURCE_TYPES.concat([COMPONENT_TYPES.DEPENDENT_VOLTAGE_SOURCE]);
 
 const COMPONENTS_LIST = {
-    AC: {
+    ac: {
         cap: "Capacitor",
         ind: "Inductor",
         vac: "AC Voltage",
         iac: "AC Current"
     },
-    DC: {
+    dc: {
         vdc: "DC Voltage",
         idc: "DC Current",
-        dio: "Diode",
-        vccs: "Voltage controlled current source",
-        cccs: "Current controlled current source",
-        vcvs: "Voltage controlled voltage source",
-        ccvs: "Current controlled voltage source"
+        dio: "Diode"
     }
+};
+
+const ELEMENT_TYPES = {
+    LABEL: "Label",
+    IMAGE: "Image",
+    LINE: "Line",
+    PIN: "Pin"
 };
 
 const EQUATION_TYPES = {
@@ -66,16 +69,16 @@ const EQUATION_TYPES = {
 };
 
 const COMPONENT_DEFINITIONS = {
-    res: {name: "Resistor", init: "res", prop: "Resistance", unit: "\u03A9", pinCount: 2},
-    cap: {name: "Capacitor", init: "cap", prop: "Capacitance", unit: "\u00B5F", pinCount: 2},
-    ind: {name: "Inductor", init: "ind", prop: "Inductance", unit: "mH", pinCount: 2},
-    vdc: {name: "DC Voltage source", init: "vdc", prop: "Voltage", unit: "V", pinCount: 2},
-    vac: {name: "AC voltage source", init: "vac", prop: "Phasor voltage", unit: "V", pinCount: 2},
-    idc: {name: "DC Current source", init: "idc", prop: "Current", unit: "A", pinCount: 2},
-    iac: {name: "AC Current source", init: "iac", prop: "Phasor Current", unit: "A", pinCount: 2},
-    dio: {name: "Diode", init: "dio", pinCount: 2},
-    vcvs: {name: "Voltage controlled voltage source", init: "vcvs", prop: "Gain", unit: "", pinCount: 4},
-    ccvs: {name: "Current controlled voltage source", init: "ccvs", prop: "Gain", unit: "\u03A9", pinCount: 4},
-    vccs: {name: "Voltage controlled current source", init: "vccs", prop: "Gain", unit: "S", pinCount: 4},
-    cccs: {name: "Current controlled current source", init: "cccs", prop: "Gain", unit: "", pinCount: 4}
+    res: {name: "Resistor", prefix: "res", prop: "Resistance", unit: "\u03A9", pinCount: 2},
+    cap: {name: "Capacitor", prefix: "cap", prop: "Capacitance", unit: "\u00B5F", pinCount: 2},
+    ind: {name: "Inductor", prefix: "ind", prop: "Inductance", unit: "mH", pinCount: 2},
+    vdc: {name: "DC Voltage source", prefix: "vdc", prop: "Voltage", unit: "V", pinCount: 2},
+    vac: {name: "AC voltage source", prefix: "vac", prop: "Phasor voltage", unit: "V", pinCount: 2},
+    idc: {name: "DC Current source", prefix: "idc", prop: "Current", unit: "A", pinCount: 2},
+    iac: {name: "AC Current source", prefix: "iac", prop: "Phasor Current", unit: "A", pinCount: 2},
+    dio: {name: "Diode", prefix: "dio", pinCount: 2},
+    vcvs: {name: "Voltage controlled voltage source", prefix: "vcvs", prop: "Gain", unit: "", pinCount: 4},
+    ccvs: {name: "Current controlled voltage source", prefix: "ccvs", prop: "Gain", unit: "\u03A9", pinCount: 4},
+    vccs: {name: "Voltage controlled current source", prefix: "vccs", prop: "Gain", unit: "S", pinCount: 4},
+    cccs: {name: "Current controlled current source", prefix: "cccs", prop: "Gain", unit: "", pinCount: 4}
 };

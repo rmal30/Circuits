@@ -1,3 +1,13 @@
+const directions = {
+    H: [1, 0],
+    V: [0, 1]
+};
+
+const directionAngles = {
+    H: 0,
+    V: 90
+};
+
 function rotateVector(vec) {
     return [-vec[1], vec[0]];
 }
@@ -33,24 +43,37 @@ function getAngleFromDirection(direction) {
     return angles[direction.toString()];
 }
 
-function generateXML(tag, properties, value) {
-    let xml = `<${tag}`;
-    for (const prop in properties) {
-        xml += ` ${prop}="${properties[prop]}"`;
-    }
-    if (value) {
-        xml += `>${value}</${tag}>`;
-    } else {
-        xml += "/>";
-    }
-    return xml;
-}
-
 function getElementId(id, type) {
     const prefixes = {
-        Line: "",
-        Component: "img",
-        Node: "pin-"
+        Line: "lin",
+        Image: "img",
+        Pin: "pin-",
+        Label: "txt" 
     };
-    return (prefixes[type] + id);
+    if (type in prefixes){
+        return (prefixes[type] + id);
+    } else {
+        throw new Error("Invalid type");
+    }
+
+}
+
+function getLines(pointsStr) {
+    const points = pointsStr.split(" ").map((pointStr) => pointStr.split(",").map((v) => parseInt(v)));
+    const linePoints = [];
+    for (let i = 0; i < points.length - 1; i++) {
+        linePoints.push([points[i], points[i + 1]]);
+    }
+    return linePoints;
+}
+
+function isNearLine(linePoints, position, range) {
+    const [point1, point2] = linePoints;
+    const [x1, y1] = point1;
+    const [x2, y2] = point2;
+    const minX = Math.min(x1, x2) - range;
+    const maxX = Math.max(x1, x2) + range;
+    const minY = Math.min(y1, y2) - range;
+    const maxY = Math.max(y1, y2) + range;
+    return position.x >= minX && position.x <= maxX && position.y >= minY && position.y <= maxY;
 }

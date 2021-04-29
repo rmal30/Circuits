@@ -1,23 +1,24 @@
 .mdl-layout__header-row{
-    padding:0 40px 0 20px;
+    padding: 0 40px 0 20px;
 }
 
 #info{
-    width:28%;
-    height:80%;
-    float:right;
-    padding-top:20px;
+    width: 28%;
+    height: 80%;
+    float: right;
+    padding-top: 20px;
+    white-space: pre;
 }
 
 #controls{
-    margin-top:5px;
-    margin-left:20px;
+    margin-top: 5px;
+    margin-left: 20px;
     width: 380px;
-    color:#fff;
+    color: #fff;
 }
 
 .mdl-layout-title, .mdl-textfield__label, .white{
-    color:#fff;
+    color: #fff;
 }
 
 .control{
@@ -30,13 +31,13 @@
 }
 
 .mdl-textfield__input{
-    background-color:#4caf50;
-    border-color:#fff;
+    background-color: #4caf50;
+    border-color: #fff;
 }
 
 #svg{
-    user-select:none;
-    position:absolute;
-    top:0px;
-    z-index:-1;
+    user-select: none;
+    position: absolute;
+    top: 0px;
+    z-index: -1;
 }

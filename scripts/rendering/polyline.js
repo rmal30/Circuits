@@ -1,8 +1,6 @@
 
 // Plan a line which can connect two components
-function findPolyStr(pins, pinId0, pinId1) {
-    const pin0 = pins[pinId0];
-    const pin1 = pins[pinId1];
+function findPolyStr(pin0, pin1) {
     const origin = pin0.pos;
     const dest = pin1.pos;
     let dir0 = pin0.direction;
@@ -116,5 +114,5 @@ function findPolyStr(pins, pinId0, pinId1) {
     polyLinePoints.push(origin.coords());
     polyLinePoints = polyLinePoints.concat(midPoints);
     polyLinePoints.push(dest.coords());
-    return polyLinePoints.map(point => point.join(", ")).join(" ");
+    return polyLinePoints.map(point => point.join(",")).join(" ");
 }

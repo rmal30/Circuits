@@ -8,20 +8,14 @@ class SpanningTree {
 
         while (tree.nodeCount() < graph.nodeCount()) {
             let edgeFound = false;
-            for (const nodeId in tree.nodes) {
+            for (const nodeId of Object.keys(tree.nodes)) {
                 for (const edgeId of graph.nodes[nodeId]) {
                     const [node1, node2] = graph.edges[edgeId];
-                    let nodeId2;
+                    const neighbourId = node1 === parseInt(nodeId, 10) ? node2 : node1;
 
-                    if (node1 === parseInt(nodeId)) {
-                        nodeId2 = node2;
-                    } else {
-                        nodeId2 = node1;
-                    }
-
-                    if (tree.nodes[nodeId2] === undefined) {
-                        tree.addNode(nodeId2);
-                        tree.addEdge(edgeId, [parseInt(nodeId), nodeId2]);
+                    if (!(neighbourId in tree.nodes)) {
+                        tree.addNode(neighbourId);
+                        tree.addEdge(edgeId, [parseInt(nodeId, 10), neighbourId]);
                         edgeFound = true;
                         break;
                     }

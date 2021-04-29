@@ -28,7 +28,7 @@ class QRDecomposition {
 
     // Solve RU matrix
     static solveRUMatrix(matrix, vector) {
-        const solutionSet = zeros(matrix.length);
+        const solutionSet = new Array(matrix.length).fill(0);
         const l = solutionSet.length;
         for (let j = l - 1; j >= 0; j--) {
             let sol = vector[j];

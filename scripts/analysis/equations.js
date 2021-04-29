@@ -1,3 +1,5 @@
+
+
 /**
  * Direction matrix
  * @param {[[pinId]]} groups List of component lists
@@ -12,7 +14,7 @@ function groupMatrix(groups, impComponents, type) {
         const line = [];
 
         for (const group of groups) {
-            line.push(getDirection(component.pins, group, type));
+            line.push(AnalysisUtils.getDirection(component.pins, group, type));
         }
         compMatrix.push(line);
     }
@@ -33,11 +35,11 @@ function groupMatrix2(groups, twoPortComponents, type) {
     for (const component of twoPortComponents) {
         const line = [];
         const [pinA, pinB, pinC, pinD] = component.pins;
-        const dir = (type === EQUATION_TYPES.LOOP) ? -1 : 1;
+        const dir = type === EQUATION_TYPES.LOOP ? -1 : 1;
 
         for (const group of groups) {
-            const d1 = component.value * getDirection([pinA, pinC], group, type);
-            const d2 = dir * getDirection([pinB, pinD], group, type);
+            const d1 = component.value * AnalysisUtils.getDirection([pinA, pinC], group, type);
+            const d2 = dir * AnalysisUtils.getDirection([pinB, pinD], group, type);
             line.push(d1 - d2);
         }
         compMatrix.push(line);
@@ -59,8 +61,8 @@ function lawMatrix(hertz, groups, impComponents, type) {
     for (const group of groups) {
         const line = [];
         for (const component of impComponents) {
-            const compDirection = getDirection(component.pins, group, type);
-            const impedance = getImpedance(hertz, component);
+            const compDirection = AnalysisUtils.getDirection(component.pins, group, type);
+            const impedance = AnalysisUtils.getImpedance(hertz, component);
             let coeff;
 
             switch (type) {
@@ -83,13 +85,13 @@ function lawMatrix(hertz, groups, impComponents, type) {
 
 function voltageVector(loops, components) {
     const init = [];
-    const voltageComponents = getComponents(components, INDEPENDENT_VOLTAGE_SOURCE_TYPES);
-    const currentComponents = getComponents(components, INDEPENDENT_CURRENT_SOURCE_TYPES);
+    const voltageComponents = AnalysisUtils.getComponents(components, INDEPENDENT_VOLTAGE_SOURCE_TYPES);
+    const currentComponents = AnalysisUtils.getComponents(components, INDEPENDENT_CURRENT_SOURCE_TYPES);
 
     for (const loop of loops) {
         let voltageSum = 0;
         for (const component of voltageComponents) {
-            voltageSum -= getDirection(component.pins, loop, EQUATION_TYPES.LOOP) * component.value;
+            voltageSum -= AnalysisUtils.getDirection(component.pins, loop, EQUATION_TYPES.LOOP) * component.value;
         }
         init.push(voltageSum);
     }
@@ -99,13 +101,13 @@ function voltageVector(loops, components) {
 
 function currentVector(nodes, components) {
     let init = [];
-    const voltageComponents = getComponents(components, INDEPENDENT_VOLTAGE_SOURCE_TYPES);
-    const currentComponents = getComponents(components, INDEPENDENT_CURRENT_SOURCE_TYPES);
+    const voltageComponents = AnalysisUtils.getComponents(components, INDEPENDENT_VOLTAGE_SOURCE_TYPES);
+    const currentComponents = AnalysisUtils.getComponents(components, INDEPENDENT_CURRENT_SOURCE_TYPES);
 
     for (const node of nodes) {
         let currentSum = 0;
         for (const component of currentComponents) {
-            currentSum -= getDirection(component.pins, node, EQUATION_TYPES.NODE) * component.value;
+            currentSum -= AnalysisUtils.getDirection(component.pins, node, EQUATION_TYPES.NODE) * component.value;
         }
         init.push(currentSum);
     }

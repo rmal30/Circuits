@@ -1,93 +1,126 @@
+"use strict";
+
 class Circuit {
+
     constructor(hertz, pins, lines, components) {
         this.hertz = hertz;
         this.pins = pins;
         this.lines = lines;
         this.components = components;
+        this.newPinId = Circuit.getNewID(pins);
+        this.newLineId = Circuit.getNewID(lines);
+        this.newComponentId = Circuit.getNewID(components);
+    }
+
+    static getNewID(obj) {
+        const objKeys = Object.keys(obj);
+        const ids = objKeys.map((key) => parseInt(key, 10));
+        return objKeys.length === 0 ? 0 : ids.reduce((max, value) => Math.max(max, value)) + 1;
     }
 
     setFreq(freq) {
         this.hertz = freq;
     }
 
-    deleteLine(lineIndex) {
-        const linePins = this.lines[lineIndex].split("_");
-        this.lines[lineIndex] = "";
-        const pinLines = [this.pins[linePins[0]].lines, this.pins[linePins[1]].lines];
-        pinLines[0].splice(pinLines[0].indexOf(lineIndex), 1);
-        pinLines[1].splice(pinLines[1].indexOf(lineIndex), 1);
+    deleteLine(lineId) {
+        const [pin1, pin2] = this.lines[lineId];
+        this.pins[pin1].lines.delete(lineId);
+        this.pins[pin2].lines.delete(lineId);
+        delete this.lines[lineId];
     }
 
-    addComponent(id, type, value, pinCount, pos, directionStr) {
+    deleteNode(pinID) {
+        this.pins[pinID].lines.forEach((lineID) => this.deleteLine(lineID));
+        delete this.pins[pinID];
+    }
+
+    deleteComponent(componentID) {
+        this.components[componentID].pins.forEach((pinID) => this.deleteNode(pinID));
+        delete this.components[componentID];
+    }
+
+    addComponent(type, value, pos, directionStr) {
         const direction = directions[directionStr];
-        const pinDir = getPinDirections(direction, COMPONENT_DEFINITIONS[type].pinCount);
-        const pinPos = getPinPositions(pos, direction, COMPONENT_DEFINITIONS[type].pinCount);
-        this.components.push({
-            id: id,
-            type: type,
-            value: value,
-            direction: pinDir[0],
-            pins: range(pinCount, pinCount + COMPONENT_DEFINITIONS[type].pinCount),
-            pos: pos
-        });
-        for (let i = 0; i < COMPONENT_DEFINITIONS[type].pinCount; i++) {
-            this.pins[pinCount + i] = {
-                comp: id,
-                direction: pinDir[i],
-                lines: [],
-                pos: pinPos[i]
-            };
+        const pinCount = COMPONENT_DEFINITIONS[type].pinCount;
+        const pinDir = getPinDirections(direction, pinCount);
+        const pinPos = getPinPositions(pos, direction, pinCount);
+        const id = this.newComponentId;
+        const pinIds = range(this.newPinId, this.newPinId + pinCount);
+
+        this.components[id] = {id: id, type: type, value: value, direction: pinDir[0], pins: pinIds, pos: pos};
+        this.newComponentId++;
+
+        for (let i = 0; i < pinCount; i++) {
+            this.addComponentPin(id, pinPos[i], pinDir[i]);
         }
+
+        return id;
     }
 
-    addLine(lineID, prevPointID, id) {
-        this.lines.push(lineID);
-        this.pins[prevPointID].lines.push(this.lines.length - 1);
-        this.pins[id].lines.push(this.lines.length - 1);
+    addLine(pinId1, pinId2) {
+        const lineId = this.newLineId;
+        this.lines[lineId] = [pinId1, pinId2];
+        this.newLineId++;
+
+        this.pins[pinId1].lines.add(lineId);
+        this.pins[pinId2].lines.add(lineId);
+        return lineId;
     }
 
-    splitLine(lineID, pos, pinCount) {
-        const [pin1, pin2] = lineID.split("_");
-        const lineID1 = pin1 + "_" + pinCount;
-        const lineID2 = pin2 + "_" + pinCount;
-        const lineIndex1 = this.lines.indexOf(lineID);
-        const lineIndex2 = this.lines.length;
-        this.lines[lineIndex1] = lineID1;
-        this.lines.push(lineID2);
-        const lines2 = this.pins[pin2].lines;
-        lines2[lines2.indexOf(lineIndex1)] = lineIndex2;
-        this.pins[pinCount] = {pos: pos, comp: "", lines: [lineIndex1, lineIndex2], direction: ""};
+    splitLineWithNode(pin3, lineId, pos) {
+        const [pin1, pin2] = this.lines[lineId];
+        this.deleteLine(lineId);
+        const pinId = this.addNode(pos);
+        this.addLine(pinId, pin1);
+        this.addLine(pinId, pin2);
+        this.addLine(pinId, pin3);
+        return pinId;
+    }
+
+    addComponentPin(componentId, pos, direction) {
+        const pinId = this.newPinId;
+        this.pins[pinId] = {id: pinId, comp: componentId, direction: direction, lines: new Set(), pos: pos};
+        this.newPinId++;
+        return pinId;
+    }
+
+    addNode(pos) {
+        const pinId = this.newPinId;
+        this.pins[pinId] = {id: pinId, pos: pos, lines: new Set()};
+        this.newPinId++;
+        return pinId;
     }
 
     rotateComponent(id) {
         const comp = this.components[id];
         comp.direction = rotateVector(comp.direction);
-        const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
+        const pinPositions = getPinPositions(comp.pos, comp.direction, comp.pins.length);
         const directions = getPinDirections(comp.direction, comp.pins.length);
 
-        for (const pinId in comp.pins) {
-            this.pins[comp.pins[pinId]].direction = directions[pinId];
-        }
-
-        for (let i = 0; i < pplPos.length - 1; i++) {
-            this.pins[comp.pins[i]].pos = pplPos[i];
-        }
+        comp.pins.forEach((pinId, index) => {
+            this.pins[pinId].direction = directions[index];
+            this.moveNode(pinId, pinPositions[index]);
+        });
     }
 
     moveComponent(id, pos) {
         const comp = this.components[id];
-        const pplPos = getLabelPinPos(pos, comp.direction, comp.pins.length);
+        const pinPositions = getPinPositions(pos, comp.direction, comp.pins.length);
         comp.pos = pos;
-        for (let i = 0; i < pplPos.length - 1; i++) {
-            this.pins[comp.pins[i]].pos = pplPos[i];
-        }
+        comp.pins.forEach((pinId, index) => {
+            this.moveNode(pinId, pinPositions[index]);
+        });
     }
 
-    moveNode(id, pos) {
-        this.pins[id].pos = pos;
+    moveNode(pinId, pos) {
+        this.pins[pinId].pos = pos;
     }
 
     setComponentValue(id, value) {
         this.components[id].value = value;
+    }
+
+    simulate() {
+        return Analyser.getCurrentsAndVoltages(this);
     }
 }

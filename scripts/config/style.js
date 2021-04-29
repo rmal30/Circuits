@@ -2,13 +2,13 @@
 const styles = {
     select: {
         Line: {stroke: "blue"},
-        Component: {opacity: 0.7},
-        Node: {fill: "blue"}
+        Image: {opacity: 0.7},
+        Pin: {fill: "blue"}
     },
     deselect: {
         Line: {stroke: "black"},
-        Component: {opacity: 1},
-        Node: {fill: "black"}
+        Image: {opacity: 1},
+        Pin: {fill: "black"}
     }
 };
 

@@ -1,11 +1,17 @@
 class View {
-    constructor() {
-        this.simulate = document.getElementById("simulate");
-        this.chooseMode = document.getElementById("mode");
-        this.svg = document.getElementById("svg");
-        this.freq = document.getElementById("freq");
-        this.header = document.getElementById("header");
-        this.doc = document;
+    constructor(_doc, _window) {
+        this.doc = _doc;
+        this.window = _window;
+        this.schematic = new Schematic(_doc);
+        this.svg = this.doc.getElementById("svg");
+        this.simulate = this.doc.getElementById("simulate");
+        this.chooseMode = this.doc.getElementById("mode");
+        this.freq = this.doc.getElementById("freq");
+        this.freq2 = this.doc.getElementById("freq2");
+        this.header = this.doc.getElementById("header");
+        this.info = this.doc.getElementById("info");
+        this.compList = this.doc.getElementById("newComp");
+        this.newCompDirection = this.doc.getElementById("newCompDir");
     }
 
     bindFreqChange(onFreqChange) {
@@ -22,18 +28,18 @@ class View {
 
     bindChooseMode(onChooseMode) {
         this.chooseMode.addEventListener("click", () => {
-            const mode = document.getElementById("mode");
-            onChooseMode(mode.value);
+            onChooseMode(this.chooseMode.value);
         });
     }
 
-    bindMouseMove(onMouseMove) {
+    bindCanvasMouseMove(onCanvasMouseMove) {
         const height = this.header.clientHeight;
 
         // Drag component or node
         this.svg.addEventListener("mousemove", (event) => {
             const pos = new Position(event.clientX, event.clientY).offset(0, -height);
-            onMouseMove(pos);
+            const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
+            onCanvasMouseMove(alignedPos);
         });
     }
 
@@ -44,101 +50,198 @@ class View {
         });
     }
 
-    bindCanvasClick(onCanvasClick) {
-        const height = this.header.clientHeight;
-
-        this.svg.addEventListener("click", () => {
-            const pos = new Position(window.event.clientX, window.event.clientY).offset(0, -height);
-            onCanvasClick(pos);
+    bindCanvasMouseUp(onCanvasMouseUp) {
+        this.svg.addEventListener("mouseup", () => {
+            onCanvasMouseUp();
         });
     }
 
+    bindCanvasClick(onCanvasClick) {
+        const height = this.header.clientHeight;
 
-    rotateComponent(circuit, id) {
-        const comp = circuit.components[id];
-        const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
-        Render.changeComponentPosition(comp, id, comp.pos, pplPos);
-        const componentLines = comp.pins.map((pinId) => circuit.pins[pinId].lines);
+        this.svg.addEventListener("click", (event) => {
+            setTimeout(() => {
+                const pos = new Position(event.clientX, event.clientY).offset(0, -height);
+                const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
+                onCanvasClick(alignedPos);
+            }, 10);
+        });
+    }
 
-        for (const i in componentLines) {
-            componentLines[i].forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
+    bindLabelClick(id, onLabelClick) {
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.LABEL)).addEventListener("click", () => {
+            onLabelClick(id);
+        });
+    }
+
+    bindComponentClick(id, onComponentClick) {
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.IMAGE)).addEventListener("click", () => {
+            onComponentClick(id);
+        });
+    }
+
+    bindComponentMouseDown(id, onComponentMouseDown) {
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.IMAGE)).addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            onComponentMouseDown(id);
+        });
+    }
+
+    bindPinClick(id, onPinClick) {
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.PIN)).addEventListener("click", () => {
+            onPinClick(id);
+        });
+    }
+
+    bindNodeMouseDown(id, onNodeMouseDown) {
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.PIN)).addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            onNodeMouseDown(id);
+        });
+    }
+
+    bindLineClick(id, onLineClick) {
+        const height = this.header.clientHeight;
+
+        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.LINE)).addEventListener("click", (event) => {
+            const pos = new Position(event.clientX, event.clientY).offset(0, -height);
+            const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
+            onLineClick(id, alignedPos);
+        });
+    }
+
+    setFrequencyEnabled(enabled) {
+        const disabledClass = "is-disabled";
+
+        if (enabled) {
+            this.freq2.classList.remove(disabledClass);
+        } else {
+            this.freq2.classList.add(disabledClass);
         }
+
+        this.freq.disabled = !enabled;
     }
 
-    moveComponent(circuit, id, pos) {
-        const comp = circuit.components[id];
-        const pplPos = getLabelPinPos(pos, comp.direction, comp.pins.length);
-        Render.changeComponentPosition(comp, id, pos, pplPos);
-        const componentLines = comp.pins.map((pinId) => circuit.pins[pinId].lines);
+    setInformation(info) {
+        this.info.textContent = info;
+    }
 
-        for (const componentLine of componentLines) {
-            componentLine.forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
+    setComponentOptions(componentOptions) {
+        this.compList.options.length = 2;
+        for (const component of Object.keys(componentOptions)) {
+            this.compList.options[this.compList.options.length] = new Option(componentOptions[component], component);
         }
-    }
-
-    moveNode(circuit, id, cPos) {
-        Render.movePin(id, cPos);
-        circuit.pins[id].lines.forEach((line) => Render.adjustLine(circuit.pins, circuit.lines[line]));
-    }
-
-    splitLine(pins, lineID, pos, pinCount) {
-        const [pin1, pin2] = lineID.split("_");
-        const lineID1 = pin1 + "_" + pinCount;
-        const lineID2 = pin2 + "_" + pinCount;
-        Render.changeLine(lineID, lineID1, findPolyStr(pins, pin1, pinCount));
-        Render.drawPolyLine(lineID2, findPolyStr(pins, pin2, pinCount));
-        Render.drawNode(pinCount, pos);
-    }
-
-    getNewComponentDirection() {
-        return document.getElementById("newCompDir").value;
-    }
-
-    getNewComponentType() {
-        return document.getElementById("newComp").value;
     }
 
     showSolution(currentSets, voltageSets, impComponents, valid, validIndex) {
         let solutionOutput = null;
         if (valid) {
-            const displayVoltage = (component, index) => `${component.type}_${component.id}: ${Complex.print(voltageSets[validIndex][index][0])}V`;
-            const displayCurrent = (component, index) => `${component.type}_${component.id}: ${Complex.print(currentSets[validIndex][index][0])}A`;
             solutionOutput = [
-                "Nodal analysis:<br/>" + impComponents.map(displayVoltage).join("<br/>"),
-                "Mesh analysis:<br/>" + impComponents.map(displayCurrent).join("<br/>"),
-                "Component list:<br/>" + impComponents.map((value, i) => `${value.type}_${value.id}: ${JSON.stringify(impComponents[i])}`).join("<br/>")
-            ].join("<br/><br/>");
+                [
+                    "Nodal analysis:",
+                    ...impComponents.
+                        map((component, index) => {
+                            const fullId = `${component.type}_${component.id}`;
+                            return `${fullId}: ${Complex.print(voltageSets[validIndex][index][0])}V`;
+                        })
+                ],
+                [
+                    "Mesh analysis:",
+                    ...impComponents.
+                        map((component, index) => {
+                            const fullId = `${component.type}_${component.id}`;
+                            return `${fullId}: ${Complex.print(currentSets[validIndex][index][0])}A`;
+                        })
+                ],
+                [
+                    "Component list:",
+                    ...impComponents.map((value) => {
+                        return `${value.type}_${value.id}: ${JSON.stringify(value, (_, v) => {
+                            return (v instanceof Array) ? JSON.stringify(v) : v;
+                        }, 4)}`;
+                    })
+                ]
+            ].map((section) => section.join("\r\n")).join("\r\n\r\n");
 
         } else {
             solutionOutput = "No solution found";
         }
-        Render.setInformation(solutionOutput);
+        this.setInformation(solutionOutput);
     }
 
-    inImageBounds(componentId, pos, tolerance) {
-        const image = document.getElementById(getElementId(componentId, "Component"));
-        const dx = Math.abs(pos.x - image.x.baseVal.value - (IMAGE_SIZE / 2));
-        const dy = Math.abs(pos.y - image.y.baseVal.value - (IMAGE_SIZE / 2));
-        return dx < IMAGE_SIZE * tolerance && dy < IMAGE_SIZE * tolerance;
+    isNearImage(componentId, position, range) {
+        const elementId = getElementId(componentId, ELEMENT_TYPES.IMAGE);
+        const image = this.doc.getElementById(elementId);
+        const dx = Math.abs(position.x - image.x.baseVal.value - IMAGE_SIZE / 2);
+        const dy = Math.abs(position.y - image.y.baseVal.value - IMAGE_SIZE / 2);
+        return dx < range * IMAGE_SIZE && dy < range * IMAGE_SIZE;
     }
 
-    nearPin(pinId, pos) {
-        const pin = document.getElementById(getElementId(pinId, "Node"));
-        const nearPinX = Math.abs(pos.x - pin.cx.baseVal.value) < 0.5 * IMAGE_SIZE;
-        const nearPinY = Math.abs(pos.y - pin.cy.baseVal.value) < 0.5 * IMAGE_SIZE;
-        return nearPinX && nearPinY;
+    isNearPin(pinId, position, range) {
+        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+        const pin = this.doc.getElementById(elementId);
+        const dx = Math.abs(position.x - pin.cx.baseVal.value);
+        const dy = Math.abs(position.y - pin.cy.baseVal.value);
+        return dx < range * DOT_SIZE && dy < range * DOT_SIZE;
+    }
+
+    isNearPolyLine(lineId, position, range) {
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
+        const line = this.doc.getElementById(elementId);
+        return getLines(CircuitXML.getPolyStr(line)).some((linePoints) => isNearLine(linePoints, position, range));
+    }
+
+    isNearSchematic(circuit, position) {
+        const {pins, lines, components} = circuit;
+        const isNearPins = Object.keys(pins).some((pinId) => this.isNearPin(pinId, position, 1));
+        const isNearComponents = Object.keys(components).some((id) => this.isNearImage(id, position, 0.7));
+        const isNearLines = Object.keys(lines).some((id) => this.isNearPolyLine(id, position, 10));
+        return [isNearLines, isNearComponents, isNearPins].some((near) => near);
+    }
+
+    setElementSelected(selected, id, type) {
+        const elementId = getElementId(id, type);
+        const element = this.doc.getElementById(elementId);
+
+        if (element) {
+            const style = selected ? styles.select[type] : styles.deselect[type];
+            Object.assign(element.style, style);
+        }
+    }
+
+    // Select or deselect component, node or line
+    setSelectedItem(item) {
+        if (item) {
+            this.setElementSelected(true, item.id, item.type);
+        }
+    }
+
+    clearSelectedItem(item) {
+        if (item) {
+            this.setElementSelected(false, item.id, item.type);
+        }
     }
 
     // Prompt value from user
     promptComponentValue(info) {
         const promptStr = `Please enter a ${info.prop} for a ${info.name} in ${info.unit}`;
-        let value = prompt(promptStr);
-        while (value === "") {
-            alert("Please enter a valid value");
-            value = prompt(promptStr);
-        }
+        let value = null;
+        let invalid = true;
+        do {
+            value = this.window.prompt(promptStr);
+            invalid = value === "";
+            if (invalid) {
+                this.window.alert("Please enter a valid value");
+            }
+        } while (invalid);
         return value;
     }
 
-}
+    getNewComponentDirection() {
+        return this.newCompDirection.value;
+    }
 
+    getNewComponentType() {
+        return this.compList.value;
+    }
+}

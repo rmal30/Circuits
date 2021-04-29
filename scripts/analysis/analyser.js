@@ -10,6 +10,7 @@ class Analyser {
     static getGraph(circuit) {
         const graph = new Graph();
         Object.keys(circuit.pins).forEach((pinID) => graph.addNode(pinID));
+        const maxLineId = Object.keys(circuit.lines).map((k) => parseInt(k)).reduce((a, b) => Math.max(a, b));
 
         for (const lineId of Object.keys(circuit.lines)) {
             const [node1, node2] = circuit.lines[lineId];
@@ -25,7 +26,7 @@ class Analyser {
                 const [portA, portB, portC, portD] = circuit.components[id].pins;
                 graph.addEdge(edgeID, [portB, portD]);
                 if (CURRENT_CONTROLLED_SOURCES.includes(circuit.components[id].type)) {
-                    const lineID = `${COMPONENT_TYPES.LINE}-${circuit.lines.length + count}`;
+                    const lineID = `${COMPONENT_TYPES.LINE}-${maxLineId + 1 + count}`;
                     graph.addEdge(lineID, [portA, portC]);
                     count++;
                 }
@@ -47,11 +48,13 @@ class Analyser {
         let edge;
         let count = 0;
 
+        const maxLineId = Object.keys(graph.edges).map((k) => parseInt(k.split("-")[1])).reduce((a, b) => Math.max(a, b));
+
         for (const edgeID of Object.keys(graph.edges)) {
             if (VOLTAGE_SOURCE_TYPES.some((prefix) => edgeID.includes(prefix))) {
                 edge = graph.edges[edgeID];
                 graph.removeEdge(edgeID, edge);
-                graph.addEdge(`${COMPONENT_TYPES.LINE}-${circuit.lines.length + count}`, edge);
+                graph.addEdge(`${COMPONENT_TYPES.LINE}-${maxLineId + 1 + count}`, edge);
                 count++;
             }
         }

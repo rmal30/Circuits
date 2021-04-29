@@ -53,6 +53,13 @@ const COMPONENTS_LIST = {
         vdc: "DC Voltage",
         idc: "DC Current",
         dio: "Diode"
+    },
+    both: {
+        res: "Resistor",
+        vcvs: "Voltage controlled voltage source",
+        ccvs: "Current controlled voltage source",
+        vccs: "Voltage controlled current source",
+        cccs: "Current controlled current source"
     }
 };
 

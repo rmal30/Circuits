@@ -135,7 +135,10 @@ class View {
     }
 
     setComponentOptions(componentOptions) {
-        this.compList.options.length = 2;
+        this.compList.options.length = 1;
+        for (const component of Object.keys(COMPONENTS_LIST.both)) {
+            this.compList.options[this.compList.options.length] = new Option(COMPONENTS_LIST.both[component], component);
+        }
         for (const component of Object.keys(componentOptions)) {
             this.compList.options[this.compList.options.length] = new Option(componentOptions[component], component);
         }

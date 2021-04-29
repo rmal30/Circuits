@@ -18,7 +18,7 @@ class CircuitXML {
     static newImage(id, position, type, angle) {
         const imagePosition = position.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
         return CircuitXML.newElement("image", {
-            id: getElementId(id, "Image"),
+            id: getElementId(id, ELEMENT_TYPES.IMAGE),
             href: `images/${type}.png`,
             x: imagePosition.x,
             y: imagePosition.y,
@@ -32,7 +32,7 @@ class CircuitXML {
         return CircuitXML.newElement("text", {
             x: position.x,
             y: position.y,
-            id: getElementId(id, "Label"),
+            id: getElementId(id, ELEMENT_TYPES.LABEL),
             "text-anchor": "middle",
             style: "user-select:none;"
         }, value);
@@ -40,7 +40,7 @@ class CircuitXML {
 
     static newPin(id, position) {
         return CircuitXML.newElement("circle", {
-            id: getElementId(id, "Pin"),
+            id: getElementId(id, ELEMENT_TYPES.PIN),
             cx: position.x,
             cy: position.y,
             r: DOT_SIZE
@@ -48,12 +48,12 @@ class CircuitXML {
     }
 
     static newLine(id, points) {
-        const style = Object.keys(defaultLineStyle).
-                map((prop) => `${prop}:${defaultLineStyle[prop]};`).
+        const style = Object.keys(DEFAULT_LINE_STYLE).
+                map((prop) => `${prop}:${DEFAULT_LINE_STYLE[prop]};`).
                 join("");
 
         return CircuitXML.newElement("polyline", {
-            id: getElementId(id, "Line"),
+            id: getElementId(id, ELEMENT_TYPES.LINE),
             points: points,
             style: style
         }, null);

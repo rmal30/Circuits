@@ -63,7 +63,7 @@ function lawMatrix(hertz, groups, impComponents, type) {
         for (const component of impComponents) {
             const compDirection = AnalysisUtils.getDirection(component.pins, group, type);
             const impedance = AnalysisUtils.getImpedance(hertz, component);
-            let coeff;
+            let coeff = null;
 
             switch (type) {
                 case EQUATION_TYPES.LOOP:
@@ -96,7 +96,7 @@ function voltageVector(loops, components) {
         init.push(voltageSum);
     }
 
-    return init.concat(currentComponents.map(component => -component.value));
+    return init.concat(currentComponents.map((component) => -component.value));
 }
 
 function currentVector(nodes, components) {

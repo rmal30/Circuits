@@ -114,5 +114,5 @@ function findPolyStr(pin0, pin1) {
     polyLinePoints.push(origin.coords());
     polyLinePoints = polyLinePoints.concat(midPoints);
     polyLinePoints.push(dest.coords());
-    return polyLinePoints.map(point => point.join(",")).join(" ");
+    return polyLinePoints.map((point) => point.join(",")).join(" ");
 }

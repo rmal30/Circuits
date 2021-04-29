@@ -40,7 +40,7 @@ class Circuit {
     }
 
     addComponent(type, value, pos, directionStr) {
-        const direction = directions[directionStr];
+        const direction = DIRECTIONS[directionStr];
         const pinCount = COMPONENT_DEFINITIONS[type].pinCount;
         const pinDir = getPinDirections(direction, pinCount);
         const pinPos = getPinPositions(pos, direction, pinCount);

@@ -12,7 +12,7 @@ class QRDecomposition {
                 u[i] = ComplexMatrix.add([u[i]], ComplexMatrix.scalarMultiply([ComplexVector.projection(u[j], u[i])], -1))[0];
             }
             u[i] = ComplexMatrix.scalarDivide([u[i]], ComplexVector.norm(u[i]))[0];
-            u[i] = u[i].map(x => roundNum(x, 10));
+            u[i] = u[i].map((x) => roundNum(x, 10));
         }
         const Q = ComplexMatrix.transpose(u);
         return ComplexMatrix.scalarMultiply(Q, -1);
@@ -22,7 +22,7 @@ class QRDecomposition {
     static solve(matrix, vector) {
         const q = QRDecomposition.findQ(matrix);
         const r = ComplexMatrix.multiply(ComplexMatrix.conjTranspose(q), matrix);
-        const v = ComplexMatrix.transpose(ComplexMatrix.multiply(ComplexMatrix.conjTranspose(q), ComplexMatrix.transpose([vector])))[0]
+        const v = ComplexMatrix.transpose(ComplexMatrix.multiply(ComplexMatrix.conjTranspose(q), ComplexMatrix.transpose([vector])))[0];
         return QRDecomposition.solveRUMatrix(r, v);
     }
 

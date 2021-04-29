@@ -56,18 +56,6 @@ const COMPONENTS_LIST = {
     }
 };
 
-const ELEMENT_TYPES = {
-    LABEL: "Label",
-    IMAGE: "Image",
-    LINE: "Line",
-    PIN: "Pin"
-};
-
-const EQUATION_TYPES = {
-    LOOP: "loop",
-    NODE: "node"
-};
-
 const COMPONENT_DEFINITIONS = {
     res: {name: "Resistor", prefix: "res", prop: "Resistance", unit: "\u03A9", pinCount: 2},
     cap: {name: "Capacitor", prefix: "cap", prop: "Capacitance", unit: "\u00B5F", pinCount: 2},

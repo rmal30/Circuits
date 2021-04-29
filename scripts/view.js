@@ -33,11 +33,11 @@ class View {
     }
 
     bindCanvasMouseMove(onCanvasMouseMove) {
-        const height = this.header.clientHeight;
+        const headerHeight = this.header.clientHeight;
 
         // Drag component or node
         this.svg.addEventListener("mousemove", (event) => {
-            const pos = new Position(event.clientX, event.clientY).offset(0, -height);
+            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
             const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
             onCanvasMouseMove(alignedPos);
         });
@@ -57,66 +57,74 @@ class View {
     }
 
     bindCanvasClick(onCanvasClick) {
-        const height = this.header.clientHeight;
-
+        const headerHeight = this.header.clientHeight;
         this.svg.addEventListener("click", (event) => {
-            setTimeout(() => {
-                const pos = new Position(event.clientX, event.clientY).offset(0, -height);
-                const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
-                onCanvasClick(alignedPos);
-            }, 10);
+            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
+            const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
+            onCanvasClick(alignedPos);
         });
     }
 
     bindLabelClick(id, onLabelClick) {
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.LABEL)).addEventListener("click", () => {
+        const elementId = getElementId(id, ELEMENT_TYPES.LABEL);
+        const label = this.doc.getElementById(elementId);
+        label.addEventListener("click", () => {
             onLabelClick(id);
         });
     }
 
     bindComponentClick(id, onComponentClick) {
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.IMAGE)).addEventListener("click", () => {
+        const elementId = getElementId(id, ELEMENT_TYPES.IMAGE);
+        const image = this.doc.getElementById(elementId);
+        image.addEventListener("click", () => {
             onComponentClick(id);
         });
     }
 
     bindComponentMouseDown(id, onComponentMouseDown) {
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.IMAGE)).addEventListener("mousedown", (event) => {
+        const elementId = getElementId(id, ELEMENT_TYPES.IMAGE);
+        const image = this.doc.getElementById(elementId);
+        image.addEventListener("mousedown", (event) => {
             event.preventDefault();
             onComponentMouseDown(id);
         });
     }
 
     bindPinClick(id, onPinClick) {
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.PIN)).addEventListener("click", () => {
+        const elementId = getElementId(id, ELEMENT_TYPES.PIN);
+        const pin = this.doc.getElementById(elementId);
+        pin.addEventListener("click", () => {
             onPinClick(id);
         });
     }
 
     bindNodeMouseDown(id, onNodeMouseDown) {
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.PIN)).addEventListener("mousedown", (event) => {
+        const elementId = getElementId(id, ELEMENT_TYPES.PIN);
+        const node = this.doc.getElementById(elementId);
+        node.addEventListener("mousedown", (event) => {
             event.preventDefault();
             onNodeMouseDown(id);
         });
     }
 
     bindLineClick(id, onLineClick) {
-        const height = this.header.clientHeight;
-
-        this.doc.getElementById(getElementId(id, ELEMENT_TYPES.LINE)).addEventListener("click", (event) => {
-            const pos = new Position(event.clientX, event.clientY).offset(0, -height);
+        const headerHeight = this.header.clientHeight;
+        const elementId = getElementId(id, ELEMENT_TYPES.LINE);
+        const line = this.doc.getElementById(elementId);
+        line.addEventListener("click", (event) => {
+            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
             const alignedPos = pos.offset(-pos.x % GRID_SIZE, -pos.y % GRID_SIZE);
             onLineClick(id, alignedPos);
         });
     }
 
     setFrequencyEnabled(enabled) {
-        const disabledClass = "is-disabled";
+        const disabledClassName = "is-disabled";
 
         if (enabled) {
-            this.freq2.classList.remove(disabledClass);
+            this.freq2.classList.remove(disabledClassName);
         } else {
-            this.freq2.classList.add(disabledClass);
+            this.freq2.classList.add(disabledClassName);
         }
 
         this.freq.disabled = !enabled;
@@ -155,9 +163,9 @@ class View {
                 ],
                 [
                     "Component list:",
-                    ...impComponents.map((value) => {
-                        return `${value.type}_${value.id}: ${JSON.stringify(value, (_, v) => {
-                            return (v instanceof Array) ? JSON.stringify(v) : v;
+                    ...impComponents.map((component) => {
+                        return `${component.type}_${component.id}: ${JSON.stringify(component, (_, value) => {
+                            return value instanceof Array ? JSON.stringify(value) : value;
                         }, 4)}`;
                     })
                 ]
@@ -193,9 +201,9 @@ class View {
 
     isNearSchematic(circuit, position) {
         const {pins, lines, components} = circuit;
-        const isNearPins = Object.keys(pins).some((pinId) => this.isNearPin(pinId, position, 1));
-        const isNearComponents = Object.keys(components).some((id) => this.isNearImage(id, position, 0.7));
-        const isNearLines = Object.keys(lines).some((id) => this.isNearPolyLine(id, position, 10));
+        const isNearPins = Object.keys(pins).some((pinId) => this.isNearPin(pinId, position, PIN_RANGE));
+        const isNearComponents = Object.keys(components).some((id) => this.isNearImage(id, position, COMPONENT_RANGE));
+        const isNearLines = Object.keys(lines).some((id) => this.isNearPolyLine(id, position, LINE_RANGE));
         return [isNearLines, isNearComponents, isNearPins].some((near) => near);
     }
 
@@ -204,7 +212,7 @@ class View {
         const element = this.doc.getElementById(elementId);
 
         if (element) {
-            const style = selected ? styles.select[type] : styles.deselect[type];
+            const style = selected ? STYLES.select[type] : STYLES.deselect[type];
             Object.assign(element.style, style);
         }
     }

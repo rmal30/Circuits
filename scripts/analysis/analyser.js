@@ -51,7 +51,7 @@ class Analyser {
             if (VOLTAGE_SOURCE_TYPES.some((prefix) => edgeID.includes(prefix))) {
                 edge = graph.edges[edgeID];
                 graph.removeEdge(edgeID, edge);
-                graph.addEdge(`${COMPONENT_TYPES.LINE}-${(circuit.lines.length + count)}`, edge);
+                graph.addEdge(`${COMPONENT_TYPES.LINE}-${circuit.lines.length + count}`, edge);
                 count++;
             }
         }
@@ -85,7 +85,7 @@ class Analyser {
             }
 
             const voltageAmpComponents = AnalysisUtils.getComponents(
-                components, 
+                components,
                 [COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE]
             );
             const voltageAmpMatrix = groupMatrix2(nodes, voltageAmpComponents, EQUATION_TYPES.NODE);

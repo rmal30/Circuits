@@ -109,7 +109,7 @@ class Controller {
     onKeyPress(key) {
         if (this.model.selected) {
             switch (key) {
-                case "Delete":
+                case KEYS.DELETE:
                     switch (this.model.selected.type) {
                         case ELEMENT_TYPES.PIN:
                             this.deleteNode(this.model.selected.id);
@@ -128,11 +128,11 @@ class Controller {
                     }
                     break;
 
-                case "Escape":
+                case KEYS.ESCAPE:
                     this.clearSelection();
                     break;
 
-                case "r":
+                case KEYS.R:
                     if (this.model.selected.type === ELEMENT_TYPES.IMAGE) {
                         this.model.circuit.rotateComponent(this.model.selected.id);
                         this.view.schematic.updateComponentAndLines(this.model.circuit, this.model.selected.id);

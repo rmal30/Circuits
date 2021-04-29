@@ -11,21 +11,21 @@ class Schematic {
     }
 
     deleteLine(lineId) {
-        this.removeElement(lineId, "Line");
+        this.removeElement(lineId, ELEMENT_TYPES.LINE);
     }
 
     deleteNode(pin) {
         pin.lines.forEach((lineId) => this.deleteLine(lineId));
-        this.removeElement(pin.id, "Pin");
+        this.removeElement(pin.id, ELEMENT_TYPES.PIN);
     }
 
     deleteComponent(component, pins) {
         component.pins.forEach((pinId) => {
             pins[pinId].lines.forEach((lineId) => this.deleteLine(lineId));
-            this.removeElement(pinId, "Pin");
+            this.removeElement(pinId, ELEMENT_TYPES.PIN);
         });
-        this.removeElement(component.id, "Label");
-        this.removeElement(component.id, "Image");
+        this.removeElement(component.id, ELEMENT_TYPES.LABEL);
+        this.removeElement(component.id, ELEMENT_TYPES.IMAGE);
     }
 
     addComponent(pins, component) {
@@ -35,9 +35,9 @@ class Schematic {
 
         let dlx, dly;
         if (component.direction[0] === 0) {
-            [dlx, dly] = labelPositions.V;
+            [dlx, dly] = LABEL_POSITIONS.V;
         } else {
-            [dlx, dly] = labelPositions.H;
+            [dlx, dly] = LABEL_POSITIONS.H;
         }
 
         const labelPos = component.pos.offset(dlx, dly);
@@ -70,13 +70,13 @@ class Schematic {
             this.updatePin(pinId, pplPos[index]);
         });
 
-        const labelElementId = getElementId(comp.id, "Label");
+        const labelElementId = getElementId(comp.id, ELEMENT_TYPES.LABEL);
         const label = this.doc.getElementById(labelElementId);
         const [labelPos] = pplPos.slice(-1);
         const compInfo = COMPONENT_DEFINITIONS[comp.type];
         CircuitXML.updateLabel(label, labelPos, `${comp.value} ${compInfo.unit}`);
 
-        const imageElementId = getElementId(comp.id, "Image");
+        const imageElementId = getElementId(comp.id, ELEMENT_TYPES.IMAGE);
         const img = this.doc.getElementById(imageElementId);
         const angle = getAngleFromDirection(comp.direction);
         CircuitXML.updateImage(img, comp.pos, angle);
@@ -98,14 +98,14 @@ class Schematic {
     }
 
     updatePin(pinID, position) {
-        const elementId = getElementId(pinID, "Pin");
+        const elementId = getElementId(pinID, ELEMENT_TYPES.PIN);
         const pinElement = this.doc.getElementById(elementId);
         CircuitXML.updatePin(pinElement, position);
     }
 
     updateLine(pins, lines, lineId) {
         const [pinId1, pinId2] = lines[lineId];
-        const elementId = getElementId(lineId, "Line");
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
         const lineElement = this.doc.getElementById(elementId);
         const newPolyStr = findPolyStr(pins[pinId1], pins[pinId2]);
         CircuitXML.updateLine(lineElement, newPolyStr);

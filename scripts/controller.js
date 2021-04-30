@@ -4,15 +4,15 @@ class Controller {
         this.model = model;
         this.view = view;
         this.setMode("dc");
-        this.view.bindKeyPress(this.onKeyPress.bind(this));
+        this.view.events.bindKeyPress(this.onKeyPress.bind(this));
 
-        this.view.bindCanvasClick(this.onCanvasClick.bind(this));
-        this.view.bindCanvasMouseMove(this.onMouseMove.bind(this));
-        this.view.bindCanvasMouseUp(this.model.stopMove.bind(this.model));
+        this.view.events.bindCanvasClick(this.onCanvasClick.bind(this));
+        this.view.events.bindCanvasMouseMove(this.onMouseMove.bind(this));
+        this.view.events.bindCanvasMouseUp(this.model.stopMove.bind(this.model));
 
-        this.view.bindFreqChange(this.changeFreq.bind(this));
-        this.view.bindSimulate(this.onSimulate.bind(this));
-        this.view.bindChooseMode(this.setMode.bind(this));
+        this.view.events.bindFreqChange(this.changeFreq.bind(this));
+        this.view.events.bindSimulate(this.onSimulate.bind(this));
+        this.view.events.bindChooseMode(this.setMode.bind(this));
     }
 
     changeFreq(value) {
@@ -146,7 +146,7 @@ class Controller {
     }
 
     onCanvasClick(position) {
-        if (!this.view.isNearSchematic(this.model.circuit, position)) {
+        if (!this.view.schematic.isNearby(this.model.circuit, position)) {
             const newCompType = this.view.getNewComponentType();
             if (this.model.selected) {
                 this.clearSelection();
@@ -171,7 +171,7 @@ class Controller {
             const lineId = this.model.circuit.addLine(this.model.selected.id, pinId);
             const {pins} = this.model.circuit;
             this.view.schematic.addLine(lineId, pins[this.model.selected.id], pins[pinId]);
-            this.view.bindLineClick(lineId, this.onLineClick.bind(this));
+            this.view.events.bindLineClick(lineId, this.onLineClick.bind(this));
             this.clearSelection();
         }
     }
@@ -201,11 +201,11 @@ class Controller {
         const directionStr = this.view.getNewComponentDirection();
         const id = this.model.circuit.addComponent(type, value, position, directionStr);
         this.view.schematic.addComponent(this.model.circuit.pins, this.model.circuit.components[id]);
-        this.view.bindLabelClick(id, this.changeComponentValue.bind(this));
-        this.view.bindComponentClick(id, this.onComponentClick.bind(this));
-        this.view.bindComponentMouseDown(id, this.model.startComponentMove.bind(this.model));
+        this.view.events.bindLabelClick(id, this.changeComponentValue.bind(this));
+        this.view.events.bindComponentClick(id, this.onComponentClick.bind(this));
+        this.view.events.bindComponentMouseDown(id, this.model.startComponentMove.bind(this.model));
         this.model.circuit.components[id].pins.forEach((pinId) => {
-            this.view.bindPinClick(pinId, this.onPinClick.bind(this));
+            this.view.events.bindPinClick(pinId, this.onPinClick.bind(this));
         });
     }
 
@@ -213,8 +213,8 @@ class Controller {
     splitLine(pinId, lineId, position) {
         const newPinId = this.model.circuit.splitLineWithNode(pinId, lineId, position);
         this.view.schematic.splitLineWithNode(this.model.circuit, lineId, newPinId);
-        this.view.bindPinClick(newPinId, this.onPinClick.bind(this));
-        this.view.bindNodeMouseDown(newPinId, this.model.startNodeMove.bind(this.model));
+        this.view.events.bindPinClick(newPinId, this.onPinClick.bind(this));
+        this.view.events.bindNodeMouseDown(newPinId, this.model.startNodeMove.bind(this.model));
         return newPinId;
     }
 }

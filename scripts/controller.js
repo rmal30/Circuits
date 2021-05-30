@@ -67,7 +67,7 @@ class Controller {
         this.view.setComponentOptions(COMPONENTS_LIST[mode]);
 
         for (const possibleMode in COMPONENTS_LIST) {
-            if (possibleMode !== mode) {
+            if (possibleMode !== mode && possibleMode !== "both") {
                 for (const id of Object.keys(this.model.circuit.components)) {
                     if (this.model.circuit.components[id].type in COMPONENTS_LIST[possibleMode]) {
                         this.deleteComponent(id);

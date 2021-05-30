@@ -38,7 +38,7 @@ function getElementId(id, type) {
 }
 
 function getLines(pointsStr) {
-    const points = pointsStr.split(" ").map((pointStr) => pointStr.split(",").map((v) => parseInt(v, 10)));
+    const points = pointsStr.split(" ").map((pointStr) => pointStr.split(",").map((v) => Number(v)));
     const linePoints = [];
     for (let i = 0; i < points.length - 1; i++) {
         linePoints.push([points[i], points[i + 1]]);

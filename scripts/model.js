@@ -1,4 +1,5 @@
 class Model {
+
     constructor(hertz, pins, lines, components) {
         this.circuit = new Circuit(hertz, pins, lines, components);
         this.moving = null;

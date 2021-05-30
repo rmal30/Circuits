@@ -4,6 +4,10 @@ class Schematic {
         this.graphics = graphics;
     }
 
+    deleteLine(lineId) {
+        this.graphics.removeLine(lineId);
+    }
+
     deleteNode(pin) {
         pin.lines.forEach((lineId) => this.graphics.removeLine(lineId));
         this.graphics.removePin(pin.id);

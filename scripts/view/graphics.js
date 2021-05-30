@@ -71,7 +71,9 @@ class Graphics {
     removeElement(id, type) {
         const elementId = getElementId(id, type);
         const element = this.doc.getElementById(elementId);
-        this.svg.removeChild(element);
+        if (element) {
+            this.svg.removeChild(element);
+        }
     }
 
     removeLine(lineId) {

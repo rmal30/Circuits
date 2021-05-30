@@ -14,7 +14,7 @@ class Circuit {
 
     static getNewID(obj) {
         const objKeys = Object.keys(obj);
-        const ids = objKeys.map((key) => parseInt(key, 10));
+        const ids = objKeys.map((key) => Number(key));
         return objKeys.length === 0 ? 0 : ids.reduce((max, value) => Math.max(max, value)) + 1;
     }
 
@@ -47,7 +47,15 @@ class Circuit {
         const id = this.newComponentId;
         const pinIds = range(this.newPinId, this.newPinId + pinCount);
 
-        this.components[id] = {id: id, type: type, value: value, direction: pinDir[0], pins: pinIds, pos: pos};
+        this.components[id] = {
+            id: id,
+            type: type,
+            value: parseFloat(value),
+            direction: pinDir[0],
+            pins: pinIds,
+            pos: pos
+        };
+
         this.newComponentId++;
 
         for (let i = 0; i < pinCount; i++) {
@@ -117,7 +125,7 @@ class Circuit {
     }
 
     setComponentValue(id, value) {
-        this.components[id].value = value;
+        this.components[id].value = parseFloat(value);
     }
 
     simulate() {

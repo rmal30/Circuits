@@ -1,4 +1,6 @@
-class CircuitAnalysis {
+import AnalysisUtils from "./utils.js";
+
+export default class CircuitAnalysis {
     constructor (circuit, graph) {
         this.hertz = circuit.hertz;
         this.graph = graph;

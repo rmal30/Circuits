@@ -1,4 +1,6 @@
-class AnalysisUtils {
+import {COMPONENT_TYPES} from "../config/components.js";
+
+export default class AnalysisUtils {
 
     static getDirection(group, element) {
         return element in group ? group[element] : 0;

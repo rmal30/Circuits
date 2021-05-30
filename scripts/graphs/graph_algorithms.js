@@ -1,4 +1,5 @@
-class GraphAlgorithms {
+import Graph from "./graph.js";
+export class GraphAlgorithms {
 
     /**
      * DFS algorithm to traverse a graph

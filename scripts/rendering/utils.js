@@ -1,10 +1,19 @@
+import {ANGLES, ELEMENT_PREFIXES} from "../config/constants.js";
+import {DIRECTION_TEMPLATE, IMAGE_SIZE, LABEL_POSITIONS, PIN_POSITION_TEMPLATE} from "../config/layout.js";
+import Complex from "../math/complex.js";
 
 
-function rotateVector(vec) {
+export function rotateVector(vec) {
     return [-vec[1], vec[0]];
 }
 
-function getLabelPinPos(pos, direction, count) {
+export function getPinPositions(pos, direction, count) {
+    return PIN_POSITION_TEMPLATE[count].map((point) => {
+        return pos.offset.apply(pos, Complex.multiply(IMAGE_SIZE, Complex.multiply(point, direction)));
+    });
+}
+
+export function getLabelPinPos(pos, direction, count) {
     const points = getPinPositions(pos, direction, count);
     const [dx, dy] = direction;
     let dlx, dly;
@@ -17,27 +26,24 @@ function getLabelPinPos(pos, direction, count) {
     return points;
 }
 
-function getPinPositions(pos, direction, count) {
-    return PIN_POSITION_TEMPLATE[count].map((point) => pos.offset.apply(pos, Complex.multiply(IMAGE_SIZE, Complex.multiply(point, direction))));
-}
 
-function getPinDirections(direction, count) {
+export function getPinDirections(direction, count) {
     return DIRECTION_TEMPLATE[count].map((point) => Complex.multiply(point, direction));
 }
 
-function getAngleFromDirection(direction) {
+export function getAngleFromDirection(direction) {
     return ANGLES[direction.toString()];
 }
 
-function getElementId(id, type) {
+export function getElementId(id, type) {
     if (type in ELEMENT_PREFIXES) {
-        return (ELEMENT_PREFIXES[type] + id);
+        return ELEMENT_PREFIXES[type] + id;
     } else {
         throw new Error("Invalid type");
     }
 }
 
-function getLines(pointsStr) {
+export function getLines(pointsStr) {
     const points = pointsStr.split(" ").map((pointStr) => pointStr.split(",").map((v) => Number(v)));
     const linePoints = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -46,7 +52,7 @@ function getLines(pointsStr) {
     return linePoints;
 }
 
-function isNearLine(linePoints, position, range) {
+export function isNearLine(linePoints, position, range) {
     const [point1, point2] = linePoints;
     const [x1, y1] = point1;
     const [x2, y2] = point2;

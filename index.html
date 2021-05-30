@@ -1,102 +1,101 @@
 <!DOCTYPE html>
-<HTML>
+<HTML lang="en">
     <head>
+        <title> Circuits </title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-blue.min.css"/>
         <link rel="stylesheet" href="style.css"/>
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
-<body>
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--header-scroll">
-<title> Circuits </title>
-<div class="mdl-layout__header">
-    <div class="mdl-layout__header-row" id="header">
-        <span class="mdl-layout-title"> Circuits </span>
-        <div class="mdl-layout-spacer"> </div>
-    <div id="controls">
-        <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <label class="mdl-textfield__label" style="color:white">Mode</label>
-            <select id="mode" class="mdl-textfield__input">
-    	        <option value="dc">DC</option>
-	            <option value="ac">AC</option>
-            </select>
+    <body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--header-scroll">
+    <div class="mdl-layout__header">
+        <div class="mdl-layout__header-row" id="header">
+            <span class="mdl-layout-title"> Circuits </span>
+            <div class="mdl-layout-spacer"> </div>
+        <div id="controls">
+            <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <label class="mdl-textfield__label" style="color:white">Mode</label>
+                <select id="mode" class="mdl-textfield__input">
+                    <option value="dc">DC</option>
+                    <option value="ac">AC</option>
+                </select>
+            </div>
+
+
+            <div id="freq2" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
+                <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
+                <input disabled id="freq" class="mdl-textfield__input" type="number" step="any" value="60"></input>
+            </div>
+
+            <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <label class="mdl-textfield__label" style="color:white">Add</label>
+                <select class="mdl-textfield__input" id="newComp">
+                    <option value=" ">None</option>
+                    <option value="res">Resistor</option>
+                </select>
+            </div>
+
+            <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <label class="mdl-textfield__label" style="color:white;">Orientation</label>
+                <select class="mdl-textfield__input" id="newCompDir">
+                    <option value="H">Horizontal</option>
+                    <option value="V">Vertical</option>
+                </select>
+            </div>
         </div>
 
+        <nav class="white mdl-navigation">
+            <input class="white mdl-button mdl-js-button" type="button" id="simulate" value="Simulate"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="save" value="Save"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="load" value="Load"/>
+        </nav>
 
-        <div id="freq2" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
-            <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
-            <input disabled id="freq" class="mdl-textfield__input" type="number" step="any" value="60"></input>
-        </div>
-
-        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <label class="mdl-textfield__label" style="color:white">Add</label>
-            <select class="mdl-textfield__input" id="newComp">
-                <option value=" ">None</option>
-                <option value="res">Resistor</option>
-            </select>
-        </div>
-
-        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <label class="mdl-textfield__label" style="color:white;">Orientation</label>
-            <select class="mdl-textfield__input" id="newCompDir">
-                <option value="H">Horizontal</option>
-                <option value="V">Vertical</option>
-            </select>
         </div>
     </div>
-
-    <nav class="white mdl-navigation">
-        <input class="white mdl-button mdl-js-button" type="button" id="simulate" value="Simulate"/>
-        <input class="white mdl-button mdl-js-button" type="button" id="save" value="Save"/>
-        <input class="white mdl-button mdl-js-button" type="button" id="load" value="Load"/>
-    </nav>
-
+    <main class="mdl-layout__content">
+        <svg id="svg" width="70%" height="100%"></svg>
+        <div id="info"></div>
+    </main>
     </div>
-</div>
-<main class="mdl-layout__content">
-    <svg id="svg" width="70%" height="100%"></svg>
-    <div id="info"></div>
-</main>
-</div>
-</body>
+    </body>
 
-<script src="scripts/math/utils.js"></script>
-<script src="scripts/math/complex.js"></script>
-<script src="scripts/math/complex_vector.js"></script>
-<script src="scripts/math/complex_matrix.js"></script>
-<script src="scripts/math/gaussian_elimination.js"></script>
-<script src="scripts/math/qr.js"></script>
+    <script type="module" src="scripts/math/utils.js"></script>
+    <script type="module" src="scripts/math/complex.js"></script>
+    <script type="module" src="scripts/math/complex_vector.js"></script>
+    <script type="module" src="scripts/math/complex_matrix.js"></script>
+    <script type="module" src="scripts/math/gaussian_elimination.js"></script>
+    <script type="module" src="scripts/math/qr.js"></script>
 
-<script src="scripts/graphs/graph.js"></script>
-<script src="scripts/graphs/graph_algorithms.js"></script>
+    <script type="module" src="scripts/graphs/graph.js"></script>
+    <script type="module" src="scripts/graphs/graph_algorithms.js"></script>
 
-<script src="scripts/analysis/utils.js"></script>
-<script src="scripts/analysis/circuit_graph.js"></script>
-<script src="scripts/analysis/analyser.js"></script>
-<script src="scripts/analysis/circuit_analysis.js"></script>
-<script src="scripts/analysis/mesh_analysis.js"></script>
-<script src="scripts/analysis/nodal_analysis.js"></script>
+    <script type="module" src="scripts/analysis/utils.js"></script>
+    <script type="module" src="scripts/analysis/circuit_graph.js"></script>
+    <script type="module" src="scripts/analysis/analyser.js"></script>
+    <script type="module" src="scripts/analysis/circuit_analysis.js"></script>
+    <script type="module" src="scripts/analysis/mesh_analysis.js"></script>
+    <script type="module" src="scripts/analysis/nodal_analysis.js"></script>
 
 
-<script src="scripts/rendering/position.js"></script>
-<script src="scripts/rendering/polyline.js"></script>
-<script src="scripts/rendering/utils.js"></script>
+    <script type="module" src="scripts/rendering/position.js"></script>
+    <script type="module" src="scripts/rendering/polyline.js"></script>
+    <script type="module" src="scripts/rendering/utils.js"></script>
 
-<script src="scripts/config/constants.js"></script>
-<script src="scripts/config/components.js"></script>
-<script src="scripts/config/layout.js"></script>
-<script src="scripts/config/style.js"></script>
+    <script type="module" src="scripts/config/constants.js"></script>
+    <script type="module" src="scripts/config/components.js"></script>
+    <script type="module" src="scripts/config/layout.js"></script>
+    <script type="module" src="scripts/config/style.js"></script>
 
-<script src="scripts/view/view.js"></script>
-<script src="scripts/view/events.js"></script>
-<script src="scripts/view/schematic.js"></script>
-<script src="scripts/view/graphics.js"></script>
+    <script type="module" src="scripts/view/view.js"></script>
+    <script type="module" src="scripts/view/events.js"></script>
+    <script type="module" src="scripts/view/schematic.js"></script>
+    <script type="module" src="scripts/view/graphics.js"></script>
 
-<script src="scripts/circuit.js"></script>
-<script src="scripts/model.js"></script>
+    <script type="module" src="scripts/circuit.js"></script>
+    <script type="module" src="scripts/model.js"></script>
 
-<script src="scripts/controller.js"></script>
-<script src="scripts/main.js"></script>
-
+    <script type="module" src="scripts/controller.js"></script>
+    <script type="module" src="scripts/main.js"></script>
 </HTML>

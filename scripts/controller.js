@@ -1,4 +1,7 @@
-class Controller {
+import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./config/components.js";
+import {ELEMENT_TYPES, KEYS} from "./config/constants.js";
+
+export default class Controller {
 
     constructor(model, view) {
         this.model = model;

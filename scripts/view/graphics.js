@@ -1,4 +1,10 @@
-class Graphics {
+import {ELEMENT_TYPES} from "../config/constants.js";
+import {DOT_SIZE, IMAGE_SIZE} from "../config/layout.js";
+import {DEFAULT_LINE_STYLE} from "../config/style.js";
+import Position from "../rendering/position.js";
+import {getElementId} from "../rendering/utils.js";
+
+export default class Graphics {
 
     constructor(doc, svg) {
         this.doc = doc;

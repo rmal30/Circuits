@@ -1,5 +1,5 @@
 
-const STYLES = {
+export const STYLES = {
     select: {
         Line: {stroke: "blue"},
         Image: {opacity: 0.7},
@@ -12,7 +12,7 @@ const STYLES = {
     }
 };
 
-const DEFAULT_LINE_STYLE = {
+export const DEFAULT_LINE_STYLE = {
     fill: "none",
     stroke: "black",
     "stroke-width": 2

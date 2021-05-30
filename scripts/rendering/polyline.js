@@ -1,8 +1,10 @@
+import {IMAGE_SIZE} from "../config/layout.js";
+import Position from "./position.js";
 
 /**
  * Plan a line which can connect two horizontal components
  */
-function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
+export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
     const halfImgSize = IMAGE_SIZE / 2;
     const midPoints = [];
     if (dir1[0] * dir0[0] > 0) {
@@ -45,7 +47,7 @@ function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest
 /**
  * Plan a line which can connect two vertical components
  */
-function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
+export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
     const halfImgSize = IMAGE_SIZE / 2;
     const midPoints = [];
     if (dy * dir0[1] > 0 && dy * dir1[1] < 0 && Math.abs(dy) > IMAGE_SIZE) {
@@ -88,8 +90,8 @@ function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, 
 
 /**
  * Plan a line which can connect two components
- */ 
-function findPolyStr(pin0, pin1) {
+ */
+export function findPolyStr(pin0, pin1) {
     const origin = pin0.pos;
     const dest = pin1.pos;
     let dir0 = pin0.direction;

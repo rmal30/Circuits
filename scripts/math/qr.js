@@ -1,6 +1,9 @@
-"use strict";
+import Complex from "./complex.js";
+import ComplexMatrix from "./complex_matrix.js";
+import ComplexVector from "./complex_vector.js";
+import {roundNum} from "./utils.js";
 
-class QRDecomposition {
+export default class QRDecomposition {
 
     // Find the Q matrix in QR decomposition
     static findQ(mat) {
@@ -9,21 +12,24 @@ class QRDecomposition {
         for (let i = 0; i < mat[0].length; i++) {
             u[i] = matT[i];
             for (let j = i - 1; j >= 0; j--) {
-                u[i] = ComplexMatrix.add([u[i]], ComplexMatrix.scalarMultiply([ComplexVector.projection(u[j], u[i])], -1))[0];
+                const vectorProj = ComplexVector.projection(u[j], u[i]);
+                u[i] = ComplexMatrix.add([u[i]], ComplexMatrix.scalarMultiply([vectorProj], -1))[0];
             }
             u[i] = ComplexMatrix.scalarDivide([u[i]], ComplexVector.norm(u[i]))[0];
-            u[i] = u[i].map((x) => roundNum(x, 10));
+            u[i] = u[i].map((value) => roundNum(value, 10));
         }
-        const Q = ComplexMatrix.transpose(u);
-        return ComplexMatrix.scalarMultiply(Q, -1);
+        const qMatrix = ComplexMatrix.transpose(u);
+        return ComplexMatrix.scalarMultiply(qMatrix, -1);
     }
 
     // Solve the matrix equation using QR decomposition
     static solve(matrix, vector) {
-        const q = QRDecomposition.findQ(matrix);
-        const r = ComplexMatrix.multiply(ComplexMatrix.conjTranspose(q), matrix);
-        const v = ComplexMatrix.transpose(ComplexMatrix.multiply(ComplexMatrix.conjTranspose(q), ComplexMatrix.transpose([vector])))[0];
-        return QRDecomposition.solveRUMatrix(r, v);
+        const qMatrix = QRDecomposition.findQ(matrix);
+        const rMatrix = ComplexMatrix.multiply(ComplexMatrix.conjTranspose(qMatrix), matrix);
+        const columnVector = ComplexMatrix.transpose([vector]);
+        const columnVector2 = ComplexMatrix.multiply(ComplexMatrix.conjTranspose(qMatrix), columnVector);
+        const [vector2] = ComplexMatrix.transpose(columnVector2);
+        return QRDecomposition.solveRUMatrix(rMatrix, vector2);
     }
 
     // Solve RU matrix

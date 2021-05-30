@@ -1,6 +1,10 @@
-"use strict";
+import Analyser from "./analysis/analyser.js";
+import {COMPONENT_DEFINITIONS} from "./config/components.js";
+import {DIRECTIONS} from "./config/constants.js";
+import {range} from "./math/utils.js";
+import {getPinDirections, getPinPositions, rotateVector} from "./rendering/utils.js";
 
-class Circuit {
+export default class Circuit {
 
     constructor(hertz, pins, lines, components) {
         this.hertz = hertz;
@@ -41,7 +45,7 @@ class Circuit {
 
     addComponent(type, value, pos, directionStr) {
         const direction = DIRECTIONS[directionStr];
-        const pinCount = COMPONENT_DEFINITIONS[type].pinCount;
+        const {pinCount} = COMPONENT_DEFINITIONS[type];
         const pinDir = getPinDirections(direction, pinCount);
         const pinPos = getPinPositions(pos, direction, pinCount);
         const id = this.newComponentId;
@@ -58,8 +62,8 @@ class Circuit {
 
         this.newComponentId++;
 
-        for (let i = 0; i < pinCount; i++) {
-            this.addComponentPin(id, pinPos[i], pinDir[i]);
+        for (let index = 0; index < pinCount; index++) {
+            this.addComponentPin(id, pinPos[index], pinDir[index]);
         }
 
         return id;

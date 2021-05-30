@@ -1,4 +1,16 @@
-class NodalAnalysis extends CircuitAnalysis {
+import {
+    AMPLIFIER_TYPES, COMPONENT_TYPES, IMPEDANCE_COMPONENT_TYPES,
+    INDEPENDENT_CURRENT_SOURCE_TYPES, INDEPENDENT_VOLTAGE_SOURCE_TYPES
+} from "../config/components.js";
+import {GraphAlgorithms} from "../graphs/graph_algorithms.js";
+import Complex from "../math/complex.js";
+import ComplexMatrix from "../math/complex_matrix.js";
+import GaussianElimination from "../math/gaussian_elimination.js";
+import CircuitAnalysis from "./circuit_analysis.js";
+import {contractEdgesOfTypesFromGraph, getEdgesOfTypesFromGraph} from "./circuit_graph.js";
+import AnalysisUtils from "./utils.js";
+
+export default class NodalAnalysis extends CircuitAnalysis {
 
     getNodeVoltagesToNodeCurrentsMatrix(allNodes, noVoltageNodes) {
         const impedanceEdges = getEdgesOfTypesFromGraph(this.graph, IMPEDANCE_COMPONENT_TYPES);

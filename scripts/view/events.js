@@ -1,4 +1,9 @@
-class Events {
+import {ELEMENT_TYPES} from "../config/constants.js";
+import {GRID_SIZE} from "../config/layout.js";
+import {getElementId} from "../rendering/utils.js";
+import Position from "./../rendering/position.js";
+
+export default class Events {
 
     constructor(doc) {
         this.doc = doc;

@@ -1,6 +1,6 @@
-"use strict";
+import {roundNum} from "./utils.js";
 
-class Complex {
+export default class Complex {
 
     static abs(z) {
         if (z.constructor === Array) {
@@ -13,7 +13,7 @@ class Complex {
 
     static print(z, numPlaces = 8) {
         if (z.constructor === Array) {
-            const [realString, imaginaryString] = z.map((c) => roundNum(c, numPlaces));
+            const [realString, imaginaryString] = z.map((value) => roundNum(value, numPlaces));
             return `${realString} + ${imaginaryString}j`;
         } else {
             return roundNum(z, numPlaces);

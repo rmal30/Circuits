@@ -1,33 +1,34 @@
+import Complex from "./complex.js";
 
-class ComplexVector {
+export default class ComplexVector {
 
     // Find the length of a vector
-    static norm(vec) {
+    static norm(vector) {
         let sqsum = 0;
-        for (const v of vec) {
-            sqsum += Complex.abs(v);
+        for (const value of vector) {
+            sqsum += Complex.abs(value);
         }
         return Math.sqrt(sqsum);
     }
 
-    static dotProduct(vec1, vec2) {
+    static dotProduct(vector1, vector2) {
         let sum = 0;
-        for (let i = 0; i < vec1.length; i++) {
-            sum = Complex.add(sum, Complex.multiply(Complex.conjugate(vec1[i]), vec2[i]));
-        }
+        vector1.forEach((value, index) => {
+            sum = Complex.add(sum, Complex.multiply(Complex.conjugate(value), vector2[index]));
+        });
 
         return sum;
     }
 
-    static scalarMultiply(vec, n) {
-        return vec.map((value) => Complex.multiply(value, n));
+    static scalarMultiply(vector, scalar) {
+        return vector.map((value) => Complex.multiply(value, scalar));
     }
 
     // Find the projection of vector 1 along vector 2
-    static projection(vec1, vec2) {
-        const dotProduct = ComplexVector.dotProduct(vec1, vec2);
-        const vec1Norm = ComplexVector.norm(vec1);
+    static projection(vector1, vector2) {
+        const dotProduct = ComplexVector.dotProduct(vector1, vector2);
+        const vec1Norm = ComplexVector.norm(vector1);
         const ratio = Complex.divide(dotProduct, vec1Norm * vec1Norm);
-        return ComplexVector.scalarMultiply(vec1, ratio);
+        return ComplexVector.scalarMultiply(vector1, ratio);
     }
 }

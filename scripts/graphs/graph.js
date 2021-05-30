@@ -1,6 +1,4 @@
-"use strict";
-
-class Graph {
+export default class Graph {
     constructor() {
         this.nodes = {};
         this.edges = {};

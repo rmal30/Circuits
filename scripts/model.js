@@ -1,4 +1,7 @@
-class Model {
+import {ELEMENT_TYPES} from "./config/constants.js";
+import Circuit from "./circuit.js";
+
+export default class Model {
 
     constructor(hertz, pins, lines, components) {
         this.circuit = new Circuit(hertz, pins, lines, components);

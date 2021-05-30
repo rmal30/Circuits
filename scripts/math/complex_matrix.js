@@ -1,6 +1,5 @@
-"use strict";
-
-class ComplexMatrix {
+import Complex from "./complex.js";
+export default class ComplexMatrix {
 
     static concat(mat1, mat2) {
         const mat3 = [];

@@ -1,4 +1,12 @@
-class View {
+import {COMPONENTS_LIST} from "../config/components.js";
+import {STYLES} from "../config/style.js";
+import Complex from "../math/complex.js";
+import {getElementId} from "../rendering/utils.js";
+import Events from "./events.js";
+import Graphics from "./graphics.js";
+import Schematic from "./schematic.js";
+
+export default class View {
     constructor(_doc, _window) {
         this.doc = _doc;
         this.window = _window;
@@ -31,7 +39,10 @@ class View {
     setComponentOptions(componentOptions) {
         this.compList.options.length = 1;
         for (const component of Object.keys(COMPONENTS_LIST.both)) {
-            this.compList.options[this.compList.options.length] = new Option(COMPONENTS_LIST.both[component], component);
+            this.compList.options[this.compList.options.length] = new Option(
+                COMPONENTS_LIST.both[component],
+                component
+            );
         }
         for (const component of Object.keys(componentOptions)) {
             this.compList.options[this.compList.options.length] = new Option(componentOptions[component], component);

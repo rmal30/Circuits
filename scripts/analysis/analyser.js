@@ -1,6 +1,8 @@
-"use strict";
+import {getCircuitGraph} from "./circuit_graph.js";
+import MeshAnalysis from "./mesh_analysis.js";
+import NodalAnalysis from "./nodal_analysis.js";
 
-class Analyser {
+export default class Analyser {
 
     static analyse(circuit, Analysis) {
         const graph = getCircuitGraph(circuit);

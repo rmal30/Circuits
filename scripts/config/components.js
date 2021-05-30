@@ -1,5 +1,5 @@
 
-const COMPONENT_TYPES = {
+export const COMPONENT_TYPES = {
     LINE: "lin",
     RESISTOR: "res",
     CAPACITOR: "cap",
@@ -17,31 +17,31 @@ const COMPONENT_TYPES = {
     VOLTAGE_METER: "vm"
 };
 
-const IMPEDANCE_COMPONENT_TYPES = [
+export const IMPEDANCE_COMPONENT_TYPES = [
     COMPONENT_TYPES.RESISTOR,
     COMPONENT_TYPES.CAPACITOR,
     COMPONENT_TYPES.INDUCTOR,
     COMPONENT_TYPES.DIODE
 ];
 
-const AMPLIFIER_TYPES = [
+export const AMPLIFIER_TYPES = [
     COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE,
     COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE,
     COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE,
     COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE
 ];
 
-const INDEPENDENT_CURRENT_SOURCE_TYPES = [
+export const INDEPENDENT_CURRENT_SOURCE_TYPES = [
     COMPONENT_TYPES.DC_CURRENT_SOURCE,
     COMPONENT_TYPES.AC_CURRENT_SOURCE
 ];
 
-const INDEPENDENT_VOLTAGE_SOURCE_TYPES = [
+export const INDEPENDENT_VOLTAGE_SOURCE_TYPES = [
     COMPONENT_TYPES.DC_VOLTAGE_SOURCE,
     COMPONENT_TYPES.AC_VOLTAGE_SOURCE
 ];
 
-const COMPONENTS_LIST = {
+export const COMPONENTS_LIST = {
     ac: {
         cap: "Capacitor",
         ind: "Inductor",
@@ -62,7 +62,7 @@ const COMPONENTS_LIST = {
     }
 };
 
-const COMPONENT_DEFINITIONS = {
+export const COMPONENT_DEFINITIONS = {
     res: {name: "Resistor", prefix: "res", prop: "Resistance", unit: "\u03A9", pinCount: 2},
     cap: {name: "Capacitor", prefix: "cap", prop: "Capacitance", unit: "\u00B5F", pinCount: 2},
     ind: {name: "Inductor", prefix: "ind", prop: "Inductance", unit: "mH", pinCount: 2},

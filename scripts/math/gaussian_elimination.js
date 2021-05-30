@@ -1,9 +1,10 @@
-"use strict";
+import Complex from "./complex.js";
+import {range} from "./utils.js";
 
-class GaussianElimination {
+export default class GaussianElimination {
 
     static partialPivot(aug, p) {
-        let temp;
+        let temp = null;
         const n = aug.length;
         if (aug[p][p] === 0) {
             for (let r = p + 1; r < n; r++) {
@@ -42,7 +43,7 @@ class GaussianElimination {
         x[n - 1] = Complex.divide(aug[n - 1][n], aug[n - 1][n - 1]);
         for (let p = n - 2; p >= 0; p--) {
             const rowSum = range(p + 1, n).
-                map(i => Complex.multiply(aug[p][i], x[i])).
+                map((i) => Complex.multiply(aug[p][i], x[i])).
                 reduce((a, b) => Complex.add(a, b));
 
             x[p] = Complex.divide(Complex.subtract(aug[p][n], rowSum), aug[p][p]);

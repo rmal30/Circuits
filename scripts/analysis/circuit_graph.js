@@ -1,9 +1,12 @@
+import {COMPONENT_TYPES} from "../config/components.js";
+import Graph from "../graphs/graph.js";
+
 /**
  * Group nodes of a circuit that are connected (directly or indirectly) via a line
  * @param {any} circuit - The graphical circuit
  * @returns {Set<any[]>} nodeGroups - A set of node groups
  */
-function getNodeGroups(circuit) {
+export function getNodeGroups(circuit) {
     const nodeGroups = new Set();
 
     for (const lineId of Object.keys(circuit.lines)) {
@@ -34,7 +37,7 @@ function getNodeGroups(circuit) {
  * @param {any} circuit - The graphical circuit
  * @returns {any} graph - Network graph representation of the circuit
  */
-function getCircuitGraph(circuit) {
+export function getCircuitGraph(circuit) {
     const nodeGroups = getNodeGroups(circuit);
     const reducedNodeIds = {};
     for (const nodeGroup of nodeGroups) {
@@ -51,21 +54,29 @@ function getCircuitGraph(circuit) {
 
     for (const id of Object.keys(circuit.components)) {
         if (circuit.components[id].pins.length === 2) {
-            const [portA, portB] = circuit.components[id].pins.map((k) => k.toString());
+            const [portA, portB] = circuit.components[id].pins.map((nodeId) => nodeId.toString());
             const {type, value} = circuit.components[id];
             graph.addEdge(id, reducedNodeIds[portA], reducedNodeIds[portB], {type: type, value: value});
         } else {
-            const [portA, portB, portC, portD] = circuit.components[id].pins.map((k) => k.toString());
+            const [portA, portB, portC, portD] = circuit.components[id].pins.map((nodeId) => nodeId.toString());
             const {type, value} = circuit.components[id];
-            graph.addEdge(`${id}:2`, reducedNodeIds[portB], reducedNodeIds[portD], {type: type, value: value, meter: `${id}:1`});
+            graph.addEdge(`${id}:2`, reducedNodeIds[portB], reducedNodeIds[portD], {
+                type: type,
+                value: value,
+                meter: `${id}:1`
+            });
             switch (circuit.components[id].type) {
                 case COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE:
                 case COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE:
-                    graph.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {type: COMPONENT_TYPES.VOLTAGE_METER});
+                    graph.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
+                        type: COMPONENT_TYPES.VOLTAGE_METER
+                    });
                     break;
                 case COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE:
                 case COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE:
-                    graph.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {type: COMPONENT_TYPES.CURRENT_METER});
+                    graph.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
+                        type: COMPONENT_TYPES.CURRENT_METER
+                    });
                     break;
                 default:
                     break;
@@ -76,7 +87,7 @@ function getCircuitGraph(circuit) {
     return graph;
 }
 
-function getEdgesOfTypesFromGraph(graph, componentTypes) {
+export function getEdgesOfTypesFromGraph(graph, componentTypes) {
     const edges = [];
     for (const edge of Object.keys(graph.edges)) {
         if (componentTypes.includes(graph.edges[edge].info.type)) {
@@ -86,18 +97,18 @@ function getEdgesOfTypesFromGraph(graph, componentTypes) {
     return edges;
 }
 
-function excludeEdgesOfTypesFromGraph(graph, componentTypes) {
+export function excludeEdgesOfTypesFromGraph(graph, componentTypes) {
     const newGraph = graph.copy();
-    const edges = getEdgesOfTypesFromGraph(graph, componentTypes)
+    const edges = getEdgesOfTypesFromGraph(graph, componentTypes);
     for (const edgeId of edges) {
         newGraph.removeEdge(edgeId);
     }
     return newGraph;
 }
 
-function contractEdgesOfTypesFromGraph(graph, componentTypes) {
+export function contractEdgesOfTypesFromGraph(graph, componentTypes) {
     const newGraph = graph.copy();
-    const edges = getEdgesOfTypesFromGraph(graph, componentTypes)
+    const edges = getEdgesOfTypesFromGraph(graph, componentTypes);
     for (const edgeId of edges) {
         newGraph.contractEdge(edgeId);
     }

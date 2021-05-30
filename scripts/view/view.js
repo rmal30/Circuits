@@ -38,38 +38,45 @@ class View {
         }
     }
 
-    showSolution(currentSets, voltageSets, impComponents, valid, validIndex) {
-        let solutionOutput = null;
-        if (valid) {
+    showSolution(currentSets, voltageSets, components) {
+        let solutionOutput = "No solution known";
+        if (currentSets && voltageSets) {
             solutionOutput = [
                 [
                     "Nodal analysis:",
-                    ...impComponents.
-                        map((component, index) => {
-                            const fullId = `${component.type}_${component.id}`;
-                            return `${fullId}: ${Complex.print(voltageSets[validIndex][index][0])}V`;
-                        })
+                    ...Object.entries(voltageSets.voltages).map((entry) => {
+                        const [id, voltage] = entry;
+                        return `${id}: ${Complex.print(voltage)}V`;
+                    })
                 ],
                 [
                     "Mesh analysis:",
-                    ...impComponents.
-                        map((component, index) => {
-                            const fullId = `${component.type}_${component.id}`;
-                            return `${fullId}: ${Complex.print(currentSets[validIndex][index][0])}A`;
-                        })
+                    ...Object.entries(currentSets.currents).map((entry) => {
+                        const [id, current] = entry;
+                        return `${id}: ${Complex.print(current)}A`;
+                    })
+                ],
+                [
+                    "Meter measurements",
+                    ...Object.entries(currentSets.meterVoltages).map((entry) => {
+                        const [id, voltage] = entry;
+                        return `${id}: ${Complex.print(voltage)}V`;
+                    }),
+                    ...Object.entries(currentSets.meterCurrents).map((entry) => {
+                        const [id, current] = entry;
+                        return `${id}: ${Complex.print(current)}A`;
+                    })
                 ],
                 [
                     "Component list:",
-                    ...impComponents.map((component) => {
-                        return `${component.type}_${component.id}: ${JSON.stringify(component, (_, value) => {
+                    ...Object.entries(components).map((entry) => {
+                        const [id, component] = entry;
+                        return `${id}: ${JSON.stringify(component, (_, value) => {
                             return value instanceof Array ? JSON.stringify(value) : value;
                         }, 4)}`;
                     })
                 ]
             ].map((section) => section.join("\r\n")).join("\r\n\r\n");
-
-        } else {
-            solutionOutput = "No solution found";
         }
         this.setInformation(solutionOutput);
     }

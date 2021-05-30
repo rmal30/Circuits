@@ -45,8 +45,8 @@ class Controller {
     // Simulate circuit and show results
     onSimulate() {
         const simulationResults = this.model.circuit.simulate(this.model.circuit);
-        const [currentSets, voltageSets, impComponents, valid, validIndex] = simulationResults;
-        this.view.showSolution(currentSets, voltageSets, impComponents, valid, validIndex);
+        const [currentSets, voltageSets] = simulationResults;
+        this.view.showSolution(currentSets, voltageSets, this.model.circuit.components);
     }
 
     // Change component value

@@ -2,6 +2,18 @@
 
 class ComplexMatrix {
 
+    static concat(mat1, mat2) {
+        const mat3 = [];
+        for (let j = 0; j < mat1.length; j++) {
+            mat3.push([...mat1[j], ...mat2[j]]);
+        }
+        return mat3;
+    }
+
+    static concatMultiple(mats) {
+        return mats.reduce((currentMatrix, newMatrix) => ComplexMatrix.concat(currentMatrix, newMatrix));
+    }
+
     // Conjugate transpose
     static conjTranspose(mat) {
         const resultMatrix = new Array(mat[0].length);

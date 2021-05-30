@@ -34,6 +34,11 @@ class GaussianElimination {
     static backSubstitution(aug) {
         const n = aug.length;
         const x = new Array(n).fill(0);
+        const diagonal = aug.map((_, index) => aug[index][index]);
+        if (diagonal.some((value) => value === 0)) {
+            return null;
+        }
+
         x[n - 1] = Complex.divide(aug[n - 1][n], aug[n - 1][n - 1]);
         for (let p = n - 2; p >= 0; p--) {
             const rowSum = range(p + 1, n).

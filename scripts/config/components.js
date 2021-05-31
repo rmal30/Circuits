@@ -50,8 +50,7 @@ export const COMPONENTS_LIST = {
     },
     dc: {
         vdc: "DC Voltage",
-        idc: "DC Current",
-        dio: "Diode"
+        idc: "DC Current"
     },
     both: {
         res: "Resistor",

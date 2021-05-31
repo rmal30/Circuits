@@ -229,15 +229,15 @@ export default class NodalAnalysis extends CircuitAnalysis {
         const groundMatrix = [[1, ...new Array(allNodes.length - 1 + meterCount).fill(0)]];
 
         // Matrix equation
-        const matrix = [].concat(
-            nodeCurrentsMatrix, voltageSourcesMatrix, ccvsMatrix,
-            voltageMeterMatrix, vcvsMatrix, cccsMatrix, groundMatrix
-        );
+        const matrix = [
+            nodeCurrentsMatrix, voltageSourcesMatrix,
+            ccvsMatrix, voltageMeterMatrix, vcvsMatrix, cccsMatrix, groundMatrix
+        ].flat();
 
-        const target = [].concat(
+        const target = [
             targetCurrents, targetVoltages,
             new Array(ccvsMatrix.length + voltageMeterMatrix.length + vcvsMatrix.length + cccsMatrix.length + 1).fill(0)
-        );
+        ].flat();
 
         const solutionSet = GaussianElimination.solve(matrix, target);
         if (!solutionSet) {

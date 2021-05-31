@@ -60,7 +60,7 @@ export class GraphAlgorithms {
      * Get spanning tree
      * @param {any} component - Component
      * @param {function} traversalFunc - Traversal function
-     * @returns {any} tree - Spanning tree
+     * @returns {any} - Spanning tree
      */
     static findSpanningTree(component, traversalFunc) {
         const tree = new Graph();
@@ -86,6 +86,11 @@ export class GraphAlgorithms {
         return tree;
     }
 
+    /**
+     * Find a list of independent cycles in a graph
+     * @param {Graph} graph - Graph
+     * @returns {Object<string, number>[]} - List of independent cycles
+     */
     static findFundamentalCycleBasis(graph) {
         const tree = GraphAlgorithms.findSpanningTree(graph, GraphAlgorithms.dfs);
         const cycles = [];

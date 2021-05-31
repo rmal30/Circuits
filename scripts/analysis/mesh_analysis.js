@@ -75,6 +75,12 @@ export default class MeshAnalysis extends CircuitAnalysis {
         return loops.map((loop) => -super.getGroupTotal(loop, voltageEdges));
     }
 
+    /**
+     * Get current source equations
+     * @param {Object<string, number>[]} loops - Independent loops
+     * @param {number} meterCount - Number of voltage and current meters
+     * @returns {{matrix: Array<Array<any>>, vector: number[]}} - Current source matrix and vector
+     */
     getCurrentSourcesEquations(loops, meterCount) {
 
         // Independent current sources
@@ -88,7 +94,7 @@ export default class MeshAnalysis extends CircuitAnalysis {
 
         // Constant branch currents for independent current sources
         const targetCurrents = currentEdges.map((edgeId) => -this.graph.edges[edgeId].info.value);
-        return [currentSourcesMatrix, targetCurrents];
+        return {matrix: currentSourcesMatrix, vector: targetCurrents};
     }
 
     getCurrentMetersMatrix(loops, voltageMeterCount, currentMeterCount) {
@@ -106,6 +112,13 @@ export default class MeshAnalysis extends CircuitAnalysis {
         });
     }
 
+    /**
+     * Get VCCS matrix equations
+     * @param {Object<string, number>[]} loops - Independent loops
+     * @param {number} voltageMeterCount - Number of voltage meters
+     * @param {number} currentMeterCount - Number of current meters
+     * @returns {Array<Array<any>>} - VCCS matrix
+     */
     getVCCSMatrix(loops, voltageMeterCount, currentMeterCount) {
         const voltageMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_METER]);
 
@@ -221,22 +234,25 @@ export default class MeshAnalysis extends CircuitAnalysis {
         const currentMeterCount = currentMeterEdges.length;
         const meterCount = voltageMeterCount + currentMeterCount;
 
-        const [currentSourcesMatrix, targetCurrents] = this.getCurrentSourcesEquations(allLoops, meterCount);
+        const {
+            matrix: currentSourcesMatrix,
+            vector: targetCurrents
+        } = this.getCurrentSourcesEquations(allLoops, meterCount);
         const currentMeterMatrix = this.getCurrentMetersMatrix(allLoops, voltageMeterCount, currentMeterCount);
         const vccsMatrix = this.getVCCSMatrix(allLoops, voltageMeterCount, currentMeterCount);
         const cccsMatrix = this.getCCCSMatrix(allLoops, voltageMeterCount, currentMeterCount);
         const vcvsMatrix = this.getVCVSMatrix(allLoops, meterCount);
 
         // Matrix equation
-        const matrix = [].concat(
+        const matrix = [
             loopVoltagesMatrix, currentSourcesMatrix, vccsMatrix,
             currentMeterMatrix, vcvsMatrix, cccsMatrix
-        );
+        ].flat();
 
-        const target = [].concat(
+        const target = [
             targetVoltages, targetCurrents,
             new Array(vccsMatrix.length + currentMeterMatrix.length + vcvsMatrix.length + cccsMatrix.length).fill(0)
-        );
+        ].flat();
 
         const sol = GaussianElimination.solve(matrix, target);
         if (!sol) {

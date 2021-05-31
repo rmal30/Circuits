@@ -1,7 +1,20 @@
-export function range(a, b) {
-    return [...new Array(b - a).keys()].map((i) => i + a);
+/**
+ * Return range of numbers from a to b
+ * @param {number} start - Start number inclusive
+ * @param {number} end - End number exclusive
+ * @returns {number[]} - Range of numbers
+ */
+export function range(start, end) {
+    return [...new Array(end - start).keys()].map((value) => value + start);
 }
 
+/**
+ * Round number to a specified number of places
+ * @param {number} num - Number to round
+ * @param {number} places - Number of places
+ * @returns {number} - Rounded number
+ */
 export function roundNum(num, places) {
-    return Math.round(num * Math.pow(10, places)) / Math.pow(10, places);
+    const factor = 10 ** places;
+    return Math.round(num * factor) / factor;
 }

@@ -3,6 +3,16 @@ import Position from "./position.js";
 
 /**
  * Plan a line which can connect two horizontal components
+ * @param {number[]} dir0 - Pin direction of origin
+ * @param {number[]} dir1 - Pin direction of destination
+ * @param {Position} min - Minimum point
+ * @param {Position} max - Maximum point
+ * @param {Position} origin - Origin point
+ * @param {Position} mid - Middle point
+ * @param {Position} dest - Destination point
+ * @param {number} dx - Difference in x
+ * @param {number} dy - Difference in y
+ * @returns {Array<number>[]} List of positions
  */
 export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
     const halfImgSize = IMAGE_SIZE / 2;
@@ -46,6 +56,16 @@ export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mi
 
 /**
  * Plan a line which can connect two vertical components
+ * @param {number[]} dir0 - Pin direction of origin
+ * @param {number[]} dir1 - Pin direction of destination
+ * @param {Position} min - Minimum point
+ * @param {Position} max - Maximum point
+ * @param {Position} origin - Origin point
+ * @param {Position} mid - Middle point
+ * @param {Position} dest - Destination point
+ * @param {number} dx - Difference in x
+ * @param {number} dy - Difference in y
+ * @returns {Array<number>[]} List of positions
  */
 export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
     const halfImgSize = IMAGE_SIZE / 2;
@@ -90,12 +110,15 @@ export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid,
 
 /**
  * Plan a line which can connect two components
+ * @param {{pos, direction}} originPin - Origin pin
+ * @param {{pos, direction}} destPin - Destination pin
+ * @returns {string} - SVG polyline string
  */
-export function findPolyStr(pin0, pin1) {
-    const origin = pin0.pos;
-    const dest = pin1.pos;
-    let dir0 = pin0.direction;
-    let dir1 = pin1.direction;
+export function findPolyStr(originPin, destPin) {
+    const origin = originPin.pos;
+    const dest = destPin.pos;
+    let dir0 = originPin.direction;
+    let dir1 = destPin.direction;
     const dx = dest.x - origin.x;
     const dy = dest.y - origin.y;
     const mid = origin.offset(dx * 0.5, dy * 0.5);

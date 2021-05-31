@@ -87,6 +87,12 @@ export function getCircuitGraph(circuit) {
     return graph;
 }
 
+/**
+ * Get edges with types from graph
+ * @param {Graph} graph - Graph representation of circuit
+ * @param {string[]} componentTypes - List of types to include
+ * @returns {string[]} - List of edges with types
+ */
 export function getEdgesOfTypesFromGraph(graph, componentTypes) {
     const edges = [];
     for (const edge of Object.keys(graph.edges)) {
@@ -97,6 +103,12 @@ export function getEdgesOfTypesFromGraph(graph, componentTypes) {
     return edges;
 }
 
+/**
+ * Exclude edges with types from graph
+ * @param {Graph} graph - Graph representation of circuit
+ * @param {string[]} componentTypes - List of types to exclude
+ * @returns {Graph} - New graph with edges excluded
+ */
 export function excludeEdgesOfTypesFromGraph(graph, componentTypes) {
     const newGraph = graph.copy();
     const edges = getEdgesOfTypesFromGraph(graph, componentTypes);
@@ -106,6 +118,12 @@ export function excludeEdgesOfTypesFromGraph(graph, componentTypes) {
     return newGraph;
 }
 
+/**
+ * Collapse/contract edges with types from graph
+ * @param {Graph} graph - Graph representation of circuit
+ * @param {string[]} componentTypes - Collapse edges with one of these types
+ * @returns {Graph} - New graph with edges contracted
+ */
 export function contractEdgesOfTypesFromGraph(graph, componentTypes) {
     const newGraph = graph.copy();
     const edges = getEdgesOfTypesFromGraph(graph, componentTypes);

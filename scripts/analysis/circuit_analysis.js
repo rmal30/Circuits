@@ -6,10 +6,22 @@ export default class CircuitAnalysis {
         this.graph = graph;
     }
 
+    /**
+     * Get component directions for all groups
+     * @param {Object<string, number>[]} groups - Groups
+     * @param {string} edgeId - Component id
+     * @returns {number[]} - Directions
+     */
     static getComponentDirections(groups, edgeId) {
         return groups.map((group) => AnalysisUtils.getDirection(group, edgeId));
     }
 
+    /**
+     * Get group directions for all components
+     * @param {Object<string, number>} group - Groups
+     * @param {string[]} edges - Component ids
+     * @returns {number[]} - Directions
+     */
     static getGroupDirections(group, edges) {
         return edges.map((edgeId) => AnalysisUtils.getDirection(group, edgeId));
     }

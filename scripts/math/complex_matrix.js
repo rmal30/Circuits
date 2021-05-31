@@ -9,6 +9,11 @@ export default class ComplexMatrix {
         return mat3;
     }
 
+    /**
+     * Concatenate matricies horizontally
+     * @param {Array<Array<any>>[]} mats - Matricies to concatenate
+     * @returns {Array<Array<any>>} - Concatenated matrix
+     */
     static concatMultiple(mats) {
         return mats.reduce((currentMatrix, newMatrix) => ComplexMatrix.concat(currentMatrix, newMatrix));
     }

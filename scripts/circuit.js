@@ -1,8 +1,8 @@
 import Analyser from "./analysis/analyser.js";
 import {COMPONENT_DEFINITIONS} from "./config/components.js";
 import {DIRECTIONS} from "./config/constants.js";
-import {range} from "./math/utils.js";
-import {getPinDirections, getPinPositions, rotateVector} from "./rendering/utils.js";
+import Utils from "./utils.js";
+import {getPinDirections, getPinPositions, rotateVector} from "./rendering/geometry.js";
 
 export default class Circuit {
 
@@ -49,7 +49,7 @@ export default class Circuit {
         const pinDir = getPinDirections(direction, pinCount);
         const pinPos = getPinPositions(pos, direction, pinCount);
         const id = this.newComponentId;
-        const pinIds = range(this.newPinId, this.newPinId + pinCount);
+        const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 
         this.components[id] = {
             id: id,

@@ -1,7 +1,7 @@
 import {ELEMENT_TYPES} from "../config/constants.js";
 import {GRID_SIZE} from "../config/layout.js";
-import {getElementId} from "../rendering/utils.js";
-import Position from "./../rendering/position.js";
+import Utils from "../utils.js";
+import Position from "../rendering/position.js";
 
 export default class Events {
 
@@ -66,7 +66,7 @@ export default class Events {
     }
 
     bindLabelClick(id, onLabelClick) {
-        const elementId = getElementId(id, ELEMENT_TYPES.LABEL);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.LABEL);
         const label = this.doc.getElementById(elementId);
         label.addEventListener("click", () => {
             onLabelClick(id);
@@ -74,7 +74,7 @@ export default class Events {
     }
 
     bindComponentClick(id, onComponentClick) {
-        const elementId = getElementId(id, ELEMENT_TYPES.IMAGE);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.IMAGE);
         const image = this.doc.getElementById(elementId);
         image.addEventListener("click", () => {
             onComponentClick(id);
@@ -82,7 +82,7 @@ export default class Events {
     }
 
     bindComponentMouseDown(id, onComponentMouseDown) {
-        const elementId = getElementId(id, ELEMENT_TYPES.IMAGE);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.IMAGE);
         const image = this.doc.getElementById(elementId);
         image.addEventListener("mousedown", (event) => {
             event.preventDefault();
@@ -91,7 +91,7 @@ export default class Events {
     }
 
     bindPinClick(id, onPinClick) {
-        const elementId = getElementId(id, ELEMENT_TYPES.PIN);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.PIN);
         const pin = this.doc.getElementById(elementId);
         pin.addEventListener("click", () => {
             onPinClick(id);
@@ -99,7 +99,7 @@ export default class Events {
     }
 
     bindNodeMouseDown(id, onNodeMouseDown) {
-        const elementId = getElementId(id, ELEMENT_TYPES.PIN);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.PIN);
         const node = this.doc.getElementById(elementId);
         node.addEventListener("mousedown", (event) => {
             event.preventDefault();
@@ -109,7 +109,7 @@ export default class Events {
 
     bindLineClick(id, onLineClick) {
         const headerHeight = this.header.clientHeight;
-        const elementId = getElementId(id, ELEMENT_TYPES.LINE);
+        const elementId = Utils.getElementId(id, ELEMENT_TYPES.LINE);
         const line = this.doc.getElementById(elementId);
         line.addEventListener("click", (event) => {
             const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);

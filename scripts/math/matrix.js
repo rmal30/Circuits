@@ -1,5 +1,4 @@
-import Complex from "./complex.js";
-export default class ComplexMatrix {
+export default class MatrixUtils {
 
     static concat(mat1, mat2) {
         const mat3 = [];
@@ -15,83 +14,68 @@ export default class ComplexMatrix {
      * @returns {Array<Array<any>>} - Concatenated matrix
      */
     static concatMultiple(mats) {
-        return mats.reduce((currentMatrix, newMatrix) => ComplexMatrix.concat(currentMatrix, newMatrix));
-    }
-
-    // Conjugate transpose
-    static conjTranspose(mat) {
-        const resultMatrix = new Array(mat[0].length);
-        for (let i = 0; i < mat[0].length; i++) {
-            resultMatrix[i] = [];
-            for (let j = 0; j < mat.length; j++) {
-                resultMatrix[i].push(Complex.conjugate(mat[j][i]));
-            }
-        }
-
-        return resultMatrix;
+        return mats.reduce((currentMatrix, newMatrix) => MatrixUtils.concat(currentMatrix, newMatrix));
     }
 
     // Transpose a matrix
     static transpose(mat) {
         const resultMatrix = new Array(mat[0].length);
         for (let i = 0; i < mat[0].length; i++) {
-            resultMatrix[i] = [];
-            for (let j = 0; j < mat.length; j++) {
-                resultMatrix[i].push(mat[j][i]);
-            }
+            resultMatrix[i] = mat.map((row) => row[i]);
         }
 
         return resultMatrix;
     }
 
-    // Add two matricies
-    static add(mat1, mat2) {
+    static zipWith(mergeFunc, mat1, mat2) {
         const mat3 = new Array(mat1.length);
         for (let j = 0; j < mat1.length; j++) {
             mat3[j] = new Array(mat1[0].length);
             for (let k = 0; k < mat1[0].length; k++) {
-                mat3[j][k] = Complex.add(mat1[j][k], mat2[j][k]);
+                mat3[j][k] = mergeFunc(mat1[j][k], mat2[j][k]);
             }
         }
 
         return mat3;
     }
 
-    // Multiply a matrix by a constant
-    static scalarMultiply(mat, n) {
+    static map(func, mat) {
         const nmat = new Array(mat.length);
         for (let j = 0; j < mat.length; j++) {
             nmat[j] = new Array(mat[0].length);
             for (let k = 0; k < mat[0].length; k++) {
-                nmat[j][k] = Complex.multiply(n, mat[j][k]);
+                nmat[j][k] = func(mat[j][k]);
             }
         }
 
         return nmat;
+    }
+
+    // Add two matricies
+    static add(mathOperations, mat1, mat2) {
+        return MatrixUtils.zipWith(mat1, mat2, mathOperations.add);
+    }
+
+    // Multiply a matrix by a constant
+    static scalarMultiply(mathOperations, mat, n) {
+        return MatrixUtils.map((value) => mathOperations.multiply(value, n), mat);
     }
 
     // Divide a matrix by a constant
-    static scalarDivide(mat, n) {
-        const nmat = new Array(mat.length);
-        for (let j = 0; j < mat.length; j++) {
-            nmat[j] = new Array(mat[0].length);
-            for (let k = 0; k < mat[0].length; k++) {
-                nmat[j][k] = Complex.divide(mat[j][k], n);
-            }
-        }
-
-        return nmat;
+    static scalarDivide(mathOperations, mat, n) {
+        return MatrixUtils.map((value) => mathOperations.divide(value, n), mat);
     }
 
     // Multiply two matricies
-    static multiply(mat1, mat2) {
+    static multiply(mathOperations, mat1, mat2) {
         const mat3 = new Array(mat1.length);
         for (let j = 0; j < mat1.length; j++) {
             mat3[j] = new Array(mat2[0].length);
             for (let k = 0; k < mat2[0].length; k++) {
                 mat3[j][k] = 0;
                 for (let l = 0; l < mat2.length; l++) {
-                    mat3[j][k] = Complex.add(mat3[j][k], Complex.multiply(mat1[j][l], mat2[l][k]));
+                    const multiplied = mathOperations.multiply(mat1[j][l], mat2[l][k]);
+                    mat3[j][k] = mathOperations.add(mat3[j][k], multiplied);
                 }
             }
         }

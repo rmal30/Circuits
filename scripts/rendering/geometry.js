@@ -1,7 +1,6 @@
-import {ANGLES, ELEMENT_PREFIXES} from "../config/constants.js";
+import {ANGLES} from "../config/constants.js";
 import {DIRECTION_TEMPLATE, IMAGE_SIZE, LABEL_POSITIONS, PIN_POSITION_TEMPLATE} from "../config/layout.js";
-import Complex from "../math/complex.js";
-
+import ComplexOperations from "../math/complex.js";
 
 export function rotateVector(vec) {
     return [-vec[1], vec[0]];
@@ -9,12 +8,11 @@ export function rotateVector(vec) {
 
 export function getPinPositions(pos, direction, count) {
     return PIN_POSITION_TEMPLATE[count].map((point) => {
-        return pos.offset.apply(pos, Complex.multiply(IMAGE_SIZE, Complex.multiply(point, direction)));
+        return pos.offset.apply(pos, ComplexOperations.multiply(IMAGE_SIZE, ComplexOperations.multiply(point, direction)));
     });
 }
 
-export function getLabelPinPos(pos, direction, count) {
-    const points = getPinPositions(pos, direction, count);
+export function getLabelPosition(pos, direction){
     const [dx, dy] = direction;
     let dlx, dly;
     if (dx === 0) {
@@ -22,26 +20,24 @@ export function getLabelPinPos(pos, direction, count) {
     } else if (dy === 0) {
         [dlx, dly] = LABEL_POSITIONS.H;
     }
-    points.push(pos.offset(dlx, dly));
-    return points;
+    return pos.offset(dlx, dly);
 }
 
+export function getLabelPinPos(pos, direction, count) {
+    return [
+        ...getPinPositions(pos, direction, count),
+        getLabelPosition(pos, direction)
+    ];
+}
 
 export function getPinDirections(direction, count) {
-    return DIRECTION_TEMPLATE[count].map((point) => Complex.multiply(point, direction));
+    return DIRECTION_TEMPLATE[count].map((point) => ComplexOperations.multiply(point, direction));
 }
 
 export function getAngleFromDirection(direction) {
     return ANGLES[direction.toString()];
 }
 
-export function getElementId(id, type) {
-    if (type in ELEMENT_PREFIXES) {
-        return ELEMENT_PREFIXES[type] + id;
-    } else {
-        throw new Error("Invalid type");
-    }
-}
 
 export function getLines(pointsStr) {
     const points = pointsStr.split(" ").map((pointStr) => pointStr.split(",").map((v) => Number(v)));

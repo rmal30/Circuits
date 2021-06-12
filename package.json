@@ -1,0 +1,25 @@
+{
+  "name": "circuits",
+  "version": "1.0.0",
+  "description": "Circuit simulator",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmal30/Circuits.git"
+  },
+  "author": "Rohan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rmal30/Circuits/issues"
+  },
+  "homepage": "https://github.com/rmal30/Circuits#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

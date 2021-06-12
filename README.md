@@ -29,9 +29,14 @@ To get a local copy up and running follow these simple steps.
    git clone https://github.com/rmal30/Circuits.git
    ```
 
+  Install dependencies:
+  ```sh
+  npm install
+  ```
+
   Host the website on localhost with a server:
   ```sh
-  python server.py
+  node app.js
   ```
   
   Open a browser at localhost:8000

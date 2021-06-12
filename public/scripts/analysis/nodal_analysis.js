@@ -2,39 +2,37 @@ import {
     AMPLIFIER_TYPES, COMPONENT_TYPES, IMPEDANCE_COMPONENT_TYPES,
     INDEPENDENT_CURRENT_SOURCE_TYPES, INDEPENDENT_VOLTAGE_SOURCE_TYPES
 } from "../config/components.js";
-import {GraphAlgorithms} from "../graphs/graph_algorithms.js";
-import Complex from "../math/complex.js";
-import ComplexMatrix from "../math/complex_matrix.js";
-import GaussianElimination from "../math/gaussian_elimination.js";
-import CircuitAnalysis from "./circuit_analysis.js";
-import {contractEdgesOfTypesFromGraph, getEdgesOfTypesFromGraph} from "./circuit_graph.js";
-import AnalysisUtils from "./utils.js";
+import CommonAnalysis from "./common_analysis.js";
 
-export default class NodalAnalysis extends CircuitAnalysis {
+export default class NodalAnalysis extends CommonAnalysis {
 
     getNodeVoltagesToNodeCurrentsMatrix(allNodes, noVoltageNodes) {
-        const impedanceEdges = getEdgesOfTypesFromGraph(this.graph, IMPEDANCE_COMPONENT_TYPES);
+        const impedanceEdges = this.graph.getEdgesOfTypes(IMPEDANCE_COMPONENT_TYPES);
 
         // Matrix mapping node voltages to impedance component voltages
         const nodeToBranchVoltagesMatrix = impedanceEdges.map((edgeId) => {
-            return CircuitAnalysis.getComponentDirections(allNodes, edgeId);
+            return CommonAnalysis.getComponentDirections(allNodes, edgeId);
         });
 
         // Matrix mapping impedance component voltages to node currents (with no voltage sources)
         const branchVoltagesToNodeCurrentsMatrix = noVoltageNodes.map((node) => {
-            return super.getGroupImpedances(node, impedanceEdges, Complex.divide);
+            return super.getGroupImpedances(node, impedanceEdges, this.operations.divide);
         });
 
         // Matrix mapping node voltages to node currents of impedances
-        return ComplexMatrix.multiply(branchVoltagesToNodeCurrentsMatrix, nodeToBranchVoltagesMatrix);
+        return this.matrixUtils.multiply(
+            this.operations,
+            branchVoltagesToNodeCurrentsMatrix,
+            nodeToBranchVoltagesMatrix
+        );
     }
 
     getCurrentMetersToNodeCurrentsMatrix(noVoltageNodes) {
-        const currentMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_METER]);
+        const currentMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_METER]);
 
         // Meter currents -> Node currents with only current meters
         const currentMeterMatrix = noVoltageNodes.map((node) => {
-            return CircuitAnalysis.getGroupDirections(node, currentMeterEdges);
+            return CommonAnalysis.getGroupDirections(node, currentMeterEdges);
         });
 
         const indexes = {};
@@ -43,7 +41,7 @@ export default class NodalAnalysis extends CircuitAnalysis {
         });
 
         // Meter currents -> Node currents with only current - current amplifiers
-        const cccsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE]);
+        const cccsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE]);
         noVoltageNodes.forEach((node, nodeIndex) => {
             const meterCoeffs = super.getGroupMultipliers(node, cccsEdges);
             for (const edgeId of Object.keys(meterCoeffs)) {
@@ -55,9 +53,9 @@ export default class NodalAnalysis extends CircuitAnalysis {
     }
 
     getVoltageMetersToNodeCurrentsMatrix(noVoltageNodes) {
-        const vcvsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE]);
-        const vccsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE]);
-        const voltageMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_METER]);
+        const vcvsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE]);
+        const vccsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE]);
+        const voltageMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_METER]);
 
         return noVoltageNodes.map((node) => {
             // Meter voltages -> Node currents with only voltage - current amplifiers
@@ -71,17 +69,17 @@ export default class NodalAnalysis extends CircuitAnalysis {
     }
 
     getCurrentVector(nodes) {
-        const currentEdges = getEdgesOfTypesFromGraph(this.graph, INDEPENDENT_CURRENT_SOURCE_TYPES);
+        const currentEdges = this.graph.getEdgesOfTypes(INDEPENDENT_CURRENT_SOURCE_TYPES);
         return nodes.map((node) => super.getGroupTotal(node, currentEdges));
     }
 
     getVoltageSourcesEquations(nodes, meterCount) {
 
         // Independent voltages sources
-        const voltageEdges = getEdgesOfTypesFromGraph(this.graph, INDEPENDENT_VOLTAGE_SOURCE_TYPES);
+        const voltageEdges = this.graph.getEdgesOfTypes(INDEPENDENT_VOLTAGE_SOURCE_TYPES);
         const voltageSourcesMatrix = voltageEdges.map((edgeId) => {
             return [
-                ...CircuitAnalysis.getComponentDirections(nodes, edgeId),
+                ...CommonAnalysis.getComponentDirections(nodes, edgeId),
                 ...new Array(meterCount).fill(0)
             ];
         });
@@ -92,14 +90,14 @@ export default class NodalAnalysis extends CircuitAnalysis {
     }
 
     getVoltageMetersMatrix(nodes, voltageMeterCount, currentMeterCount) {
-        const voltageMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_METER]);
+        const voltageMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_METER]);
 
         // Node voltages + Branch voltage of meter = 0
         return voltageMeterEdges.map((edgeId, index) => {
             const identity = new Array(voltageMeterCount).fill(0);
             identity[index] = 1;
             return [
-                ...CircuitAnalysis.getComponentDirections(nodes, edgeId),
+                ...CommonAnalysis.getComponentDirections(nodes, edgeId),
                 ...identity,
                 ...new Array(currentMeterCount).fill(0)
             ];
@@ -107,10 +105,10 @@ export default class NodalAnalysis extends CircuitAnalysis {
     }
 
     getCCVSMatrix(nodes, voltageMeterCount, currentMeterCount) {
-        const currentMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_METER]);
+        const currentMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_METER]);
 
         // Current - Voltage amplifier
-        const ccvsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE]);
+        const ccvsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE]);
         const ccvsMatrix = [];
 
         const currentMeterIndexes = {};
@@ -123,12 +121,12 @@ export default class NodalAnalysis extends CircuitAnalysis {
             const identity = new Array(currentMeterCount).fill(0);
             identity[currentMeterIndexes[edge.info.meter]] = edge.info.value;
             ccvsMatrix.push([
-                ...CircuitAnalysis.getComponentDirections(nodes, edgeId),
+                ...CommonAnalysis.getComponentDirections(nodes, edgeId),
                 ...new Array(voltageMeterCount).fill(0),
                 ...identity
             ]);
             ccvsMatrix.push([
-                ...CircuitAnalysis.getComponentDirections(nodes, edge.info.meter),
+                ...CommonAnalysis.getComponentDirections(nodes, edge.info.meter),
                 ...new Array(voltageMeterCount + currentMeterCount).fill(0)
             ]);
         });
@@ -136,7 +134,7 @@ export default class NodalAnalysis extends CircuitAnalysis {
     }
 
     getVCVSMatrix(nodes, voltageMeterCount, currentMeterCount) {
-        const voltageMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_METER]);
+        const voltageMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_METER]);
 
         const voltageMeterIndexes = {};
         voltageMeterEdges.forEach((edgeId, index) => {
@@ -144,13 +142,13 @@ export default class NodalAnalysis extends CircuitAnalysis {
         });
 
         // Current - Current amplifier
-        const vcvsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE]);
+        const vcvsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE]);
         return vcvsEdges.map((edgeId) => {
             const edge = this.graph.edges[edgeId];
             const identity = new Array(voltageMeterCount).fill(0);
             identity[voltageMeterIndexes[edge.info.meter]] = edge.info.value;
             return [
-                ...CircuitAnalysis.getComponentDirections(nodes, edgeId),
+                ...CommonAnalysis.getComponentDirections(nodes, edgeId),
                 ...identity,
                 ...new Array(currentMeterCount).fill(0)
             ];
@@ -159,17 +157,17 @@ export default class NodalAnalysis extends CircuitAnalysis {
 
     getCCCSMatrix(nodes, meterCount) {
         // Current - Current amplifier
-        const cccsEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE]);
+        const cccsEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE]);
         return cccsEdges.map((edgeId) => {
             return [
-                ...CircuitAnalysis.getComponentDirections(nodes, this.graph.edges[edgeId].info.meter),
+                ...CommonAnalysis.getComponentDirections(nodes, this.graph.edges[edgeId].info.meter),
                 ...new Array(meterCount).fill(0)
             ];
         });
     }
 
     getComponentVoltagesFromNodeVoltages(allNodes, nodeVoltagesArray) {
-        const noVoltageEdges = getEdgesOfTypesFromGraph(this.graph, [
+        const noVoltageEdges = this.graph.getEdgesOfTypes([
             ...IMPEDANCE_COMPONENT_TYPES,
             ...AMPLIFIER_TYPES,
             COMPONENT_TYPES.CURRENT_METER,
@@ -178,12 +176,12 @@ export default class NodalAnalysis extends CircuitAnalysis {
 
         // Matrix mapping node voltages to impedance component voltages
         const compMatrix = noVoltageEdges.map((edgeId) => {
-            return CircuitAnalysis.getComponentDirections(allNodes, edgeId);
+            return CommonAnalysis.getComponentDirections(allNodes, edgeId);
         });
 
-        const nodeVoltagesColumn = ComplexMatrix.transpose([nodeVoltagesArray]);
-        const componentVoltagesMatrix = ComplexMatrix.multiply(compMatrix, nodeVoltagesColumn);
-        const [voltageList] = ComplexMatrix.transpose(componentVoltagesMatrix);
+        const nodeVoltagesColumn = this.matrixUtils.transpose([nodeVoltagesArray]);
+        const componentVoltagesMatrix = this.matrixUtils.multiply(this.operations, compMatrix, nodeVoltagesColumn);
+        const [voltageList] = this.matrixUtils.transpose(componentVoltagesMatrix);
 
         const voltages = {};
         noVoltageEdges.forEach((edgeId, index) => {
@@ -193,29 +191,29 @@ export default class NodalAnalysis extends CircuitAnalysis {
         return voltages;
     }
 
-    getSolution() {
+    getSolution(graphAlgorithms) {
 
         // Find an independent set of loops
-        const allNodes = GraphAlgorithms.findNodeFlows(this.graph);
+        const allNodes = graphAlgorithms.findNodeFlows(this.graph);
 
         // Find an independent set of loops with no current sources
-        const noVoltagesGraph = contractEdgesOfTypesFromGraph(this.graph, [
+        const noVoltagesGraph = this.graph.contractEdgesOfTypes([
             ...INDEPENDENT_VOLTAGE_SOURCE_TYPES,
             COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE,
             COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE
         ]);
-        const noVoltagesNodes = GraphAlgorithms.findNodeFlows(noVoltagesGraph).slice(1);
+        const noVoltagesNodes = graphAlgorithms.findNodeFlows(noVoltagesGraph).slice(1);
 
         // Matrix mapping loop currents and voltage/current meters to loop voltages
-        const nodeCurrentsMatrix = ComplexMatrix.concatMultiple([
+        const nodeCurrentsMatrix = this.matrixUtils.concatMultiple([
             this.getNodeVoltagesToNodeCurrentsMatrix(allNodes, noVoltagesNodes),
             this.getVoltageMetersToNodeCurrentsMatrix(noVoltagesNodes),
             this.getCurrentMetersToNodeCurrentsMatrix(noVoltagesNodes)
         ]);
         const targetCurrents = this.getCurrentVector(noVoltagesNodes);
 
-        const voltageMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.VOLTAGE_METER]);
-        const currentMeterEdges = getEdgesOfTypesFromGraph(this.graph, [COMPONENT_TYPES.CURRENT_METER]);
+        const voltageMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.VOLTAGE_METER]);
+        const currentMeterEdges = this.graph.getEdgesOfTypes([COMPONENT_TYPES.CURRENT_METER]);
 
         const voltageMeterCount = voltageMeterEdges.length;
         const currentMeterCount = currentMeterEdges.length;
@@ -239,12 +237,12 @@ export default class NodalAnalysis extends CircuitAnalysis {
             new Array(ccvsMatrix.length + voltageMeterMatrix.length + vcvsMatrix.length + cccsMatrix.length + 1).fill(0)
         ].flat();
 
-        const solutionSet = GaussianElimination.solve(matrix, target);
+        const solutionSet = this.solver.solve(this.operations, matrix, target);
         if (!solutionSet) {
             return null;
         }
 
-        const {nodeVoltagesList, meterVoltagesList, meterCurrentsList} = AnalysisUtils.unpackArray({
+        const {nodeVoltagesList, meterVoltagesList, meterCurrentsList} = CommonAnalysis.unpackArray({
             nodeVoltagesList: allNodes.length,
             meterVoltagesList: voltageMeterCount,
             meterCurrentsList: currentMeterCount

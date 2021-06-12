@@ -1,9 +1,24 @@
-import AnalysisUtils from "./utils.js";
+import {getImpedance} from "./impedance.js";
 
-export default class CircuitAnalysis {
-    constructor (circuit, graph) {
+export default class CommonAnalysis {
+    constructor (circuit, graph, operations, solver, matrixUtils) {
         this.hertz = circuit.hertz;
         this.graph = graph;
+        this.operations = operations;
+        this.solver = solver;
+        this.matrixUtils = matrixUtils;
+    }
+
+    static unpackArray(spec, arr) {
+        const results = {};
+        for (const prop of Object.keys(spec)) {
+            results[prop] = arr.splice(0, spec[prop]);
+        }
+        return results;
+    }
+
+    static getDirection(group, element) {
+        return element in group ? group[element] : 0;
     }
 
     /**
@@ -13,7 +28,7 @@ export default class CircuitAnalysis {
      * @returns {number[]} - Directions
      */
     static getComponentDirections(groups, edgeId) {
-        return groups.map((group) => AnalysisUtils.getDirection(group, edgeId));
+        return groups.map((group) => CommonAnalysis.getDirection(group, edgeId));
     }
 
     /**
@@ -23,15 +38,15 @@ export default class CircuitAnalysis {
      * @returns {number[]} - Directions
      */
     static getGroupDirections(group, edges) {
-        return edges.map((edgeId) => AnalysisUtils.getDirection(group, edgeId));
+        return edges.map((edgeId) => CommonAnalysis.getDirection(group, edgeId));
     }
 
     getGroupImpedances(group, edges, func) {
         const coeffs = [];
         for (const edgeId of edges) {
             const component = this.graph.edges[edgeId];
-            const direction = AnalysisUtils.getDirection(group, edgeId);
-            const impedance = AnalysisUtils.getImpedance(this.hertz, component.info.type, component.info.value);
+            const direction = CommonAnalysis.getDirection(group, edgeId);
+            const impedance = getImpedance(this.hertz, component.info.type, component.info.value);
             coeffs.push(func(direction, impedance));
         }
         return coeffs;
@@ -41,7 +56,7 @@ export default class CircuitAnalysis {
         const meterCoeffs = {};
         for (const edgeId of edges) {
             const edge = this.graph.edges[edgeId];
-            const direction = AnalysisUtils.getDirection(group, edgeId);
+            const direction = CommonAnalysis.getDirection(group, edgeId);
             meterCoeffs[edge.info.meter] = edge.info.value * direction;
         }
         return meterCoeffs;
@@ -51,7 +66,7 @@ export default class CircuitAnalysis {
         let total = 0;
         for (const edgeId of edges) {
             const edgeValue = this.graph.edges[edgeId].info.value;
-            const direction = AnalysisUtils.getDirection(group, edgeId);
+            const direction = CommonAnalysis.getDirection(group, edgeId);
             total += direction * edgeValue;
         }
         return total;

@@ -1,10 +1,10 @@
 import {COMPONENTS_LIST} from "../config/components.js";
 import {STYLES} from "../config/style.js";
 import Complex from "../math/complex.js";
-import {getElementId} from "../rendering/utils.js";
+import Utils from "../utils.js";
 import Events from "./events.js";
 import Graphics from "./graphics.js";
-import Schematic from "./schematic.js";
+import Schematic from "../schematic.js";
 
 export default class View {
     constructor(_doc, _window) {
@@ -93,7 +93,7 @@ export default class View {
     }
 
     setElementSelected(selected, id, type) {
-        const elementId = getElementId(id, type);
+        const elementId = Utils.getElementId(id, type);
         const element = this.doc.getElementById(elementId);
 
         if (element) {

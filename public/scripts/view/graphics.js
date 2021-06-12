@@ -2,7 +2,7 @@ import {ELEMENT_TYPES} from "../config/constants.js";
 import {DOT_SIZE, IMAGE_SIZE} from "../config/layout.js";
 import {DEFAULT_LINE_STYLE} from "../config/style.js";
 import Position from "../rendering/position.js";
-import {getElementId} from "../rendering/utils.js";
+import Utils from "../utils.js";
 
 export default class Graphics {
 
@@ -29,7 +29,7 @@ export default class Graphics {
     addImage(id, position, type, angle) {
         const imagePosition = position.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
         const element = this.createSVGElement("image", {
-            id: getElementId(id, ELEMENT_TYPES.IMAGE),
+            id: Utils.getElementId(id, ELEMENT_TYPES.IMAGE),
             href: `images/${type}.png`,
             x: imagePosition.x,
             y: imagePosition.y,
@@ -44,7 +44,7 @@ export default class Graphics {
         const element = this.createSVGElement("text", {
             x: position.x,
             y: position.y,
-            id: getElementId(id, ELEMENT_TYPES.LABEL),
+            id: Utils.getElementId(id, ELEMENT_TYPES.LABEL),
             "text-anchor": "middle",
             style: "user-select:none;"
         }, value);
@@ -53,7 +53,7 @@ export default class Graphics {
 
     addPin(id, position) {
         const element = this.createSVGElement("circle", {
-            id: getElementId(id, ELEMENT_TYPES.PIN),
+            id: Utils.getElementId(id, ELEMENT_TYPES.PIN),
             cx: position.x,
             cy: position.y,
             r: DOT_SIZE
@@ -67,7 +67,7 @@ export default class Graphics {
                 join("");
 
         const element = this.createSVGElement("polyline", {
-            id: getElementId(id, ELEMENT_TYPES.LINE),
+            id: Utils.getElementId(id, ELEMENT_TYPES.LINE),
             points: points,
             style: style
         }, null);
@@ -75,7 +75,7 @@ export default class Graphics {
     }
 
     removeElement(id, type) {
-        const elementId = getElementId(id, type);
+        const elementId = Utils.getElementId(id, type);
         const element = this.doc.getElementById(elementId);
         if (element) {
             this.svg.removeChild(element);
@@ -99,7 +99,7 @@ export default class Graphics {
     }
 
     updateImage(id, position, angle) {
-        const imageElementId = getElementId(id, ELEMENT_TYPES.IMAGE);
+        const imageElementId = Utils.getElementId(id, ELEMENT_TYPES.IMAGE);
         const img = this.doc.getElementById(imageElementId);
         const halfImgSize = IMAGE_SIZE / 2;
         const adjustedPosition = position.offset(-halfImgSize, -halfImgSize);
@@ -109,7 +109,7 @@ export default class Graphics {
     }
 
     updateLabel(id, position, value) {
-        const labelElementId = getElementId(id, ELEMENT_TYPES.LABEL);
+        const labelElementId = Utils.getElementId(id, ELEMENT_TYPES.LABEL);
         const text = this.doc.getElementById(labelElementId);
         text.setAttribute("x", position.x);
         text.setAttribute("y", position.y);
@@ -117,32 +117,32 @@ export default class Graphics {
     }
 
     updatePin(pinId, position) {
-        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+        const elementId = Utils.getElementId(pinId, ELEMENT_TYPES.PIN);
         const pinElement = this.doc.getElementById(elementId);
         pinElement.setAttribute("cx", position.x);
         pinElement.setAttribute("cy", position.y);
     }
 
     updateLine(lineId, polyStr) {
-        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
+        const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
         const lineElement = this.doc.getElementById(elementId);
         lineElement.setAttribute("points", polyStr);
     }
 
     getPolyStr(lineId) {
-        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
+        const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
         const line = this.doc.getElementById(elementId);
         return line.getAttribute("points");
     }
 
     getImagePosition(componentId) {
-        const elementId = getElementId(componentId, ELEMENT_TYPES.IMAGE);
+        const elementId = Utils.getElementId(componentId, ELEMENT_TYPES.IMAGE);
         const image = this.doc.getElementById(elementId);
         return new Position(image.x.baseVal.value, image.y.baseVal.value).offset(IMAGE_SIZE / 2, IMAGE_SIZE / 2);
     }
 
     getPinPosition(pinId) {
-        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+        const elementId = Utils.getElementId(pinId, ELEMENT_TYPES.PIN);
         const pin = this.doc.getElementById(elementId);
         return new Position(pin.cx.baseVal.value, pin.cy.baseVal.value);
     }

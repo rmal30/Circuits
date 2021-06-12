@@ -1,6 +1,6 @@
-import {roundNum} from "./utils.js";
+import Utils from "../utils.js";
 
-export default class Complex {
+export default class ComplexOperations {
 
     static abs(z) {
         if (z.constructor === Array) {
@@ -13,10 +13,10 @@ export default class Complex {
 
     static print(z, numPlaces = 8) {
         if (z.constructor === Array) {
-            const [realString, imaginaryString] = z.map((value) => roundNum(value, numPlaces));
+            const [realString, imaginaryString] = z.map((value) => Utils.roundNum(value, numPlaces));
             return `${realString} + ${imaginaryString}j`;
         } else {
-            return roundNum(z, numPlaces);
+            return Utils.roundNum(z, numPlaces);
         }
     }
 

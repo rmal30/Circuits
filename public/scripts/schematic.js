@@ -1,8 +1,8 @@
-import {COMPONENT_DEFINITIONS} from "../config/components.js";
-import {COMPONENT_RANGE, LINE_RANGE, PIN_RANGE} from "../config/constants.js";
-import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS} from "../config/layout.js";
-import {findPolyStr} from "../rendering/polyline.js";
-import {getAngleFromDirection, getLabelPinPos, getLines, isNearLine} from "../rendering/utils.js";
+import {COMPONENT_DEFINITIONS} from "./config/components.js";
+import {COMPONENT_RANGE, LINE_RANGE, PIN_RANGE} from "./config/constants.js";
+import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS} from "./config/layout.js";
+import {findPolyStr} from "./rendering/polyline.js";
+import {getAngleFromDirection, getLabelPinPos, getLines, isNearLine} from "./rendering/geometry.js";
 
 export default class Schematic {
     constructor(doc, graphics) {
@@ -33,13 +33,7 @@ export default class Schematic {
         const info = COMPONENT_DEFINITIONS[component.type];
         this.graphics.addImage(component.id, component.pos, component.type, angle);
 
-        let dlx, dly;
-        if (component.direction[0] === 0) {
-            [dlx, dly] = LABEL_POSITIONS.V;
-        } else {
-            [dlx, dly] = LABEL_POSITIONS.H;
-        }
-
+        const [dlx, dly] = component.direction[0] === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
         const labelPos = component.pos.offset(dlx, dly);
         const labelValue = component.value ? `${component.value} ${info.unit}` : "";
         this.graphics.addLabel(component.id, labelPos, labelValue);

@@ -1,6 +1,9 @@
 export default class MatrixUtils {
 
     static concat(mat1, mat2) {
+        if (mat1.length !== mat2.length) {
+            throw new Error("Cannot concatenate: Matricies do not have the same height");
+        }
         const mat3 = [];
         for (let j = 0; j < mat1.length; j++) {
             mat3.push([...mat1[j], ...mat2[j]]);
@@ -14,20 +17,30 @@ export default class MatrixUtils {
      * @returns {Array<Array<any>>} - Concatenated matrix
      */
     static concatMultiple(mats) {
+        if (mats.length === 0) {
+            return [];
+        }
         return mats.reduce((currentMatrix, newMatrix) => MatrixUtils.concat(currentMatrix, newMatrix));
     }
 
     // Transpose a matrix
     static transpose(mat) {
-        const resultMatrix = new Array(mat[0].length);
-        for (let i = 0; i < mat[0].length; i++) {
+        const numCols = mat.length > 0 ? mat[0].length : 0;
+        const resultMatrix = new Array(numCols);
+        for (let i = 0; i < numCols; i++) {
             resultMatrix[i] = mat.map((row) => row[i]);
         }
-
         return resultMatrix;
     }
 
     static zipWith(mergeFunc, mat1, mat2) {
+        const rowSizeMatches = mat1.length === mat2.length;
+        const bothNotEmpty = mat1.length > 0 && mat2.length > 0;
+        const bothEmpty = mat1.length === 0 && rowSizeMatches;
+        const colSizeMatches = bothNotEmpty ? mat1[0].length === mat2[0].length : bothEmpty;
+        if (!rowSizeMatches || !colSizeMatches) {
+            throw new Error("Cannot merge: Matricies do not have the same size");
+        }
         const mat3 = new Array(mat1.length);
         for (let j = 0; j < mat1.length; j++) {
             mat3[j] = new Array(mat1[0].length);
@@ -53,7 +66,7 @@ export default class MatrixUtils {
 
     // Add two matricies
     static add(mathOperations, mat1, mat2) {
-        return MatrixUtils.zipWith(mat1, mat2, mathOperations.add);
+        return MatrixUtils.zipWith(mathOperations.add, mat1, mat2);
     }
 
     // Multiply a matrix by a constant
@@ -69,6 +82,9 @@ export default class MatrixUtils {
     // Multiply two matricies
     static multiply(mathOperations, mat1, mat2) {
         const mat3 = new Array(mat1.length);
+        if (mat1[0].length !== mat2.length) {
+            throw new Error("Matrix size mismatch");
+        }
         for (let j = 0; j < mat1.length; j++) {
             mat3[j] = new Array(mat2[0].length);
             for (let k = 0; k < mat2[0].length; k++) {

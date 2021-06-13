@@ -1,6 +1,8 @@
 # Circuits
 Web application to build and simulate circuits. Simulate any electrical circuit with RLC components, ideal amplifiers and power sources, using nodal and mesh analysis.
 
+[![Node.js CI](https://github.com/rmal30/Circuits/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/rmal30/Circuits/actions/workflows/node.js.yml)
+
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">

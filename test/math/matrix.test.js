@@ -1,8 +1,8 @@
-import MatrixUtils from "../public/scripts/math/matrix.js";
+import MatrixUtils from "../../public/scripts/math/matrix.js";
 import {describe, it} from "mocha";
 import assert from "assert";
 
-describe("Matrix operation tests", () => {
+describe("Matrix operations", () => {
     const operations = {
         add: (a, b) => a + b,
         subtract: (a, b) => a - b,

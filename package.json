@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "npx c8 --reporter=html --reporter=text mocha"
+    "test": "npx c8 --reporter=html --reporter=text mocha --recursive"
   },
   "type": "module",
   "repository": {

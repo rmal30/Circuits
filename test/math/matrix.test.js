@@ -1,5 +1,4 @@
 import MatrixUtils from "../../public/scripts/math/matrix.js";
-import {describe, it} from "mocha";
 import assert from "assert";
 
 describe("Matrix operations", () => {

@@ -11,6 +11,7 @@ export default class GaussianElimination {
                     temp = aug[p];
                     aug[p] = aug[r];
                     aug[r] = temp;
+                    return aug;
                 }
             }
         }
@@ -37,7 +38,14 @@ export default class GaussianElimination {
         const x = new Array(n).fill(0);
         const diagonal = aug.map((_, index) => aug[index][index]);
         if (diagonal.some((value) => value === 0)) {
-            return null;
+            let impossible = false;
+            for (let i = 0; i < n; i++) {
+                if (aug[i][i] === 0) {
+                    impossible = impossible || aug[i][n] !== 0;
+                }
+            }
+
+            throw new Error(impossible ? "No solution" : "Indeterminate");
         }
 
         x[n - 1] = mathOperations.divide(aug[n - 1][n], aug[n - 1][n - 1]);

@@ -2,7 +2,7 @@ import Utils from "../utils.js";
 
 export default class ComplexOperations {
 
-    static abs(z) {
+    static norm(z) {
         if (z.constructor === Array) {
             const [re, imag] = z;
             return re * re + imag * imag;
@@ -11,20 +11,20 @@ export default class ComplexOperations {
         }
     }
 
-    static print(z, numPlaces = 8) {
-        if (z.constructor === Array) {
-            const [realString, imaginaryString] = z.map((value) => Utils.roundNum(value, numPlaces));
-            return `${realString} + ${imaginaryString}j`;
-        } else {
-            return Utils.roundNum(z, numPlaces);
-        }
-    }
-
     static conjugate(z) {
         if (z.constructor === Array) {
             return [z[0], -z[1]];
         } else {
             return z;
+        }
+    }
+
+    static print(z, numPlaces = 8) {
+        if (z.constructor === Array) {
+            const [realString, imaginaryString] = z.map((value) => Utils.roundNum(value, numPlaces));
+            return `${realString} + ${imaginaryString}j`;
+        } else {
+            return Utils.roundNum(z, numPlaces).toString();
         }
     }
 

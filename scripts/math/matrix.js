@@ -84,7 +84,10 @@ export default class MatrixUtils {
         const mat3 = new Array(mat1.length);
         if (mat1.length > 0 && mat1[0].length !== mat2.length) {
             throw new Error("Matrix size mismatch");
+        } else if (mat1.length > 0 && mat2.length === 0) {
+            throw new Error("Cannot multiply as number of columns in second matrix is unknown")
         }
+
         for (let j = 0; j < mat1.length; j++) {
             mat3[j] = new Array(mat2[0].length);
             for (let k = 0; k < mat2[0].length; k++) {

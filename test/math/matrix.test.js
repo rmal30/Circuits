@@ -22,22 +22,19 @@ describe("Matrix operations", () => {
                 [2, 5],
                 [3, 6]
             ];
-            const result = testFunc(input);
-            return assert.deepStrictEqual(result, expected);
+            return assert.deepStrictEqual(testFunc(input), expected);
         });
 
         it("Empty 0x0", () => {
             const input = [];
             const expected = [];
-            const result = testFunc(input);
-            return assert.deepStrictEqual(result, expected);
+            return assert.deepStrictEqual(testFunc(input), expected);
         });
 
         it("1x0 -> 0x1", () => {
             const input = [[]];
             const expected = [];
-            const result = testFunc(input);
-            return assert.deepStrictEqual(result, expected);
+            return assert.deepStrictEqual(testFunc(input), expected);
         });
     });
 
@@ -55,15 +52,13 @@ describe("Matrix operations", () => {
                 [11, 22, 33],
                 [44, 55, 66]
             ];
-            const result = MatrixUtils.add(operations, mat1, mat2);
-            assert.deepStrictEqual(result, expected);
+            assert.deepStrictEqual(MatrixUtils.add(operations, mat1, mat2), expected);
         });
         it("Empty", () => {
             const mat1 = [];
             const mat2 = [];
             const expected = [];
-            const result = MatrixUtils.add(operations, mat1, mat2);
-            assert.deepStrictEqual(result, expected);
+            assert.deepStrictEqual(MatrixUtils.add(operations, mat1, mat2), expected);
         });
         it("Throw error if wrong shape", () => {
             const mat1 = [
@@ -88,8 +83,7 @@ describe("Matrix operations", () => {
                 [2, 4, 6],
                 [8, 10, 12]
             ];
-            const result = MatrixUtils.scalarMultiply(operations, mat, 2);
-            assert.deepStrictEqual(result, expected);
+            assert.deepStrictEqual(MatrixUtils.scalarMultiply(operations, mat, 2), expected);
         });
     });
 
@@ -103,33 +97,125 @@ describe("Matrix operations", () => {
                 [0.02, 0.04, 0.06],
                 [0.08, 0.1, 0.12]
             ];
-            const result = MatrixUtils.scalarDivide(operations, mat, 5);
-            assert.deepStrictEqual(result, expected);
+            assert.deepStrictEqual(MatrixUtils.scalarDivide(operations, mat, 5), expected);
         });
     });
 
     describe("Multiply", () => {
+        const testFunc = MatrixUtils.multiply;
+
+        it("Empty (0 rows) x Empty (0 rows)", () => {
+            const mat1 = [];
+            const mat2 = [];
+            assert.deepStrictEqual(testFunc(operations, mat1, mat2), []);
+        });
+
+        it("Empty (0 rows) x (2 x 0 matrix)", () => {
+            const mat1 = [];
+            const mat2 = [
+                [],
+                []
+            ];
+            assert.deepStrictEqual(testFunc(operations, mat1, mat2), []);
+        });
+
+        it("Empty (0 rows) x (2 x 3 matrix)", () => {
+            const mat1 = [];
+            const mat2 = [
+                [1, 2, 3],
+                [4, 5, 6]
+            ];
+            assert.deepStrictEqual(testFunc(operations, mat1, mat2), []);
+        });
+
+        it("(2 x 0 matrix) x Empty (0 rows)", () => {
+            const mat1 = [
+                [],
+                []
+            ];
+            const mat2 = [];
+            assert.throws(() => testFunc(operations, mat1, mat2));
+        });
+
+        it("(2 x 0 matrix) x (3 x 0 matrix)", () => {
+            const mat1 = [
+                [],
+                []
+            ];
+            const mat2 = [
+                [],
+                [],
+                []
+            ];
+            assert.throws(() => testFunc(operations, mat1, mat2));
+        });
+        
+        it("(2 x 0 matrix) x (1 x 2 matrix)", () => {
+            const mat1 = [
+                [],
+                []
+            ];
+            const mat2 = [
+                [1, 2]
+            ];
+            assert.throws(() => testFunc(operations, mat1, mat2));
+        });
+
+        it("(1 x 2 matrix) x Empty (0 rows)", () => {
+            const mat1 = [
+                [1, 2]
+            ];
+            const mat2 = [];
+            assert.throws(() => testFunc(operations, mat1, mat2));
+        });
+
+        it("(1 x 2 matrix) x (3 x 0 matrix)", () => {
+            const mat1 = [
+                [1, 2]
+            ];
+            const mat2 = [
+                [],
+                [],
+                []
+            ];
+            assert.throws(() => testFunc(operations, mat1, mat2));
+        });
+
+        it("(1 x 2 matrix) x (2 x 0 matrix)", () => {
+            const mat1 = [
+                [1, 2]
+            ];
+            const mat2 = [
+                [],
+                [],
+            ];
+            assert.deepStrictEqual(testFunc(operations, mat1, mat2), [[]]);
+        });
+
         it("Single x single", () => {
             const mat1 = [[3]];
             const mat2 = [[5]];
             const expected = [[15]];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
+
         it("Col x single", () => {
             const mat1 = [[1], [2], [3]];
             const mat2 = [[5]];
             const expected = [[5], [10], [15]];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
+
         it("Single x row", () => {
             const mat1 = [[2]];
             const mat2 = [[1, 2, 3]];
             const expected = [[2, 4, 6]];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
+
         it("Row x col", () => {
             const mat1 = [
                 [1, 2, 3]
@@ -142,7 +228,7 @@ describe("Matrix operations", () => {
             const expected = [
                 [32]
             ];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
 
@@ -160,7 +246,7 @@ describe("Matrix operations", () => {
                 [5, 10, 15],
                 [6, 12, 18]
             ];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
 
@@ -178,7 +264,7 @@ describe("Matrix operations", () => {
                 [58, 64, 14],
                 [139, 154, 32]
             ];
-            const result = MatrixUtils.multiply(operations, mat1, mat2);
+            const result = testFunc(operations, mat1, mat2);
             assert.deepStrictEqual(result, expected);
         });
 
@@ -191,7 +277,7 @@ describe("Matrix operations", () => {
                 [7, 8],
                 [9, 10]
             ];
-            assert.throws(() => MatrixUtils.multiply(operations, mat1, mat2));
+            assert.throws(() => testFunc(operations, mat1, mat2));
         });
     });
 
@@ -228,16 +314,20 @@ describe("Matrix operations", () => {
     });
 
     describe("Concatenate a number of matricies horizontally", () => {
+        const testFunc = MatrixUtils.concatMultiple;
+
         it("Zero", () => {
-            assert.deepStrictEqual(MatrixUtils.concatMultiple([]), []);
+            assert.deepStrictEqual(testFunc([]), []);
         });
+
         it("One", () => {
             const mat = [
                 [1, 2, 3],
                 [4, 5, 6]
             ];
-            assert.deepStrictEqual(MatrixUtils.concatMultiple([mat]), mat);
+            assert.deepStrictEqual(testFunc([mat]), mat);
         });
+
         it("Three", () => {
             const mats = [
                 [
@@ -261,9 +351,9 @@ describe("Matrix operations", () => {
                 [2, 6, 7, 11],
                 [3, 8, 9, 12],
             ];
-            const result = MatrixUtils.concatMultiple(mats);
-            assert.deepStrictEqual(expected, result);
+            assert.deepStrictEqual(testFunc(mats), expected);
         });
+
         it("Throw error if height mismatch", () => {
             const mat1 = [
                 [1, 2, 3],
@@ -274,7 +364,7 @@ describe("Matrix operations", () => {
                 [9, 10],
                 [11, 12]
             ];
-            assert.throws(() => MatrixUtils.concatMultiple([mat1, mat2]));
+            assert.throws(() => testFunc([mat1, mat2]));
         });
     });
 });

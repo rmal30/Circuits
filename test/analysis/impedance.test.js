@@ -3,7 +3,7 @@ import assert from "assert";
 import { COMPONENT_TYPES } from "../../public/scripts/config/components.js";
 
 describe("Impedance calculation", () => {
-    describe("Resistance", () => {
+    it("Resistance", () => {
         assert.strictEqual(getImpedance(100, COMPONENT_TYPES.RESISTOR, 200), 200);
     });
 

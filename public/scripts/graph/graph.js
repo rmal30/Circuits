@@ -32,8 +32,7 @@ export default class Graph {
 
     contractEdge(id) {
         const edge = this.edges[id];
-        this.nodes[edge.node1].edges.delete(id);
-        this.nodes[edge.node2].edges.delete(id);
+        this.removeEdge(id);
         const newId = `${edge.node1}:${edge.node2}`;
         this.nodes[newId] = {edges: new Set([...this.nodes[edge.node1].edges, ...this.nodes[edge.node2].edges])};
         this.nodes[newId].edges.forEach((edgeId) => {

@@ -82,7 +82,7 @@ export default class MatrixUtils {
     // Multiply two matricies
     static multiply(mathOperations, mat1, mat2) {
         const mat3 = new Array(mat1.length);
-        if (mat1[0].length !== mat2.length) {
+        if (mat1.length > 0 && mat1[0].length !== mat2.length) {
             throw new Error("Matrix size mismatch");
         }
         for (let j = 0; j < mat1.length; j++) {

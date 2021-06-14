@@ -15,7 +15,7 @@ export default class Events {
     }
 
     bindFreqChange(onFreqChange) {
-        this.freq.addEventListener("click", () => {
+        this.freq.addEventListener("input", () => {
             onFreqChange(this.freq.value);
         });
     }

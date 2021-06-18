@@ -1,4 +1,4 @@
-import Graph from "../../public/scripts/graph/graph.js";
+import Graph from "../../public/scripts/math/graph.js";
 import assert from "assert";
 
 describe("Graph", () => {

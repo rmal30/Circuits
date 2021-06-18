@@ -1,49 +1,20 @@
 import Graph from "./graph.js";
 export default class GraphAlgorithms {
 
-    /**
-     * DFS algorithm to traverse a graph
-     * @param {any} graph - Graph to traverse
-     * @param {string} start - Start node id
-     * @returns {{children: {}, parents: {}}} Children tree, parents map
-     */
-    static dfs(graph, start) {
-        const stack = [];
-        const children = {};
-        const parents = {};
-
-        stack.push(start);
-        const visited = new Set();
-
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (!visited.has(node)) {
-                visited.add(node);
-                children[node] = new Set();
-                for (const neighbour of graph.neighbours(node)) {
-                    if (!visited.has(neighbour)) {
-                        children[node].add(neighbour);
-                        parents[neighbour] = node;
-                        stack.push(neighbour);
-                    }
-                }
-            }
-        }
-
-        return {children, parents};
+    constructor (traversalFunc) {
+        this.traversalFunc = traversalFunc;
     }
 
     /**
      * Get path from start node to end node via a traversal function
      * @static
-     * @param {any} graph - Graph
+     * @param {Graph} graph - Graph
      * @param {string} start - Start node
      * @param {string} end - End node
-     * @param {function} traversalFunc - Traversal function
      * @returns {{}} - Map of edges and their directions
      */
-    static findPath(graph, start, end, traversalFunc) {
-        const ancestors = traversalFunc(graph, end).parents;
+    findPath(graph, start, end) {
+        const ancestors = this.traversalFunc(graph.neighbours.bind(graph), end).parents;
         let node = start;
         let node2 = null;
         const nodePath = {};
@@ -58,17 +29,14 @@ export default class GraphAlgorithms {
 
     /**
      * Get spanning tree
-     * @param {any} component - Component
-     * @param {function} traversalFunc - Traversal function
+     * @param {Graph} component - Component
      * @returns {any} - Spanning tree
      */
-    static findSpanningTree(component, traversalFunc) {
+    findSpanningTree(component) {
         const tree = new Graph();
 
         const [id] = Object.keys(component.nodes);
-        const {children} = traversalFunc(component, id);
-        tree.addNode(id);
-
+        const {children} = this.traversalFunc(component.neighbours.bind(component), id);
         for (const node of Object.keys(children)) {
             if (!(node in tree.nodes)) {
                 tree.addNode(node);
@@ -91,8 +59,8 @@ export default class GraphAlgorithms {
      * @param {Graph} graph - Graph
      * @returns {Object<string, number>[]} - List of independent cycles
      */
-    static findFundamentalCycleBasis(graph) {
-        const tree = GraphAlgorithms.findSpanningTree(graph, GraphAlgorithms.dfs);
+    findFundamentalCycleBasis(graph) {
+        const tree = this.findSpanningTree(graph);
         const cycles = [];
         const edges = {};
 
@@ -106,9 +74,9 @@ export default class GraphAlgorithms {
 
         for (const edgeId of Object.keys(edges)) {
             const edge = edges[edgeId];
-            const cycle = GraphAlgorithms.findPath(tree, edge.node2, edge.node1, GraphAlgorithms.dfs);
+            const cycle = this.findPath(tree, edge.node2, edge.node1);
             if (cycle) {
-                cycle[edgeId] = 1;
+                cycle[edgeId] = edge.node1 === edge.node2 ? 0 : 1;
                 cycles.push(cycle);
             }
         }
@@ -116,15 +84,15 @@ export default class GraphAlgorithms {
         return cycles;
     }
 
-    static findNodeFlows(graph) {
+    findNodeFlows(graph) {
         const nodes = [];
         for (const nodeId of Object.keys(graph.nodes)) {
             const node = {};
             for (const edgeId of graph.nodes[nodeId].edges) {
                 if (graph.edges[edgeId].node1 === nodeId && graph.edges[edgeId].node2 !== nodeId) {
-                    node[edgeId] = 1;
-                } else if (graph.edges[edgeId].node2 === nodeId && graph.edges[edgeId].node1 !== nodeId) {
                     node[edgeId] = -1;
+                } else if (graph.edges[edgeId].node2 === nodeId && graph.edges[edgeId].node1 !== nodeId) {
+                    node[edgeId] = 1;
                 } else {
                     node[edgeId] = 0;
                 }

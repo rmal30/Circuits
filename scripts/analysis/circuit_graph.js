@@ -1,5 +1,5 @@
 import {COMPONENT_TYPES} from "../config/components.js";
-import Graph from "./graph.js";
+import Graph from "../math/graph.js";
 
 export default class CircuitGraph extends Graph {
 

@@ -180,7 +180,6 @@ describe("Graph algorithms", () => {
     describe("Cycle basis", () => {
         it("Single node", () => {
             const graph = graphs.singleNode(2);
-            console.error(graph);
             const result = graphAlgorithms.findFundamentalCycleBasis(graph);
             assert.deepStrictEqual(result, [
                 {edge1: 0}, 

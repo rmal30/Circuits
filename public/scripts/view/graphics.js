@@ -61,14 +61,14 @@ export default class Graphics {
         this.svg.appendChild(element);
     }
 
-    addLine(id, points) {
+    addPolyline(id, polyLinePoints) {
         const style = Object.keys(DEFAULT_LINE_STYLE).
                 map((prop) => `${prop}:${DEFAULT_LINE_STYLE[prop]};`).
                 join("");
 
         const element = this.createSVGElement("polyline", {
             id: Utils.getElementId(id, ELEMENT_TYPES.LINE),
-            points: points,
+            points: polyLinePoints.map((point) => point.join(",")).join(" "),
             style: style
         }, null);
         this.svg.appendChild(element);
@@ -123,9 +123,10 @@ export default class Graphics {
         pinElement.setAttribute("cy", position.y);
     }
 
-    updateLine(lineId, polyStr) {
+    updatePolyline(lineId, polyLinePoints) {
         const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
         const lineElement = this.doc.getElementById(elementId);
+        const polyStr = polyLinePoints.map((point) => point.join(",")).join(" ");
         lineElement.setAttribute("points", polyStr);
     }
 

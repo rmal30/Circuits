@@ -1,7 +1,7 @@
 import {COMPONENT_DEFINITIONS} from "./config/components.js";
 import {COMPONENT_RANGE, LINE_RANGE, PIN_RANGE} from "./config/constants.js";
 import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS} from "./config/layout.js";
-import {findPolyStr} from "./rendering/polyline.js";
+import {planPolyLine} from "./rendering/polyline.js";
 import {getAngleFromDirection, getLabelPinPos, getLines, isNearLine} from "./rendering/geometry.js";
 
 export default class Schematic {
@@ -41,8 +41,8 @@ export default class Schematic {
     }
 
     addLine(id, pin1, pin2) {
-        const polyStr = findPolyStr(pin1, pin2);
-        this.graphics.addLine(id, polyStr);
+        const lines = planPolyLine(pin1, pin2);
+        this.graphics.addPolyline(id, lines);
     }
 
     addPin(pin) {
@@ -89,8 +89,8 @@ export default class Schematic {
 
     updateLine(pins, lines, lineId) {
         const [pinId1, pinId2] = lines[lineId];
-        const newPolyStr = findPolyStr(pins[pinId1], pins[pinId2]);
-        this.graphics.updateLine(lineId, newPolyStr);
+        const newLines = planPolyLine(pins[pinId1], pins[pinId2]);
+        this.graphics.updatePolyline(lineId, newLines);
     }
 
     isNearPin(pinId, position, range) {

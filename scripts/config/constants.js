@@ -28,6 +28,13 @@ export const DIRECTIONS = {
     V: [0, 1]
 };
 
+export const ALL_DIRECTIONS = {
+    LEFT: [-1, 0],
+    RIGHT: [1, 0],
+    UP: [0, -1],
+    DOWN: [0, 1]
+}
+
 export const DIRECTION_ANGLES = {
     H: 0,
     V: 90

@@ -38,8 +38,12 @@ export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mi
             midPoints.push([dest.x + dir1[0] * halfImgSize, dest.y]);
         }
     } else if (dx * dir0[0] >= 0 && (Math.abs(dx) > IMAGE_SIZE || Math.abs(dy) < IMAGE_SIZE)) {
+        if(dy === 0) {
+            // Nothing
+        } else {
             midPoints.push([mid.x, origin.y]);
             midPoints.push([mid.x, dest.y]);
+        }
     } else {
         midPoints.push([origin.x + dir0[0] * halfImgSize, origin.y]);
         if (Math.abs(dy) >= IMAGE_SIZE) {
@@ -70,16 +74,21 @@ export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mi
 export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
     const halfImgSize = IMAGE_SIZE / 2;
     const midPoints = [];
+    
     if (dy * dir0[1] > 0 && dy * dir1[1] < 0 && Math.abs(dy) > IMAGE_SIZE) {
-        midPoints.push([origin.x, mid.y]);
-        midPoints.push([dest.x, mid.y]);
+        if (dx === 0) {
+            // Nothing
+        } else {
+            midPoints.push([origin.x, mid.y]);
+            midPoints.push([dest.x, mid.y]);
+        }
     } else if (dir1[1] * dir0[1] > 0 && Math.abs(dx) > halfImgSize) {
         if (dir1[1] < 0) {
-            midPoints.push([origin.x, min.y - IMAGE_SIZE]);
-            midPoints.push([dest.x, min.y - IMAGE_SIZE]);
+            midPoints.push([origin.x, min.y - halfImgSize]);
+            midPoints.push([dest.x, min.y - halfImgSize]);
         } else {
-            midPoints.push([origin.x, max.y + IMAGE_SIZE]);
-            midPoints.push([dest.x, max.y + IMAGE_SIZE]);
+            midPoints.push([origin.x, max.y + halfImgSize]);
+            midPoints.push([dest.x, max.y + halfImgSize]);
         }
     } else if (Math.abs(dx) > IMAGE_SIZE) {
         midPoints.push([origin.x, origin.y + dir0[1] * halfImgSize]);
@@ -112,9 +121,9 @@ export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid,
  * Plan a line which can connect two components
  * @param {{pos, direction}} originPin - Origin pin
  * @param {{pos, direction}} destPin - Destination pin
- * @returns {string} - SVG polyline string
+ * @returns {number[][]} - SVG polyline string
  */
-export function findPolyStr(originPin, destPin) {
+export function planPolyLine(originPin, destPin) {
     const origin = originPin.pos;
     const dest = destPin.pos;
     let dir0 = originPin.direction;
@@ -143,12 +152,12 @@ export function findPolyStr(originPin, destPin) {
         } else if (dir0[0] === 0 && dir1[1] === 0) {
             if (dy * dir0[1] > 0 && dx * dir1[0] < 0) {
                 midPoints.push([origin.x, dest.y]);
-            } else {
+            } else if (dx !== 0 && dy !== 0) {
                 midPoints.push([dest.x, origin.y]);
             }
         } else if (dx * dir0[0] > 0 && dy * dir1[1] < 0) {
             midPoints.push([dest.x, origin.y]);
-        } else {
+        } else if (dx !== 0 && dy !== 0) {
             midPoints.push([origin.x, dest.y]);
         }
     }
@@ -156,5 +165,5 @@ export function findPolyStr(originPin, destPin) {
     polyLinePoints.push(origin.coords());
     polyLinePoints = polyLinePoints.concat(midPoints);
     polyLinePoints.push(dest.coords());
-    return polyLinePoints.map((point) => point.join(",")).join(" ");
+    return polyLinePoints;
 }

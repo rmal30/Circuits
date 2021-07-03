@@ -1,6 +1,6 @@
 import Analyser from "./analysis/analyser.js";
 import {COMPONENT_DEFINITIONS} from "./config/components.js";
-import {DIRECTIONS} from "./config/constants.js";
+import {ALIGNMENT_DELTAS} from "./config/constants.js";
 import Utils from "./utils.js";
 import {getPinDirections, getPinPositions, rotateVector} from "./rendering/geometry.js";
 
@@ -43,11 +43,10 @@ export default class Circuit {
         delete this.components[componentID];
     }
 
-    addComponent(type, value, pos, directionStr) {
-        const direction = DIRECTIONS[directionStr];
+    addComponent(type, value, pos, alignment) {
         const {pinCount} = COMPONENT_DEFINITIONS[type];
-        const pinDir = getPinDirections(direction, pinCount);
-        const pinPos = getPinPositions(pos, direction, pinCount);
+        const pinDir = getPinDirections(ALIGNMENT_DELTAS[alignment], pinCount);
+        const pinPos = getPinPositions(pos, ALIGNMENT_DELTAS[alignment], pinCount);
         const id = this.newComponentId;
         const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 

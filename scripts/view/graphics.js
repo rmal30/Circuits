@@ -11,6 +11,10 @@ export default class Graphics {
         this.svg = svg;
     }
 
+    static pointsToPolylineString(polyLinePoints) {
+        return polyLinePoints.map((point) => `${point.x},${point.y}`).join(" ");
+    }
+
     createSVGElement(tag, properties, value) {
         const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
         const element = this.doc.createElementNS(SVG_NAMESPACE, tag);
@@ -68,7 +72,7 @@ export default class Graphics {
 
         const element = this.createSVGElement("polyline", {
             id: Utils.getElementId(id, ELEMENT_TYPES.LINE),
-            points: polyLinePoints.map((point) => point.join(",")).join(" "),
+            points: Graphics.pointsToPolylineString(polyLinePoints),
             style: style
         }, null);
         this.svg.appendChild(element);
@@ -126,7 +130,7 @@ export default class Graphics {
     updatePolyline(lineId, polyLinePoints) {
         const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
         const lineElement = this.doc.getElementById(elementId);
-        const polyStr = polyLinePoints.map((point) => point.join(",")).join(" ");
+        const polyStr = Graphics.pointsToPolylineString(polyLinePoints);
         lineElement.setAttribute("points", polyStr);
     }
 

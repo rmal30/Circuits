@@ -23,32 +23,40 @@ export const EQUATION_TYPES = {
     NODE: "node"
 };
 
-export const DIRECTIONS = {
-    H: [1, 0],
-    V: [0, 1]
-};
-
-export const ALL_DIRECTIONS = {
-    LEFT: [-1, 0],
-    RIGHT: [1, 0],
-    UP: [0, -1],
-    DOWN: [0, 1]
-}
-
-export const DIRECTION_ANGLES = {
-    H: 0,
-    V: 90
-};
-
-export const ANGLES = {
-    "0,1": 90,
-    "0,-1": -90,
-    "1,0": 0,
-    "-1,0": 180
-};
-
 export const KEYS = {
     R: "r",
     DELETE: "Delete",
     ESCAPE: "Escape"
+};
+
+
+export const DIRECTIONS = {
+    LEFT: "LEFT",
+    RIGHT: "RIGHT",
+    UP: "UP",
+    DOWN: "DOWN"
+}
+
+export const DIRECTION_DELTAS = {
+    LEFT: {dx: -1, dy: 0},
+    RIGHT: {dx: 1, dy: 0},
+    UP: {dx: 0, dy: -1},
+    DOWN: {dx: 0, dy: 1}
+}
+
+export const DIRECTION_ANGLES = {
+    DOWN: 90,
+    UP: -90,
+    RIGHT: 0,
+    LEFT: 180
+};
+
+export const ALIGNMENT_DELTAS = {
+    H: {dx: 1, dy: 0},
+    V: {dx: 0, dy: 1}
+};
+
+export const ALIGNMENT_ANGLES = {
+    H: 0,
+    V: 90
 };

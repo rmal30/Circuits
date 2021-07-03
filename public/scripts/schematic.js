@@ -33,7 +33,7 @@ export default class Schematic {
         const info = COMPONENT_DEFINITIONS[component.type];
         this.graphics.addImage(component.id, component.pos, component.type, angle);
 
-        const [dlx, dly] = component.direction[0] === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
+        const [dlx, dly] = component.direction.dx === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
         const labelPos = component.pos.offset(dlx, dly);
         const labelValue = component.value ? `${component.value} ${info.unit}` : "";
         this.graphics.addLabel(component.id, labelPos, labelValue);
@@ -41,7 +41,7 @@ export default class Schematic {
     }
 
     addLine(id, pin1, pin2) {
-        const lines = planPolyLine(pin1, pin2);
+        const lines = planPolyLine(pin1, pin2, IMAGE_SIZE / 2);
         this.graphics.addPolyline(id, lines);
     }
 
@@ -89,7 +89,7 @@ export default class Schematic {
 
     updateLine(pins, lines, lineId) {
         const [pinId1, pinId2] = lines[lineId];
-        const newLines = planPolyLine(pins[pinId1], pins[pinId2]);
+        const newLines = planPolyLine(pins[pinId1], pins[pinId2], IMAGE_SIZE / 2);
         this.graphics.updatePolyline(lineId, newLines);
     }
 

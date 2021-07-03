@@ -1,169 +1,272 @@
-import {IMAGE_SIZE} from "../config/layout.js";
 import Position from "./position.js";
 
-/**
- * Plan a line which can connect two horizontal components
- * @param {number[]} dir0 - Pin direction of origin
- * @param {number[]} dir1 - Pin direction of destination
- * @param {Position} min - Minimum point
- * @param {Position} max - Maximum point
- * @param {Position} origin - Origin point
- * @param {Position} mid - Middle point
- * @param {Position} dest - Destination point
- * @param {number} dx - Difference in x
- * @param {number} dy - Difference in y
- * @returns {Array<number>[]} List of positions
- */
-export function findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
-    const halfImgSize = IMAGE_SIZE / 2;
-    const midPoints = [];
-    if (dir1[0] * dir0[0] > 0) {
-        if (Math.abs(dy) > halfImgSize) {
-            if (dir1[0] < 0) {
-                midPoints.push([min.x - halfImgSize, origin.y]);
-                midPoints.push([min.x - halfImgSize, dest.y]);
-            } else {
-                midPoints.push([max.x + halfImgSize, origin.y]);
-                midPoints.push([max.x + halfImgSize, dest.y]);
-            }
+function findMidPointsWithSameDirection(originPosition, destPosition, direction, padding) {
+    const dy = destPosition.y - originPosition.y;
+    const dx = destPosition.x - originPosition.x;
+    const minX = Math.min(originPosition.x, destPosition.x);
+    const minY = Math.min(originPosition.y, destPosition.y);
+    const maxX = Math.max(originPosition.x, destPosition.x);
+    const maxY = Math.max(originPosition.y, destPosition.y);
+
+    if (direction.dx === 0) {
+        if(Math.abs(dx) > padding) {
+            const yPos = direction.dy < 0 ? (minY - padding) : (maxY + padding);
+            return [ 
+                new Position(originPosition.x, yPos),
+                new Position(destPosition.x, yPos)
+            ];
         } else {
-            midPoints.push([origin.x + dir0[0] * halfImgSize, origin.y]);
-            if (dy * dx * dir1[0] >= 0) {
-                midPoints.push([origin.x + dir0[0] * halfImgSize, max.y - halfImgSize]);
-                midPoints.push([dest.x + dir1[0] * halfImgSize, max.y - halfImgSize]);
-            } else {
-                midPoints.push([origin.x + dir0[0] * halfImgSize, min.y + halfImgSize]);
-                midPoints.push([dest.x + dir1[0] * halfImgSize, min.y + halfImgSize]);
-            }
-            midPoints.push([dest.x + dir1[0] * halfImgSize, dest.y]);
-        }
-    } else if (dx * dir0[0] >= 0 && (Math.abs(dx) > IMAGE_SIZE || Math.abs(dy) < IMAGE_SIZE)) {
-        if(dy === 0) {
-            // Nothing
-        } else {
-            midPoints.push([mid.x, origin.y]);
-            midPoints.push([mid.x, dest.y]);
+            const xPos = dy * dx * direction.dy >= 0 ? (maxX - padding) : (minX + padding);
+            const initialY = originPosition.y + direction.dy * padding;
+            const finalY = destPosition.y + direction.dy * padding;
+            return [ 
+                originPosition.offset(0, direction.dy * padding),
+                new Position(xPos, initialY),
+                new Position(xPos, finalY),
+                destPosition.offset(0, direction.dy * padding)
+            ];
         }
     } else {
-        midPoints.push([origin.x + dir0[0] * halfImgSize, origin.y]);
-        if (Math.abs(dy) >= IMAGE_SIZE) {
-            midPoints.push([origin.x + dir0[0] * halfImgSize, mid.y]);
-            midPoints.push([dest.x + dir1[0] * halfImgSize, mid.y]);
+        if(Math.abs(dy) > padding) {
+            const xPos = direction.dx < 0 ? (minX - padding) : (maxX + padding);
+            return [ 
+                new Position(xPos, originPosition.y),
+                new Position(xPos, destPosition.y)
+            ];
         } else {
-            midPoints.push([origin.x + dir0[0] * halfImgSize, min.y - halfImgSize]);
-            midPoints.push([dest.x + dir1[0] * halfImgSize, min.y - halfImgSize]);
+            const yPos = dy * dx * direction.dx >= 0 ? (maxY - padding) : (minY + padding);
+            const initialX = originPosition.x + direction.dx * padding;
+            const finalX = destPosition.x + direction.dx * padding;
+            return [ 
+                originPosition.offset(direction.dx * padding, 0),
+                new Position(initialX, yPos),
+                new Position(finalX, yPos),
+                destPosition.offset(direction.dx * padding, 0)
+            ];
         }
-        midPoints.push([dest.x + dir1[0] * halfImgSize, dest.y]);
     }
-    return midPoints;
 }
 
-/**
- * Plan a line which can connect two vertical components
- * @param {number[]} dir0 - Pin direction of origin
- * @param {number[]} dir1 - Pin direction of destination
- * @param {Position} min - Minimum point
- * @param {Position} max - Maximum point
- * @param {Position} origin - Origin point
- * @param {Position} mid - Middle point
- * @param {Position} dest - Destination point
- * @param {number} dx - Difference in x
- * @param {number} dy - Difference in y
- * @returns {Array<number>[]} List of positions
- */
-export function findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy) {
-    const halfImgSize = IMAGE_SIZE / 2;
-    const midPoints = [];
-    
-    if (dy * dir0[1] > 0 && dy * dir1[1] < 0 && Math.abs(dy) > IMAGE_SIZE) {
-        if (dx === 0) {
-            // Nothing
+function findMidPointsWithOppositeDirection(originPosition, destPosition, originDirection, padding) {
+    const dy = destPosition.y - originPosition.y;
+    const dx = destPosition.x - originPosition.x;
+    const minX = Math.min(originPosition.x, destPosition.x);
+    const minY = Math.min(originPosition.y, destPosition.y);
+
+    if (originDirection.dx === 0) {
+        if (dx === 0 && originDirection.dy * dy >= 0) {
+            return [];
+        } else if (originDirection.dy * dy >= 0 && (Math.abs(dy) > 2 * padding || Math.abs(dx) <= 2 * padding)) {
+            return [
+                originPosition.offset(0, dy/2),
+                destPosition.offset(0, -dy/2)
+            ];
         } else {
-            midPoints.push([origin.x, mid.y]);
-            midPoints.push([dest.x, mid.y]);
+            const xPos = Math.abs(dx) > 2 * padding ? (originPosition.x + destPosition.x) / 2 : minX - padding;
+            const initialY = originPosition.y + padding * originDirection.dy;
+            const finalY = destPosition.y - padding * originDirection.dy;
+            return [
+                originPosition.offset(0, padding * originDirection.dy),
+                new Position(xPos, initialY),
+                new Position(xPos, finalY),
+                destPosition.offset(0, -padding * originDirection.dy)
+            ];
         }
-    } else if (dir1[1] * dir0[1] > 0 && Math.abs(dx) > halfImgSize) {
-        if (dir1[1] < 0) {
-            midPoints.push([origin.x, min.y - halfImgSize]);
-            midPoints.push([dest.x, min.y - halfImgSize]);
+    } else {
+        if (dy === 0 && originDirection.dx * dx >= 0) {
+            return [];
+        } else if (originDirection.dx * dx >= 0 && (Math.abs(dx) > 2 * padding || Math.abs(dy) <= 2 * padding)) {
+            return [
+                originPosition.offset(dx/2, 0),
+                destPosition.offset(-dx/2, 0)
+            ];
         } else {
-            midPoints.push([origin.x, max.y + halfImgSize]);
-            midPoints.push([dest.x, max.y + halfImgSize]);
+            const yPos = Math.abs(dy) > 2 * padding ? (originPosition.y + destPosition.y) / 2 : minY - padding;
+            const initialX = originPosition.x + padding * originDirection.dx;
+            const finalX = destPosition.x - padding * originDirection.dx;
+            
+            return [
+                originPosition.offset(padding * originDirection.dx, 0),
+                new Position(initialX, yPos),
+                new Position(finalX, yPos),
+                destPosition.offset(-padding * originDirection.dx, 0)
+            ];
         }
-    } else if (Math.abs(dx) > IMAGE_SIZE) {
-        midPoints.push([origin.x, origin.y + dir0[1] * halfImgSize]);
-        midPoints.push([mid.x, origin.y + dir0[1] * halfImgSize]);
-        midPoints.push([mid.x, dest.y + dir1[1] * halfImgSize]);
-        midPoints.push([dest.x, dest.y + dir1[1] * halfImgSize]);
-    } else if (dy * dir0[1] < 0 || dy * dir1[1] > 0) {
-        midPoints.push([origin.x, origin.y + dir0[1] * halfImgSize]);
-        if (dir1[1] * dir0[1] > 0) {
-            if (dx * dy * dir1[1] >= 0) {
-                midPoints.push([max.x - halfImgSize, origin.y + dir0[1] * halfImgSize]);
-                midPoints.push([max.x - halfImgSize, dest.y + dir1[1] * halfImgSize]);
+    }
+}
+
+function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding) {
+    const dx = dest.x - origin.x;
+    const dy = dest.y - origin.y;
+
+    if((dir0.dx * dx > padding || dir0.dy * dy > padding) && (dir1.dx * dx < -padding || dir1.dy * dy < -padding)) {
+        return [
+            origin.offset(Math.abs(dx) * dir0.dx, Math.abs(dy) * dir0.dy)
+        ];
+    } else if((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx < -2 * padding || dir1.dy * dy < -2 * padding)) {
+        const firstMidPoint = origin.offset(padding * dir0.dx, padding * dir0.dy);
+        const secondMidPoint = firstMidPoint.offset(-Math.abs(dx/2) * dir1.dx, -Math.abs(dy/2) * dir1.dy)
+        return [
+            firstMidPoint,
+            secondMidPoint,
+            dest.offset(Math.abs(dx/2) * dir1.dx, Math.abs(dy/2) * dir1.dy)
+        ];
+    } else if((dir0.dx * dx > 2 * padding || dir0.dy * dy > 2 * padding) && (dir1.dx * dx < 0 || dir1.dy * dy < 0)) {
+        const firstMidPoint = origin.offset(Math.abs(dx/2) * dir0.dx, Math.abs(dy/2) * dir0.dy);
+        const lastMidPoint = dest.offset(padding * dir1.dx, padding * dir1.dy);
+        return [
+            firstMidPoint,
+            lastMidPoint.offset(-Math.abs(dx/2) * dir0.dx, -Math.abs(dy/2) * dir0.dy),
+            lastMidPoint
+        ];
+    } else if ((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx < 0 || dir1.dy * dy < 0)) {
+        return [
+            origin.offset(Math.abs(dx) * dir0.dx, Math.abs(dy) * dir0.dy)
+        ];
+    } else if ((dir0.dx * dx < 0 || dir0.dy * dy < 0) && (dir1.dx * dx > 0 || dir1.dy * dy > 0)) {
+        const firstMidPoint = origin.offset(padding * dir0.dx, padding * dir0.dy);
+        const secondMidPoint = firstMidPoint.offset(
+            (Math.abs(dx) + padding) * dir1.dx, 
+            (Math.abs(dy) + padding) * dir1.dy
+        );
+        return [
+            firstMidPoint,
+            secondMidPoint,
+            dest.offset(padding * dir1.dx, padding * dir1.dy)
+        ];
+    } else if((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx > 0 || dir1.dy * dy > 0)) {
+        const initialdx = Math.abs(dx) > 2 * padding ? Math.abs(dx/2) : (Math.abs(dx) + padding);
+        const initialdy = Math.abs(dy) > 2 * padding ? Math.abs(dy/2) : (Math.abs(dy) + padding);
+        const firstMidPoint = origin.offset(initialdx * dir0.dx, initialdy * dir0.dy);
+        return [
+            firstMidPoint,
+            firstMidPoint.offset(
+                (Math.abs(dx) + padding) * dir1.dx,
+                (Math.abs(dy) + padding) * dir1.dy
+            ),
+            dest.offset(padding * dir1.dx, padding * dir1.dy)
+        ];
+    } else if ((dir0.dx * dx < 0 || dir0.dy * dy < 0) && (dir1.dx * dx < 0 || dir1.dy * dy < 0)) {
+        const initialdx = Math.abs(dx) > 2 * padding ? Math.abs(dx/2) : (Math.abs(dx) + padding);
+        const initialdy = Math.abs(dy) > 2 * padding ? Math.abs(dy/2) : (Math.abs(dy) + padding);
+        const lastMidPoint = dest.offset(initialdx * dir1.dx, initialdy * dir1.dy);
+        const secondLastMidPoint = lastMidPoint.offset(
+            (Math.abs(dx) + padding) * dir0.dx,
+            (Math.abs(dy) + padding) * dir0.dy
+        )
+        return [
+            origin.offset(padding * dir0.dx, padding * dir0.dy),
+            secondLastMidPoint,
+            lastMidPoint
+        ];
+    } else if (dir0.dx * dx === 0 && dir0.dy * dy === 0) {
+        if(Math.abs(dx) + Math.abs(dy) < 2 * padding && dir1.dx * dx <= 0 && dir1.dy * dy <= 0) {
+            return [];
+        } else {
+            const secondX = dir1.dx * dx < 0 ? -Math.abs(dx/2) : (Math.abs(dx) + padding);
+            const secondY = dir1.dy * dy < 0 ? -Math.abs(dy/2) : (Math.abs(dy) + padding);
+            const finalOffsetX = Math.max(-dir1.dx * dx / 2, padding);
+            const finalOffsetY = Math.max(-dir1.dy * dy / 2, padding);
+            const firstMidPoint = origin.offset(padding * dir0.dx, padding * dir0.dy);
+            return [
+                firstMidPoint,
+                firstMidPoint.offset(secondX * dir1.dx, secondY * dir1.dy),
+                dest.offset(finalOffsetX * dir1.dx, finalOffsetY * dir1.dy)
+            ];
+        }
+    } else {
+        if(Math.abs(dx) + Math.abs(dy) < 2 * padding && dir0.dx * dx >= 0 && dir0.dy * dy >= 0) {
+            return [];
+        } else {
+            const secondX = dir0.dx * dx > 0 ? -Math.abs(dx/2) : (Math.abs(dx) + padding);
+            const secondY = dir0.dy * dy > 0 ? -Math.abs(dy/2) : (Math.abs(dy) + padding);
+            const initialOffsetX = Math.max(dir0.dx * dx / 2, padding);
+            const initialOffsetY = Math.max(dir0.dy * dy / 2, padding);
+            const lastMidPoint = dest.offset(padding * dir1.dx, padding * dir1.dy);
+            return [
+                origin.offset(initialOffsetX * dir0.dx, initialOffsetY * dir0.dy),
+                lastMidPoint.offset(secondX * dir0.dx, secondY * dir0.dy),
+                lastMidPoint
+            ];
+        }
+    }
+}
+
+function findMidPointsWithNoDirection(startPosition, endPosition, startDirection, padding) {
+    const dy = endPosition.y - startPosition.y;
+    const dx = endPosition.x - startPosition.x;
+
+    if(dy * startDirection.dx - dx * startDirection.dy === 0 && dx * startDirection.dx + dy * startDirection.dy >= 0) {
+        return [];
+    } else {
+        if (startDirection.dx === 0) {
+            if(startDirection.dy * dy >= 0 && (Math.abs(dy) > padding || Math.abs(dx) <= padding)) {
+                return [
+                    new Position(startPosition.x, endPosition.y)
+                ];
+            } else if (Math.abs(dx) > padding) {
+                return [
+                    startPosition.offset(0, padding * startDirection.dy),
+                    startPosition.offset(dx, padding * startDirection.dy)
+                ]
             } else {
-                midPoints.push([min.x + halfImgSize, origin.y + dir0[1] * halfImgSize]);
-                midPoints.push([min.x + halfImgSize, dest.y + dir0[1] * halfImgSize]);
+                return [
+                    startPosition.offset(0, padding * startDirection.dy),
+                    startPosition.offset(-padding, padding * startDirection.dy),
+                    startPosition.offset(-padding, dy)
+                ]
             }
         } else {
-            midPoints.push([min.x - halfImgSize, origin.y + dir0[1] * halfImgSize]);
-            midPoints.push([min.x - halfImgSize, dest.y + dir1[1] * halfImgSize]);
+            if(startDirection.dx * dx >= 0 && (Math.abs(dx) > padding || Math.abs(dy) <= padding)) {
+                return [
+                    new Position(endPosition.x, startPosition.y)
+                ];
+            } else if (Math.abs(dy) > padding) {
+                const firstMidPoint = startPosition.offset(padding * startDirection.dx, 0);
+                return [
+                    firstMidPoint,
+                    firstMidPoint.offset(0, dy)
+                ]
+            } else {
+                return [
+                    startPosition.offset(padding * startDirection.dx, 0),
+                    startPosition.offset(padding * startDirection.dx, -padding),
+                    startPosition.offset(dx, -padding)
+                ]
+            }
         }
-        midPoints.push([dest.x, dest.y + dir1[1] * halfImgSize]);
-    } else {
-        midPoints.push([origin.x, mid.y]);
-        midPoints.push([dest.x, mid.y]);
     }
-    return midPoints;
 }
 
 /**
  * Plan a line which can connect two components
  * @param {{pos, direction}} originPin - Origin pin
  * @param {{pos, direction}} destPin - Destination pin
+ * @param {number} padding - The number of pixels to add to a pin before turning
  * @returns {number[][]} - SVG polyline string
  */
-export function planPolyLine(originPin, destPin) {
+export function planPolyLine(originPin, destPin, padding) {
     const origin = originPin.pos;
     const dest = destPin.pos;
-    let dir0 = originPin.direction;
-    let dir1 = destPin.direction;
-    const dx = dest.x - origin.x;
-    const dy = dest.y - origin.y;
-    const mid = origin.offset(dx * 0.5, dy * 0.5);
-    const min = new Position(Math.min(origin.x, dest.x), Math.min(origin.y, dest.y));
-    const max = new Position(Math.max(origin.x, dest.x), Math.max(origin.y, dest.y));
-    let polyLinePoints = [];
+    const dir0 = originPin.direction;
+    const dir1 = destPin.direction;
+
     let midPoints = [];
-
-    if (!dir0) {
-        dir0 = [dx * Math.abs(dir1[1]), dy * Math.abs(dir1[0])];
+    if (!dir0 && !dir1) {
+        midPoints = [
+            new Position(origin.x, dest.y)
+        ];
+    } else if(!dir1) {
+        midPoints = findMidPointsWithNoDirection(origin, dest, dir0, padding);
+    } else if(!dir0) {
+        midPoints = findMidPointsWithNoDirection(dest, origin, dir1, padding).reverse();
+    } else if(dir0.dx === dir1.dx && dir0.dy === dir1.dy) {
+        midPoints = findMidPointsWithSameDirection(origin, dest, dir0, padding);
+    } else if (dir0.dx === -dir1.dx && dir0.dy === -dir1.dy) {
+        midPoints = findMidPointsWithOppositeDirection(origin, dest, dir0, padding);
+    } else {
+        midPoints = findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding);
     }
 
-    if (!dir1) {
-        dir1 = [-dx * Math.abs(dir0[1]), -dy * Math.abs(dir0[0])];
-    }
-
-    if (dir0 && dir1) {
-        if (dir0[1] === 0 && dir1[1] === 0) {
-            midPoints = findMidPointsWithBothHorizontal(dir0, dir1, min, max, origin, mid, dest, dx, dy);
-        } else if (dir0[0] === 0 && dir1[0] === 0) {
-            midPoints = findMidPointsWithBothVertical(dir0, dir1, min, max, origin, mid, dest, dx, dy);
-        } else if (dir0[0] === 0 && dir1[1] === 0) {
-            if (dy * dir0[1] > 0 && dx * dir1[0] < 0) {
-                midPoints.push([origin.x, dest.y]);
-            } else if (dx !== 0 && dy !== 0) {
-                midPoints.push([dest.x, origin.y]);
-            }
-        } else if (dx * dir0[0] > 0 && dy * dir1[1] < 0) {
-            midPoints.push([dest.x, origin.y]);
-        } else if (dx !== 0 && dy !== 0) {
-            midPoints.push([origin.x, dest.y]);
-        }
-    }
-
-    polyLinePoints.push(origin.coords());
-    polyLinePoints = polyLinePoints.concat(midPoints);
-    polyLinePoints.push(dest.coords());
-    return polyLinePoints;
+    return [origin, ...midPoints, dest];
 }

@@ -33,7 +33,7 @@ export default class Graph {
     contractEdge(id) {
         const edge = this.edges[id];
         this.removeEdge(id);
-        const newId = `${edge.node1}:${edge.node2}`;
+        const newId = edge.node1 === edge.node2 ? edge.node1 : `${edge.node1}:${edge.node2}`;
         this.nodes[newId] = {edges: new Set([...this.nodes[edge.node1].edges, ...this.nodes[edge.node2].edges])};
         this.nodes[newId].edges.forEach((edgeId) => {
             if (this.edges[edgeId].node1 === edge.node1 || this.edges[edgeId].node1 === edge.node2) {
@@ -43,8 +43,10 @@ export default class Graph {
                 this.edges[edgeId].node2 = newId;
             }
         });
-        delete this.nodes[edge.node1];
-        delete this.nodes[edge.node2];
+        if (newId !== edge.node1) {
+            delete this.nodes[edge.node1];
+            delete this.nodes[edge.node2];
+        }
     }
 
     neighbours(nodeId) {

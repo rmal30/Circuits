@@ -45,7 +45,7 @@ export default class CircuitGraph extends Graph {
                         });
                         break;
                     default:
-                        break;
+                        throw new Error("Unknown 4 pin component type");
                 }
             }
         }

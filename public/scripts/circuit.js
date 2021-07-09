@@ -1,8 +1,26 @@
 import Analyser from "./analysis/analyser.js";
 import {COMPONENT_DEFINITIONS} from "./config/components.js";
-import {ALIGNMENT_DELTAS} from "./config/constants.js";
 import Utils from "./utils.js";
-import {getPinDirections, getPinPositions, rotateVector} from "./rendering/geometry.js";
+import { DIRECTION_TEMPLATE, getPinPositions } from "./config/layout.js";
+import ComplexOperations from "./math/complex.js";
+
+export const ALIGNMENT_DELTAS = {
+    H: {dx: 1, dy: 0},
+    V: {dx: 0, dy: 1}
+};
+
+
+function rotateVector(vec) {
+    return {dx: -vec.dy, dy: vec.dx};
+}
+
+export function getPinDirections(alignmentDelta, count) {
+    return DIRECTION_TEMPLATE[count].map((delta) => {
+        const newDelta = ComplexOperations.multiply([delta.dx, delta.dy], [alignmentDelta.dx, alignmentDelta.dy])
+        return {dx: newDelta[0], dy: newDelta[1]}
+    });
+}
+
 
 export default class Circuit {
 

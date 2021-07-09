@@ -1,6 +1,11 @@
 import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./config/components.js";
-import {ELEMENT_TYPES, KEYS} from "./config/constants.js";
+import {ELEMENT_TYPES} from "./config/constants.js";
 
+export const KEYS = {
+    R: "r",
+    DELETE: "Delete",
+    ESCAPE: "Escape"
+};
 export default class Controller {
 
     constructor(model, view) {

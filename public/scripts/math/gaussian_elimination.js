@@ -48,6 +48,10 @@ export default class GaussianElimination {
             throw new Error(impossible ? "No solution" : "Indeterminate");
         }
 
+        if (aug.length === 0) {
+            throw new Error("Empty");
+        }
+
         x[n - 1] = mathOperations.divide(aug[n - 1][n], aug[n - 1][n - 1]);
         for (let p = n - 2; p >= 0; p--) {
             const rowSum = Utils.range(p + 1, n).

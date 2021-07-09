@@ -1,4 +1,10 @@
-import {ELEMENT_PREFIXES} from "./config/constants.js";
+
+export const ELEMENT_PREFIXES = {
+    Line: "lin",
+    Image: "img",
+    Pin: "pin-",
+    Label: "txt"
+};
 
 export default class Utils {
 

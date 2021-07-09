@@ -248,31 +248,12 @@ export default class MeshAnalysis extends CommonAnalysis {
             new Array(vccsMatrix.length + currentMeterMatrix.length + vcvsMatrix.length + cccsMatrix.length).fill(0)
         ].flat();
 
-        const sol = this.solver.solve(this.operations, matrix, target);
-        if (!sol) {
-            return null;
-        }
-
-        const {loopCurrentsList, meterVoltagesList, meterCurrentsList} = CommonAnalysis.unpackArray({
-            loopCurrentsList: allLoops.length,
-            meterVoltagesList: voltageMeterCount,
-            meterCurrentsList: currentMeterCount
-        }, sol);
-
-        const meterVoltages = {};
-        voltageMeterEdges.forEach((edgeId, index) => {
-            meterVoltages[edgeId] = meterVoltagesList[index];
-        });
-
-        const meterCurrents = {};
-        currentMeterEdges.forEach((edgeId, index) => {
-            meterCurrents[edgeId] = meterCurrentsList[index];
-        });
+        const {unknowns, meterVoltages, meterCurrents} = super.solve(matrix, target, voltageMeterEdges, currentMeterEdges, allLoops.length);
 
         return {
-            currents: this.getComponentCurrentsFromLoopCurrents(allLoops, loopCurrentsList),
-            meterVoltages: meterVoltages,
-            meterCurrents: meterCurrents
+            currents: this.getComponentCurrentsFromLoopCurrents(allLoops, unknowns),
+            meterVoltages,
+            meterCurrents
         };
     }
 }

@@ -1,0 +1,14 @@
+{
+    "hertz": 60,
+    "pins": {
+        "0": {"id": 0, "comp": 0, "direction": {"dx": 1, "dy": 0}, "lines": [], "pos": {"x": 792, "y": 168}},
+        "1": {"id": 1, "comp": 0, "direction": {"dx": -1, "dy": 0}, "lines": [], "pos": {"x": 744, "y": 168}}
+    },
+    "lines": {},
+    "components": {
+        "0": {"id": 0, "type": "res", "value": 2, "direction": {"dx": 1, "dy": 0}, "pins": [0, 1], "pos": {"x": 768, "y": 168}}
+    },
+    "newPinId": 2,
+    "newLineId": 0,
+    "newComponentId": 1
+}

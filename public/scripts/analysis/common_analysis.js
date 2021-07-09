@@ -71,4 +71,29 @@ export default class CommonAnalysis {
         }
         return total;
     }
+
+    solve(matrix, target, voltageMeterEdges, currentMeterEdges, solutionSize) {
+        const solution = this.solver.solve(this.operations, matrix, target);
+        const {unknowns, meterVoltagesList, meterCurrentsList} = CommonAnalysis.unpackArray({
+            unknowns: solutionSize,
+            meterVoltagesList: voltageMeterEdges.length,
+            meterCurrentsList: currentMeterEdges.length
+        }, solution);
+
+
+        const meterVoltages = {};
+        voltageMeterEdges.forEach((edgeId, index) => {
+            meterVoltages[edgeId] = meterVoltagesList[index];
+        });
+
+        const meterCurrents = {};
+        currentMeterEdges.forEach((edgeId, index) => {
+            meterCurrents[edgeId] = meterCurrentsList[index];
+        });
+        return {
+            unknowns,
+            meterVoltages,
+            meterCurrents
+        }
+    }
 }

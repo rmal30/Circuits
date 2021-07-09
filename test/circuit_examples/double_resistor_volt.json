@@ -1,0 +1,82 @@
+{
+    "hertz": 60,
+    "pins": {
+        "9": {
+            "id": 9,
+            "comp": 3,
+            "direction": {"dx": 1, "dy": 0},
+            "lines": [12],
+            "pos": {"x": 558, "y": 168}
+        },
+        "10": {
+            "id": 10,
+            "comp": 3,
+            "direction": {"dx": -1, "dy": 0},
+            "lines": [10, 11],
+            "pos": {"x": 510, "y": 168}
+        },
+        "11": {
+            "id": 11,
+            "comp": 4,
+            "direction": {"dx": 1, "dy": 0},
+            "lines": [12, 13],
+            "pos": {"x": 558, "y": 228}
+        },
+        "12": {
+            "id": 12,
+            "comp": 4,
+            "direction": {"dx": -1, "dy": 0},
+            "lines": [11],
+            "pos": {"x": 510, "y": 228}
+        },
+        "13": {
+            "id": 13,
+            "comp": 5,
+            "direction": {"dx": 1, "dy": 0},
+            "lines": [13],
+            "pos": {"x": 558, "y": 294}
+        },
+        "14": {
+            "id": 14,
+            "comp": 5,
+            "direction": {"dx": -1, "dy": 0},
+            "lines": [10],
+            "pos": {"x": 510, "y": 294}
+        }
+    },
+    "lines": {
+        "10": [14, 10],
+        "11": [12, 10],
+        "12": [9, 11],
+        "13": [11, 13]
+    },
+    "components": {
+        "3": {
+            "id": 3,
+            "type": "res",
+            "value": 3,
+            "direction": {"dx": 1, "dy": 0},
+            "pins": [9, 10],
+            "pos": {"x": 534, "y": 168}
+        },
+        "4": {
+            "id": 4,
+            "type": "res",
+            "value": 5,
+            "direction": {"dx": 1, "dy": 0},
+            "pins": [11, 12],
+            "pos": {"x": 534, "y": 228}
+        },
+        "5": {
+            "id": 5,
+            "type": "vdc",
+            "value": 7,
+            "direction": {"dx": 1, "dy": 0},
+            "pins": [13, 14],
+            "pos": {"x": 534, "y": 294}
+        }
+    },
+    "newPinId": 15,
+    "newLineId": 14,
+    "newComponentId": 6
+}

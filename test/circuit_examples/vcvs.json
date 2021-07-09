@@ -1,0 +1,30 @@
+{
+    "hertz": 60,
+    "pins": {
+        "0": {"id": 0, "comp": 0, "direction": {"dx": 1, "dy": 0}, "lines": [6], "pos": {"x": 648, "y": 162}},
+        "1": {"id": 1, "comp": 0, "direction": {"dx": -1, "dy": 0}, "lines": [3], "pos": {"x": 600, "y": 162}},
+        "2": {"id": 2, "comp": 1, "direction": {"dx": 1, "dy": 0}, "lines": [8], "pos": {"x": 648, "y": 246}},
+        "3": {"id": 3, "comp": 1, "direction": {"dx": 1, "dy": 0}, "lines": [9], "pos": {"x": 648, "y": 222}},
+        "4": {"id": 4, "comp": 1, "direction": {"dx": -1, "dy": 0}, "lines": [4], "pos": {"x": 600, "y": 246}},
+        "5": {"id": 5, "comp": 1, "direction": {"dx": -1, "dy": 0}, "lines": [3], "pos": {"x": 600, "y": 222}},
+        "6": {"id": 6, "comp": 2, "direction": {"dx": 1, "dy": 0}, "lines": [7], "pos": {"x": 648, "y": 300}},
+        "7": {"id": 7, "comp": 2, "direction": {"dx": -1, "dy": 0}, "lines": [4], "pos": {"x": 600, "y": 300}},
+        "8": {"id": 8, "pos": {"x": 672, "y": 234}, "lines": [6, 7, 8, 9]}
+    },
+    "lines": {
+        "3": [1, 5],
+        "4": [4, 7],
+        "6": [8, 0],
+        "7": [8, 6],
+        "8": [8, 2],
+        "9": [8, 3]
+    },
+    "components": {
+        "0": {"id": 0, "type": "res", "value": 3, "direction": {"dx": 1, "dy": 0}, "pins": [0, 1], "pos": {"x": 624, "y": 162}},
+        "1": {"id": 1, "type": "vcvs", "value": 5, "direction": {"dx": 1, "dy": 0}, "pins": [2, 3, 4, 5], "pos": {"x": 624, "y": 234}},
+        "2": {"id": 2, "type": "vdc", "value": 7, "direction": {"dx": 1, "dy": 0}, "pins": [6, 7], "pos": {"x": 624, "y": 300}}
+    },
+    "newPinId": 9,
+    "newLineId": 10,
+    "newComponentId": 3
+}

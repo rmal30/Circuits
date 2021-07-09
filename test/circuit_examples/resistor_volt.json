@@ -1,0 +1,20 @@
+{
+    "hertz": 60, 
+    "pins": {
+        "0": {"id": 0, "comp": 0, "direction": {"dx": 1, "dy": 0}, "lines": [1], "pos": {"x": 594, "y": 96}},
+        "1": {"id": 1, "comp": 0, "direction": {"dx": -1, "dy": 0}, "lines": [0], "pos": {"x": 546, "y": 96}},
+        "2": {"id": 2, "comp": 1, "direction": {"dx": 1, "dy": 0}, "lines": [1], "pos": {"x": 600, "y": 180}},
+        "3": {"id": 3, "comp": 1, "direction": {"dx": -1, "dy": 0}, "lines": [0], "pos": {"x": 552, "y": 180}}
+    },
+    "lines": {
+        "0": [3, 1], 
+        "1": [0, 2]
+    },
+    "components": {
+        "0": {"id": 0, "type": "res", "value": 2, "direction": {"dx": 1, "dy": 0}, "pins": [0, 1], "pos": {"x": 570, "y": 96}},
+        "1": {"id": 1, "type": "vdc", "value": 3, "direction": {"dx": 1, "dy": 0}, "pins": [2, 3], "pos": {"x": 576, "y": 180}}
+    },
+    "newPinId": 4,
+    "newLineId": 2,
+    "newComponentId": 2
+}

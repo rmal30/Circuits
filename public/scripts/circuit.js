@@ -28,8 +28,15 @@ export default class Circuit {
 
     deleteLine(lineId) {
         const [pin1, pin2] = this.lines[lineId];
-        this.pins[pin1].lines.delete(lineId);
-        this.pins[pin2].lines.delete(lineId);
+
+        const pin1LineSet = new Set(this.pins[pin1].lines);
+        pin1LineSet.delete(lineId);
+        this.pins[pin1].lines = [...pin1LineSet];
+
+        const pin2LineSet = new Set(this.pins[pin2].lines);
+        pin2LineSet.delete(lineId);
+        this.pins[pin2].lines = [...pin2LineSet];
+
         delete this.lines[lineId];
     }
 
@@ -71,10 +78,9 @@ export default class Circuit {
     addLine(pinId1, pinId2) {
         const lineId = this.newLineId;
         this.lines[lineId] = [pinId1, pinId2];
+        this.pins[pinId1].lines.push(lineId);
+        this.pins[pinId2].lines.push(lineId);
         this.newLineId++;
-
-        this.pins[pinId1].lines.add(lineId);
-        this.pins[pinId2].lines.add(lineId);
         return lineId;
     }
 
@@ -90,14 +96,14 @@ export default class Circuit {
 
     addComponentPin(componentId, pos, direction) {
         const pinId = this.newPinId;
-        this.pins[pinId] = {id: pinId, comp: componentId, direction: direction, lines: new Set(), pos: pos};
+        this.pins[pinId] = {id: pinId, comp: componentId, direction: direction, lines: [], pos: pos};
         this.newPinId++;
         return pinId;
     }
 
     addNode(pos) {
         const pinId = this.newPinId;
-        this.pins[pinId] = {id: pinId, pos: pos, lines: new Set()};
+        this.pins[pinId] = {id: pinId, pos: pos, lines: []};
         this.newPinId++;
         return pinId;
     }

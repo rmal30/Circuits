@@ -174,6 +174,26 @@ describe("Graph algorithms", () => {
             const connectedNodesCount = Object.keys(TraversalMethods.dfs(spanningTree.neighbours.bind(spanningTree), "node1").parents).length;
             assert.strictEqual(connectedNodesCount, graph.nodeCount() - 1);
         });
+
+        it("Four node loop", () => {
+            const graph = new Graph();
+            graph.nodes = {
+                "0":{"edges": new Set(["0", "1"])},
+                "1":{"edges": new Set(["0", "3"])},
+                "2":{"edges": new Set(["1", "2"])},
+                "4":{"edges": new Set(["2", "3"])}
+            };
+            
+            graph.edges = {
+                "0":{"node1":"0","node2":"1","info":{"type":"res","value":2}},
+                "1":{"node1":"2","node2":"0","info":{"type":"cap","value":3}},
+                "2":{"node1":"4","node2":"2","info":{"type":"ind","value":5}},
+                "3":{"node1":"4","node2":"1","info":{"type":"vac","value":3}}
+            };
+            const spanningTree = graphAlgorithms.findSpanningTree(graph);
+            assert.strictEqual(spanningTree.nodeCount(), graph.nodeCount());
+            assert.strictEqual(spanningTree.edgeCount(), graph.nodeCount() - 1);
+        })
     })
 
 

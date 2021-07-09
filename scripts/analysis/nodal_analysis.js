@@ -32,7 +32,7 @@ export default class NodalAnalysis extends CommonAnalysis {
 
         // Meter currents -> Node currents with only current meters
         const currentMeterMatrix = noVoltageNodes.map((node) => {
-            return CommonAnalysis.getGroupDirections(node, currentMeterEdges);
+            return CommonAnalysis.getGroupDirections(node, currentMeterEdges).map((v) => -v);
         });
 
         const indexes = {};
@@ -70,7 +70,7 @@ export default class NodalAnalysis extends CommonAnalysis {
 
     getCurrentVector(nodes) {
         const currentEdges = this.graph.getEdgesOfTypes(INDEPENDENT_CURRENT_SOURCE_TYPES);
-        return nodes.map((node) => super.getGroupTotal(node, currentEdges));
+        return nodes.map((node) => -super.getGroupTotal(node, currentEdges));
     }
 
     getVoltageSourcesEquations(nodes, meterCount) {
@@ -185,7 +185,7 @@ export default class NodalAnalysis extends CommonAnalysis {
 
         const voltages = {};
         noVoltageEdges.forEach((edgeId, index) => {
-            voltages[edgeId] = -voltageList[index];
+            voltages[edgeId] = this.operations.multiply(voltageList[index], -1);
         });
 
         return voltages;
@@ -237,31 +237,12 @@ export default class NodalAnalysis extends CommonAnalysis {
             new Array(ccvsMatrix.length + voltageMeterMatrix.length + vcvsMatrix.length + cccsMatrix.length + 1).fill(0)
         ].flat();
 
-        const solutionSet = this.solver.solve(this.operations, matrix, target);
-        if (!solutionSet) {
-            return null;
-        }
-
-        const {nodeVoltagesList, meterVoltagesList, meterCurrentsList} = CommonAnalysis.unpackArray({
-            nodeVoltagesList: allNodes.length,
-            meterVoltagesList: voltageMeterCount,
-            meterCurrentsList: currentMeterCount
-        }, solutionSet);
-
-        const meterVoltages = {};
-        voltageMeterEdges.forEach((edgeId, index) => {
-            meterVoltages[edgeId] = meterVoltagesList[index];
-        });
-
-        const meterCurrents = {};
-        currentMeterEdges.forEach((edgeId, index) => {
-            meterCurrents[edgeId] = meterCurrentsList[index];
-        });
+        const {unknowns, meterVoltages, meterCurrents} = super.solve(matrix, target, voltageMeterEdges, currentMeterEdges, allNodes.length);
 
         return {
-            voltages: this.getComponentVoltagesFromNodeVoltages(allNodes, nodeVoltagesList),
-            meterVoltages: meterVoltages,
-            meterCurrents: meterCurrents
+            voltages: this.getComponentVoltagesFromNodeVoltages(allNodes, unknowns),
+            meterVoltages,
+            meterCurrents
         };
     }
 }

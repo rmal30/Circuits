@@ -55,10 +55,10 @@ export default class CircuitGraph extends Graph {
     /**
      * Group nodes of a circuit that are connected (directly or indirectly) via a line
      * @param {any} circuit - The graphical circuit
-     * @returns {Set<any[]>} nodeGroups - A set of node groups
+     * @returns {Set<Set<any>>} nodeGroups - A set of node groups
      */
     static getNodeGroups(circuit) {
-        const nodeGroups = new Set();
+        const nodeGroups = new Set(Object.keys(circuit.pins).map((nodeId) => new Set([Number(nodeId)])));
 
         for (const lineId of Object.keys(circuit.lines)) {
             const [node1, node2] = circuit.lines[lineId];

@@ -36,18 +36,16 @@ export default class GraphAlgorithms {
         const tree = new Graph();
 
         const [id] = Object.keys(component.nodes);
+        tree.addNode(id);
+
         const {children} = this.traversalFunc(component.neighbours.bind(component), id);
         for (const node of Object.keys(children)) {
-            if (!(node in tree.nodes)) {
-                tree.addNode(node);
-            }
             for (const neighbour of children[node]) {
-                if (!(neighbour in tree.nodes)) {
-                    tree.addNode(neighbour);
-                    const [edgeId] = component.getEdges(node, neighbour);
-                    const edge = component.edges[edgeId];
-                    tree.addEdge(edgeId, edge.node1, edge.node2, edge.info);
-                }
+                tree.addNode(node);
+                tree.addNode(neighbour);
+                const [edgeId] = component.getEdges(node, neighbour);
+                const edge = component.edges[edgeId];
+                tree.addEdge(edgeId, edge.node1, edge.node2, edge.info);
             }
         }
 

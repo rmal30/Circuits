@@ -13,7 +13,9 @@ export default class Graph {
     }
 
     addNode(id) {
-        this.nodes[id] = {edges: new Set()};
+        if(!(id in this.nodes)) {
+            this.nodes[id] = {edges: new Set()};
+        }
     }
 
     addEdge(id, nodeId1, nodeId2, info) {

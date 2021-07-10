@@ -1,7 +1,7 @@
 import {
     AMPLIFIER_TYPES, COMPONENT_TYPES, IMPEDANCE_COMPONENT_TYPES,
     INDEPENDENT_CURRENT_SOURCE_TYPES, INDEPENDENT_VOLTAGE_SOURCE_TYPES
-} from "../config/components.js";
+} from "../components.js";
 import CommonAnalysis from "./common_analysis.js";
 
 export default class NodalAnalysis extends CommonAnalysis {

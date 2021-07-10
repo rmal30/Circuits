@@ -25,9 +25,9 @@
             </div>
 
 
-            <div id="freq2" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
+            <div id="freqComponent" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
                 <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
-                <input disabled id="freq" class="mdl-textfield__input" type="number" step="any" value="60"></input>
+                <input disabled id="frequency" class="mdl-textfield__input" type="number" step="any" value="60"></input>
             </div>
 
             <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -66,6 +66,7 @@
     <script type="module" src="scripts/math/graph.js"></script>
     <script type="module" src="scripts/math/graph_algorithms.js"></script>
     <script type="module" src="scripts/math/traversal_methods.js"></script>
+    <script type="module" src="scripts/math/utils.js"></script>
 
     <script type="module" src="scripts/analysis/analyser.js"></script>
     <script type="module" src="scripts/analysis/circuit_graph.js"></script>
@@ -78,20 +79,26 @@
     <script type="module" src="scripts/rendering/position.js"></script>
     <script type="module" src="scripts/rendering/polyline.js"></script>
 
-    <script type="module" src="scripts/config/constants.js"></script>
-    <script type="module" src="scripts/config/components.js"></script>
-    <script type="module" src="scripts/config/layout.js"></script>
-    <script type="module" src="scripts/config/style.js"></script>
+    <script type="module" src="scripts/schematic/layout.js"></script>
+    <script type="module" src="scripts/schematic/elements.js"></script>
+    <script type="module" src="scripts/schematic/schematic.js"></script>
+    <script type="module" src="scripts/schematic/style.js"></script>
 
-    <script type="module" src="scripts/view/graphics.js"></script>
-    <script type="module" src="scripts/view/view.js"></script>
-    <script type="module" src="scripts/view/events.js"></script>
-    <script type="module" src="scripts/schematic.js"></script>
+    <script type="module" src="scripts/views/svg_graphics_view.js"></script>
+    <script type="module" src="scripts/views/header_view.js"></script>
+    <script type="module" src="scripts/views/prompt_view.js"></script>
+    <script type="module" src="scripts/views/schematic_view.js"></script>
+    <script type="module" src="scripts/views/status_view.js"></script>
 
-    <script type="module" src="scripts/circuit.js"></script>
-    <script type="module" src="scripts/model.js"></script>
+    <script type="module" src="scripts/models/circuit.js"></script>
+    <script type="module" src="scripts/models/motion_state.js"></script>
+    <script type="module" src="scripts/models/selection_state.js"></script>
 
+    <script type="module" src="scripts/events/header_events.js"></script>
+    <script type="module" src="scripts/events/schematic_events.js"></script>
+
+    <script type="module" src="scripts/components.js"></script>
     <script type="module" src="scripts/controller.js"></script>
     <script type="module" src="scripts/main.js"></script>
-    <script type="module" src="scripts/utils.js"></script>
+
 </HTML>

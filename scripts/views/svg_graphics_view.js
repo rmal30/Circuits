@@ -1,10 +1,9 @@
-import {ELEMENT_TYPES} from "../config/constants.js";
-import {DOT_SIZE, IMAGE_SIZE} from "../config/layout.js";
-import {DEFAULT_LINE_STYLE} from "../config/style.js";
+import {ELEMENT_TYPES, getElementId} from "../schematic/elements.js";
+import {DOT_SIZE, IMAGE_SIZE} from "../schematic/layout.js";
+import {DEFAULT_LINE_STYLE, STYLES} from "../schematic/style.js";
 import Position from "../rendering/position.js";
-import Utils from "../utils.js";
 
-export default class Graphics {
+export default class SVGGraphicsView {
 
     constructor(doc, svg) {
         this.doc = doc;
@@ -13,6 +12,18 @@ export default class Graphics {
 
     static pointsToPolylineString(polyLinePoints) {
         return polyLinePoints.map((point) => `${point.x},${point.y}`).join(" ");
+    }
+
+    static polylineStringToPoints(polylineStr){
+        const points = polylineStr.split(" ").map((pointStr) => {
+            const [x, y] = pointStr.split(",").map((v) => Number(v));
+            return new Position(x, y)
+        });
+        const linePoints = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            linePoints.push([points[i], points[i + 1]]);
+        }
+        return linePoints;
     }
 
     createSVGElement(tag, properties, value) {
@@ -33,7 +44,7 @@ export default class Graphics {
     addImage(id, position, type, angle) {
         const imagePosition = position.offset(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2);
         const element = this.createSVGElement("image", {
-            id: Utils.getElementId(id, ELEMENT_TYPES.IMAGE),
+            id: getElementId(id, ELEMENT_TYPES.IMAGE),
             href: `images/${type}.png`,
             x: imagePosition.x,
             y: imagePosition.y,
@@ -48,7 +59,7 @@ export default class Graphics {
         const element = this.createSVGElement("text", {
             x: position.x,
             y: position.y,
-            id: Utils.getElementId(id, ELEMENT_TYPES.LABEL),
+            id: getElementId(id, ELEMENT_TYPES.LABEL),
             "text-anchor": "middle",
             style: "user-select:none;"
         }, value);
@@ -57,7 +68,7 @@ export default class Graphics {
 
     addPin(id, position) {
         const element = this.createSVGElement("circle", {
-            id: Utils.getElementId(id, ELEMENT_TYPES.PIN),
+            id: getElementId(id, ELEMENT_TYPES.PIN),
             cx: position.x,
             cy: position.y,
             r: DOT_SIZE
@@ -71,15 +82,15 @@ export default class Graphics {
                 join("");
 
         const element = this.createSVGElement("polyline", {
-            id: Utils.getElementId(id, ELEMENT_TYPES.LINE),
-            points: Graphics.pointsToPolylineString(polyLinePoints),
+            id: getElementId(id, ELEMENT_TYPES.LINE),
+            points: SVGGraphicsView.pointsToPolylineString(polyLinePoints),
             style: style
         }, null);
         this.svg.appendChild(element);
     }
 
     removeElement(id, type) {
-        const elementId = Utils.getElementId(id, type);
+        const elementId = getElementId(id, type);
         const element = this.doc.getElementById(elementId);
         if (element) {
             this.svg.removeChild(element);
@@ -103,7 +114,7 @@ export default class Graphics {
     }
 
     updateImage(id, position, angle) {
-        const imageElementId = Utils.getElementId(id, ELEMENT_TYPES.IMAGE);
+        const imageElementId = getElementId(id, ELEMENT_TYPES.IMAGE);
         const img = this.doc.getElementById(imageElementId);
         const halfImgSize = IMAGE_SIZE / 2;
         const adjustedPosition = position.offset(-halfImgSize, -halfImgSize);
@@ -113,7 +124,7 @@ export default class Graphics {
     }
 
     updateLabel(id, position, value) {
-        const labelElementId = Utils.getElementId(id, ELEMENT_TYPES.LABEL);
+        const labelElementId = getElementId(id, ELEMENT_TYPES.LABEL);
         const text = this.doc.getElementById(labelElementId);
         text.setAttribute("x", position.x);
         text.setAttribute("y", position.y);
@@ -121,34 +132,57 @@ export default class Graphics {
     }
 
     updatePin(pinId, position) {
-        const elementId = Utils.getElementId(pinId, ELEMENT_TYPES.PIN);
+        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
         const pinElement = this.doc.getElementById(elementId);
         pinElement.setAttribute("cx", position.x);
         pinElement.setAttribute("cy", position.y);
     }
 
     updatePolyline(lineId, polyLinePoints) {
-        const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
         const lineElement = this.doc.getElementById(elementId);
-        const polyStr = Graphics.pointsToPolylineString(polyLinePoints);
+        const polyStr = SVGGraphicsView.pointsToPolylineString(polyLinePoints);
         lineElement.setAttribute("points", polyStr);
     }
 
-    getPolyStr(lineId) {
-        const elementId = Utils.getElementId(lineId, ELEMENT_TYPES.LINE);
+    getPolylinePoints(lineId) {
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
         const line = this.doc.getElementById(elementId);
-        return line.getAttribute("points");
+        const pointsStr = line.getAttribute("points");
+        return SVGGraphicsView.polylineStringToPoints(pointsStr);
     }
 
     getImagePosition(componentId) {
-        const elementId = Utils.getElementId(componentId, ELEMENT_TYPES.IMAGE);
+        const elementId = getElementId(componentId, ELEMENT_TYPES.IMAGE);
         const image = this.doc.getElementById(elementId);
         return new Position(image.x.baseVal.value, image.y.baseVal.value).offset(IMAGE_SIZE / 2, IMAGE_SIZE / 2);
     }
 
     getPinPosition(pinId) {
-        const elementId = Utils.getElementId(pinId, ELEMENT_TYPES.PIN);
+        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
         const pin = this.doc.getElementById(elementId);
         return new Position(pin.cx.baseVal.value, pin.cy.baseVal.value);
+    }
+
+    setElementSelected(selected, id, type) {
+        const elementId = getElementId(id, type);
+        const element = this.doc.getElementById(elementId);
+
+        if (element) {
+            const style = selected ? STYLES.select[type] : STYLES.deselect[type];
+            Object.assign(element.style, style);
+        }
+    }
+
+    setSelectedItem(item) {
+        if (item.selected) {
+            this.setElementSelected(true, item.id, item.type);
+        }
+    }
+
+    clearSelectedItem(item) {
+        if (item.selected) {
+            this.setElementSelected(false, item.id, item.type);
+        }
     }
 }

@@ -1,26 +1,8 @@
-import Analyser from "./analysis/analyser.js";
-import {COMPONENT_DEFINITIONS} from "./config/components.js";
-import Utils from "./utils.js";
-import { DIRECTION_TEMPLATE, getPinPositions } from "./config/layout.js";
-import ComplexOperations from "./math/complex.js";
-
-export const ALIGNMENT_DELTAS = {
-    H: {dx: 1, dy: 0},
-    V: {dx: 0, dy: 1}
-};
-
-
-function rotateVector(vec) {
-    return {dx: -vec.dy, dy: vec.dx};
-}
-
-export function getPinDirections(alignmentDelta, count) {
-    return DIRECTION_TEMPLATE[count].map((delta) => {
-        const newDelta = ComplexOperations.multiply([delta.dx, delta.dy], [alignmentDelta.dx, alignmentDelta.dy])
-        return {dx: newDelta[0], dy: newDelta[1]}
-    });
-}
-
+import Analyser from "../analysis/analyser.js";
+import {COMPONENT_DEFINITIONS} from "../components.js";
+import Utils from "../math/utils.js";
+import {ALIGNMENT_DELTAS, getPinDirections, getPinPositions} from "../schematic/layout.js";
+import GeometryUtils from "../rendering/geometry.js";
 
 export default class Circuit {
 
@@ -106,9 +88,9 @@ export default class Circuit {
         const [pin1, pin2] = this.lines[lineId];
         this.deleteLine(lineId);
         const pinId = this.addNode(pos);
-        this.addLine(pinId, pin1);
-        this.addLine(pinId, pin2);
-        this.addLine(pinId, pin3);
+        [pin1, pin2, pin3].forEach((pin) => {
+            this.addLine(pinId, pin);
+        });
         return pinId;
     }
 
@@ -128,7 +110,7 @@ export default class Circuit {
 
     rotateComponent(id) {
         const comp = this.components[id];
-        comp.direction = rotateVector(comp.direction);
+        comp.direction = GeometryUtils.rotateVector(comp.direction);
         const pinPositions = getPinPositions(comp.pos, comp.direction, comp.pins.length);
         const directions = getPinDirections(comp.direction, comp.pins.length);
 

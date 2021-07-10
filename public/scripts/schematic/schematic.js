@@ -1,48 +1,14 @@
-import {COMPONENT_DEFINITIONS} from "./config/components.js";
-import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS, getLabelPinPos} from "./config/layout.js";
-import {planPolyLine} from "./rendering/polyline.js";
-import Position from "./rendering/position.js";
+import {COMPONENT_DEFINITIONS} from "../components.js";
+import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS, getLabelPinPos} from "./layout.js";
+import GeometryUtils from "../rendering/geometry.js";
+import {planPolyLine} from "../rendering/polyline.js";
 
 export const COMPONENT_RANGE = 0.7;
 export const LINE_RANGE = 10;
 export const PIN_RANGE = 1;
 
-function getLines(pointsStr) {
-    const points = pointsStr.split(" ").map((pointStr) => {
-        const [x, y] = pointStr.split(",").map((v) => Number(v));
-        return new Position(x, y)
-    });
-    const linePoints = [];
-    for (let i = 0; i < points.length - 1; i++) {
-        linePoints.push([points[i], points[i + 1]]);
-    }
-    return linePoints;
-}
-
-
-function isNearLine(linePoints, position, range) {
-    const [point1, point2] = linePoints;
-    const minX = Math.min(point1.x, point2.x) - range;
-    const maxX = Math.max(point1.x, point2.x) + range;
-    const minY = Math.min(point1.y, point2.y) - range;
-    const maxY = Math.max(point1.y, point2.y) + range;
-    return position.x >= minX && position.x <= maxX && position.y >= minY && position.y <= maxY;
-}
-
-function getAngleFromDirection(direction) {
-    if (direction.dx === 1 && direction.dy === 0) {
-        return 0
-    } else if (direction.dx === 0 && direction.dy === 1) {
-        return 90;
-    } else if(direction.dx === 0 && direction.dy === -1) {
-        return -90;
-    } else {
-        return 180;
-    }
-}
 export default class Schematic {
-    constructor(doc, graphics) {
-        this.doc = doc;
+    constructor(graphics) {
         this.graphics = graphics;
     }
 
@@ -55,6 +21,14 @@ export default class Schematic {
         this.graphics.removePin(pin.id);
     }
 
+    setSelection(item) {
+        this.graphics.setSelectedItem(item);
+    }
+
+    clearSelection(item) {
+        this.graphics.clearSelectedItem(item);
+    }
+
     deleteComponent(component, pins) {
         component.pins.forEach((pinId) => {
             pins[pinId].lines.forEach((lineId) => this.graphics.removeLine(lineId));
@@ -65,7 +39,7 @@ export default class Schematic {
     }
 
     addComponent(pins, component) {
-        const angle = getAngleFromDirection(component.direction);
+        const angle = GeometryUtils.getAngleFromDirection(component.direction);
         const info = COMPONENT_DEFINITIONS[component.type];
         this.graphics.addImage(component.id, component.pos, component.type, angle);
 
@@ -104,7 +78,7 @@ export default class Schematic {
         const compInfo = COMPONENT_DEFINITIONS[comp.type];
         this.graphics.updateLabel(comp.id, labelPos, `${comp.value} ${compInfo.unit}`);
 
-        const angle = getAngleFromDirection(comp.direction);
+        const angle = GeometryUtils.getAngleFromDirection(comp.direction);
         this.graphics.updateImage(comp.id, comp.pos, angle);
     }
 
@@ -137,8 +111,8 @@ export default class Schematic {
     }
 
     isNearPolyLine(lineId, position, range) {
-        const lines = getLines(this.graphics.getPolyStr(lineId));
-        return lines.some((linePoints) => isNearLine(linePoints, position, range));
+        const lines = this.graphics.getPolylinePoints(lineId);
+        return lines.some((linePoints) => GeometryUtils.isNearLine(linePoints, position, range));
     }
 
     isNearImage(componentId, position, range) {

@@ -1,6 +1,6 @@
 import {getImpedance} from "../../public/scripts/analysis/impedance.js";
 import assert from "assert";
-import { COMPONENT_TYPES } from "../../public/scripts/config/components.js";
+import { COMPONENT_TYPES } from "../../public/scripts/components.js";
 
 describe("Impedance calculation", () => {
     it("Resistance", () => {

@@ -1,4 +1,4 @@
-import {COMPONENT_TYPES} from "../config/components.js";
+import {COMPONENT_TYPES} from "../components.js";
 
 /**
  * Get impedance of component

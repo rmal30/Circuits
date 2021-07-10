@@ -1,5 +1,5 @@
-import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./config/components.js";
-import {ELEMENT_TYPES} from "./config/constants.js";
+import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./components.js";
+import {ELEMENT_TYPES} from "./schematic/elements.js";
 
 export const KEYS = {
     R: "r",
@@ -8,39 +8,47 @@ export const KEYS = {
 };
 export default class Controller {
 
-    constructor(model, view) {
-        this.model = model;
-        this.view = view;
+    constructor(circuit, motion, selection, schematicView, headerView, statusView, promptView) {
+        this.models = {
+            circuit,
+            motion,
+            selection
+        };
+        this.views = {
+            schematicView,
+            headerView,
+            statusView,
+            promptView
+        };
         this.setMode("dc");
-        this.view.events.bindKeyPress(this.onKeyPress.bind(this));
+        this.views.schematicView.events.bindKeyPress(this.onKeyPress.bind(this));
+        this.views.schematicView.events.bindContainerClick(this.onContainerClick.bind(this));
+        this.views.schematicView.events.bindContainerMouseMove(this.onMouseMove.bind(this));
+        this.views.schematicView.events.bindContainerMouseUp(this.models.motion.stopMove.bind(this.models.motion));
 
-        this.view.events.bindCanvasClick(this.onCanvasClick.bind(this));
-        this.view.events.bindCanvasMouseMove(this.onMouseMove.bind(this));
-        this.view.events.bindCanvasMouseUp(this.model.stopMove.bind(this.model));
-
-        this.view.events.bindFreqChange(this.changeFreq.bind(this));
-        this.view.events.bindSimulate(this.onSimulate.bind(this));
-        this.view.events.bindChooseMode(this.setMode.bind(this));
+        this.views.headerView.events.bindFreqChange(this.changeFreq.bind(this));
+        this.views.headerView.events.bindSimulate(this.onSimulate.bind(this));
+        this.views.headerView.events.bindChooseMode(this.setMode.bind(this));
     }
 
     changeFreq(value) {
-        this.model.circuit.setFreq(parseFloat(value));
+        this.models.circuit.setFreq(parseFloat(value));
     }
 
     onMouseMove(pos) {
-        if (this.model.moving) {
-            switch (this.model.moving.type) {
+        if (this.models.motion.moving) {
+            switch (this.models.motion.type) {
                 case ELEMENT_TYPES.IMAGE:
-                    if (this.model.moving) {
-                        this.model.circuit.moveComponent(this.model.moving.id, pos);
-                        this.view.schematic.updateComponentAndLines(this.model.circuit, this.model.moving.id);
+                    if (this.models.motion.moving) {
+                        this.models.circuit.moveComponent(this.models.motion.id, pos);
+                        this.views.schematicView.schematic.updateComponentAndLines(this.models.circuit, this.models.motion.id);
                     }
                     break;
 
                 case ELEMENT_TYPES.PIN:
-                    if (this.model.moving) {
-                        this.model.circuit.moveNode(this.model.moving.id, pos);
-                        this.view.schematic.updateNodeAndLines(this.model.circuit, this.model.moving.id);
+                    if (this.models.motion.moving) {
+                        this.models.circuit.moveNode(this.models.motion.id, pos);
+                        this.views.schematicView.schematic.updateNodeAndLines(this.models.circuit, this.models.motion.id);
                     }
                     break;
 
@@ -52,32 +60,31 @@ export default class Controller {
 
     // Simulate circuit and show results
     onSimulate() {
-        const simulationResults = this.model.circuit.simulate(this.model.circuit);
-        const [currentSets, voltageSets] = simulationResults;
-        this.view.showSolution(currentSets, voltageSets, this.model.circuit.components);
+        const [currentSets, voltageSets] = this.models.circuit.simulate(this.models.circuit);
+        this.views.statusView.showSolution(currentSets, voltageSets, this.models.circuit.components);
     }
 
     // Change component value
     changeComponentValue(id) {
-        const component = this.model.circuit.components[id];
+        const component = this.models.circuit.components[id];
         const compInfo = COMPONENT_DEFINITIONS[component.type];
-        const value = this.view.promptComponentValue(compInfo);
+        const value = this.views.promptView.promptComponentValue(compInfo);
 
         if (value !== null) {
-            this.model.circuit.setComponentValue(id, value);
-            this.view.schematic.updateComponent(component);
+            this.models.circuit.setComponentValue(id, value);
+            this.views.schematicView.schematic.updateComponent(component);
         }
     }
 
     // Set AC/DC mode
     setMode(mode) {
-        this.view.setFrequencyEnabled(mode === "ac");
-        this.view.setComponentOptions(COMPONENTS_LIST[mode]);
+        this.views.headerView.setFrequencyEnabled(mode === "ac");
+        this.views.headerView.setComponentOptions(COMPONENTS_LIST[mode]);
 
         for (const possibleMode in COMPONENTS_LIST) {
             if (possibleMode !== mode && possibleMode !== "both") {
-                for (const id of Object.keys(this.model.circuit.components)) {
-                    if (this.model.circuit.components[id].type in COMPONENTS_LIST[possibleMode]) {
+                for (const id of Object.keys(this.models.circuit.components)) {
+                    if (this.models.circuit.components[id].type in COMPONENTS_LIST[possibleMode]) {
                         this.deleteComponent(id);
                     }
                 }
@@ -87,48 +94,48 @@ export default class Controller {
 
     // Delete component and all associated pins/lines
     deleteComponent(id) {
-        const component = this.model.circuit.components[id];
-        this.view.schematic.deleteComponent(component, this.model.circuit.pins);
-        this.model.circuit.deleteComponent(id);
-        this.model.clearSelection();
+        const component = this.models.circuit.components[id];
+        this.views.schematicView.schematic.deleteComponent(component, this.models.circuit.pins);
+        this.models.circuit.deleteComponent(id);
+        this.models.selection.clearSelection();
     }
 
     // Delete node and all associated lines
     deleteNode(id) {
-        const pin = this.model.circuit.pins[id];
+        const pin = this.models.circuit.pins[id];
         if (!("comp" in pin)) {
-            this.view.schematic.deleteNode(pin);
-            this.model.circuit.deleteNode(id);
-            this.model.clearSelection();
+            this.views.schematicView.schematic.deleteNode(pin);
+            this.models.circuit.deleteNode(id);
+            this.models.selection.clearSelection();
         }
     }
 
     deleteLine(lineId) {
-        this.view.schematic.deleteLine(lineId);
-        this.model.circuit.deleteLine(lineId);
-        this.model.clearSelection();
+        this.views.schematicView.schematic.deleteLine(lineId);
+        this.models.circuit.deleteLine(lineId);
+        this.models.selection.clearSelection();
     }
 
     clearSelection() {
-        this.view.clearSelectedItem(this.model.selected);
-        this.model.clearSelection();
+        this.views.schematicView.schematic.clearSelection(this.models.selection);
+        this.models.selection.clearSelection();
     }
 
     onKeyPress(key) {
-        if (this.model.selected) {
+        if (this.models.selection.selected) {
             switch (key) {
                 case KEYS.DELETE:
-                    switch (this.model.selected.type) {
+                    switch (this.models.selection.type) {
                         case ELEMENT_TYPES.PIN:
-                            this.deleteNode(this.model.selected.id);
+                            this.deleteNode(this.models.selection.id);
                             break;
 
                         case ELEMENT_TYPES.IMAGE:
-                            this.deleteComponent(this.model.selected.id);
+                            this.deleteComponent(this.models.selection.id);
                             break;
 
                         case ELEMENT_TYPES.LINE:
-                            this.deleteLine(this.model.selected.id);
+                            this.deleteLine(this.models.selection.id);
                             break;
 
                         default:
@@ -141,9 +148,9 @@ export default class Controller {
                     break;
 
                 case KEYS.R:
-                    if (this.model.selected.type === ELEMENT_TYPES.IMAGE) {
-                        this.model.circuit.rotateComponent(this.model.selected.id);
-                        this.view.schematic.updateComponentAndLines(this.model.circuit, this.model.selected.id);
+                    if (this.models.selection.type === ELEMENT_TYPES.IMAGE) {
+                        this.models.circuit.rotateComponent(this.models.selection.id);
+                        this.views.schematicView.schematic.updateComponentAndLines(this.models.circuit, this.models.selection.id);
                     }
                     break;
 
@@ -153,10 +160,10 @@ export default class Controller {
         }
     }
 
-    onCanvasClick(position) {
-        if (!this.view.schematic.isNearby(this.model.circuit, position)) {
-            const newCompType = this.view.getNewComponentType();
-            if (this.model.selected) {
+    onContainerClick(position) {
+        if (!this.views.schematicView.schematic.isNearby(this.models.circuit, position)) {
+            const newCompType = this.views.headerView.getNewComponentType();
+            if (this.models.selection.selected) {
                 this.clearSelection();
             } else if (newCompType !== " ") {
                 this.addComponent(newCompType, position);
@@ -166,31 +173,31 @@ export default class Controller {
 
     onComponentClick(componentId) {
         this.clearSelection();
-        this.model.selectImage(componentId);
-        this.view.setSelectedItem(this.model.selected);
+        this.models.selection.selectImage(componentId);
+        this.views.schematicView.schematic.setSelection(this.models.selection);
     }
 
     onPinClick(pinId) {
-        if (!this.model.selected || this.model.selected.type !== ELEMENT_TYPES.PIN) {
+        if (!this.models.selection.selected || this.models.selection.type !== ELEMENT_TYPES.PIN) {
             this.clearSelection();
-            this.model.selectPin(pinId);
-            this.view.setSelectedItem(this.model.selected);
-        } else if (pinId !== this.model.selected.id) {
-            const lineId = this.model.circuit.addLine(this.model.selected.id, pinId);
-            const {pins} = this.model.circuit;
-            this.view.schematic.addLine(lineId, pins[this.model.selected.id], pins[pinId]);
-            this.view.events.bindLineClick(lineId, this.onLineClick.bind(this));
+            this.models.selection.selectPin(pinId);
+            this.views.schematicView.schematic.setSelection(this.models.selection);
+        } else if (pinId !== this.models.selection.id) {
+            const lineId = this.models.circuit.addLine(this.models.selection.id, pinId);
+            const {pins} = this.models.circuit;
+            this.views.schematicView.schematic.addLine(lineId, pins[this.models.selection.id], pins[pinId]);
+            this.views.schematicView.events.bindLineClick(lineId, this.onLineClick.bind(this));
             this.clearSelection();
         }
     }
 
     onLineClick(lineId, position) {
-        if (!this.model.selected || this.model.selected.type !== ELEMENT_TYPES.PIN) {
+        if (!this.models.selection.selected || this.models.selection.type !== ELEMENT_TYPES.PIN) {
             this.clearSelection();
-            this.model.selectLine(lineId);
-            this.view.setSelectedItem(this.model.selected);
+            this.models.selection.selectLine(lineId);
+            this.views.schematicView.schematic.setSelection(this.models.selection);
         } else {
-            this.splitLine(this.model.selected.id, lineId, position);
+            this.splitLine(this.models.selection.id, lineId, position);
             this.clearSelection();
         }
     }
@@ -200,29 +207,29 @@ export default class Controller {
         let value = null;
         const newCompInfo = COMPONENT_DEFINITIONS[type];
         if (newCompInfo.prop) {
-            value = this.view.promptComponentValue(newCompInfo);
+            value = this.views.promptView.promptComponentValue(newCompInfo);
             if (value === null) {
                 return;
             }
         }
 
-        const directionStr = this.view.getNewComponentDirection();
-        const id = this.model.circuit.addComponent(type, value, position, directionStr);
-        this.view.schematic.addComponent(this.model.circuit.pins, this.model.circuit.components[id]);
-        this.view.events.bindLabelClick(id, this.changeComponentValue.bind(this));
-        this.view.events.bindComponentClick(id, this.onComponentClick.bind(this));
-        this.view.events.bindComponentMouseDown(id, this.model.startComponentMove.bind(this.model));
-        this.model.circuit.components[id].pins.forEach((pinId) => {
-            this.view.events.bindPinClick(pinId, this.onPinClick.bind(this));
+        const directionStr = this.views.headerView.getNewComponentDirection();
+        const id = this.models.circuit.addComponent(type, value, position, directionStr);
+        this.views.schematicView.schematic.addComponent(this.models.circuit.pins, this.models.circuit.components[id]);
+        this.views.schematicView.events.bindLabelClick(id, this.changeComponentValue.bind(this));
+        this.views.schematicView.events.bindComponentClick(id, this.onComponentClick.bind(this));
+        this.views.schematicView.events.bindComponentMouseDown(id, this.models.motion.startComponentMove.bind(this.models.motion));
+        this.models.circuit.components[id].pins.forEach((pinId) => {
+            this.views.schematicView.events.bindPinClick(pinId, this.onPinClick.bind(this));
         });
     }
 
     // Split line with node at a given position, and connect new node to another pin
     splitLine(pinId, lineId, position) {
-        const newPinId = this.model.circuit.splitLineWithNode(pinId, lineId, position);
-        this.view.schematic.splitLineWithNode(this.model.circuit, lineId, newPinId);
-        this.view.events.bindPinClick(newPinId, this.onPinClick.bind(this));
-        this.view.events.bindNodeMouseDown(newPinId, this.model.startNodeMove.bind(this.model));
+        const newPinId = this.models.circuit.splitLineWithNode(pinId, lineId, position);
+        this.views.schematicView.schematic.splitLineWithNode(this.models.circuit, lineId, newPinId);
+        this.views.schematicView.events.bindPinClick(newPinId, this.onPinClick.bind(this));
+        this.views.schematicView.events.bindNodeMouseDown(newPinId, this.models.motion.startNodeMove.bind(this.models.motion));
         return newPinId;
     }
 }

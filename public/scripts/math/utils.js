@@ -1,11 +1,3 @@
-
-export const ELEMENT_PREFIXES = {
-    Line: "lin",
-    Image: "img",
-    Pin: "pin-",
-    Label: "txt"
-};
-
 export default class Utils {
 
     /**
@@ -29,11 +21,4 @@ export default class Utils {
         return Math.round(num * factor) / factor;
     }
 
-    static getElementId(id, type) {
-        if (type in ELEMENT_PREFIXES) {
-            return ELEMENT_PREFIXES[type] + id;
-        } else {
-            throw new Error("Invalid type");
-        }
-    }
 }

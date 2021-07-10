@@ -15,16 +15,7 @@ export default class GeometryUtils {
     }
 
     static getAngleFromDirection(direction) {
-        if (direction.dx === 1 && direction.dy === 0) {
-            return 0
-        } else if (direction.dx === 0 && direction.dy === 1) {
-            return 90;
-        } else if(direction.dx === 0 && direction.dy === -1) {
-            return -90;
-        } else if(direction.dx === -1 && direction.dy === 0) {
-            return 180;
-        } else {
-            throw new Error("Unexpected direction");
-        }
+        const radianAngle = Math.atan2(direction.dy, direction.dx);
+        return radianAngle * 180 / Math.PI;
     }
 }

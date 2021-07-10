@@ -1,5 +1,16 @@
+export const DIRECTION_DELTAS = {
+    LEFT: {dx: -1, dy: 0},
+    RIGHT: {dx: 1, dy: 0},
+    UP: {dx: 0, dy: -1},
+    DOWN: {dx: 0, dy: 1}
+};
 
-export default class GeometryUtils {
+export const ALIGNMENT_DELTAS = {
+    H: {dx: 1, dy: 0},
+    V: {dx: 0, dy: 1}
+};
+
+export class GeometryUtils {
 
     static rotateVector(vec) {
         return {dx: -vec.dy, dy: vec.dx};

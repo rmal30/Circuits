@@ -1,15 +1,9 @@
 import ComplexOperations from "../math/complex.js";
+import {DIRECTION_DELTAS} from "../rendering/geometry.js";
 
 export const IMAGE_SIZE = 48;
 export const DOT_SIZE = 4;
 export const GRID_SIZE = 6;
-
-export const DIRECTION_DELTAS = {
-    LEFT: {dx: -1, dy: 0},
-    RIGHT: {dx: 1, dy: 0},
-    UP: {dx: 0, dy: -1},
-    DOWN: {dx: 0, dy: 1}
-};
 
 export const PIN_POSITION_TEMPLATE = {
     1: [0, 0],
@@ -25,11 +19,6 @@ export const DIRECTION_TEMPLATE = {
 export const LABEL_POSITIONS = {
     V: [IMAGE_SIZE / 2 + 12, 5],
     H: [0, IMAGE_SIZE / 2 + 8]
-};
-
-export const ALIGNMENT_DELTAS = {
-    H: {dx: 1, dy: 0},
-    V: {dx: 0, dy: 1}
 };
 
 export function getPinDirections(alignmentDelta, count) {

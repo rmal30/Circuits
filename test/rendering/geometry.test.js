@@ -1,7 +1,6 @@
 import assert from 'assert';
-import GeometryUtils from '../../public/scripts/rendering/geometry.js';
+import {GeometryUtils, DIRECTION_DELTAS} from '../../public/scripts/rendering/geometry.js';
 import Position from '../../public/scripts/rendering/position.js';
-import { DIRECTION_DELTAS } from '../../public/scripts/schematic/layout.js';
 
 describe("Geometry utility function tests", () => {
 

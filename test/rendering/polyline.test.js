@@ -2,7 +2,7 @@ import Position from "../../public/scripts/rendering/position.js";
 import {planPolyLine} from "../../public/scripts/rendering/polyline.js";
 
 import assert from "assert";
-import { DIRECTION_DELTAS } from "../../public/scripts/schematic/layout.js";
+import { DIRECTION_DELTAS } from "../../public/scripts/rendering/geometry.js";
 
 const padding = 20;
 

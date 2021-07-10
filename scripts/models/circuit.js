@@ -1,8 +1,8 @@
 import Analyser from "../analysis/analyser.js";
 import {COMPONENT_DEFINITIONS} from "../components.js";
 import Utils from "../math/utils.js";
-import {ALIGNMENT_DELTAS, getPinDirections, getPinPositions} from "../schematic/layout.js";
-import GeometryUtils from "../rendering/geometry.js";
+import {getPinDirections, getPinPositions} from "../schematic/layout.js";
+import {GeometryUtils, ALIGNMENT_DELTAS} from "../rendering/geometry.js";
 
 export default class Circuit {
 

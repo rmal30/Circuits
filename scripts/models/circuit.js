@@ -1,19 +1,22 @@
-import Analyser from "../analysis/analyser.js";
+
 import {COMPONENT_DEFINITIONS} from "../components.js";
 import Utils from "../math/utils.js";
-import {getPinDirections, getPinPositions} from "../schematic/layout.js";
 import {GeometryUtils, ALIGNMENT_DELTAS} from "../rendering/geometry.js";
 
 export default class Circuit {
 
-    constructor(hertz, pins, lines, components) {
-        this.hertz = hertz;
-        this.pins = pins;
-        this.lines = lines;
-        this.components = components;
-        this.newPinId = Circuit.getNewID(pins);
-        this.newLineId = Circuit.getNewID(lines);
-        this.newComponentId = Circuit.getNewID(components);
+    constructor(circuit, posTemplates, dirTemplates, imageSize, analyser) {
+        this.hertz = circuit.hertz;
+        this.pins = circuit.pins;
+        this.lines = circuit.lines;
+        this.components = circuit.components;
+        this.newPinId = Circuit.getNewID(this.pins);
+        this.newLineId = Circuit.getNewID(this.lines);
+        this.newComponentId = Circuit.getNewID(this.components);
+        this.posTemplates = posTemplates;
+        this.dirTemplates = dirTemplates;
+        this.imageSize = imageSize;
+        this.analyser = analyser;
     }
 
     static getNewID(obj) {
@@ -52,8 +55,8 @@ export default class Circuit {
 
     addComponent(type, value, pos, alignment) {
         const {pinCount} = COMPONENT_DEFINITIONS[type];
-        const pinDir = getPinDirections(ALIGNMENT_DELTAS[alignment], pinCount);
-        const pinPos = getPinPositions(pos, ALIGNMENT_DELTAS[alignment], pinCount);
+        const pinDir = GeometryUtils.getDirectionsFromTemplate(ALIGNMENT_DELTAS[alignment], this.dirTemplates[pinCount]);
+        const pinPos = GeometryUtils.getPositionsFromTemplate(pos, ALIGNMENT_DELTAS[alignment], this.posTemplates[pinCount], this.imageSize);
         const id = this.newComponentId;
         const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 
@@ -108,11 +111,11 @@ export default class Circuit {
         return pinId;
     }
 
-    rotateComponent(id) {
+    rotateComponent(id, ) {
         const comp = this.components[id];
         comp.direction = GeometryUtils.rotateVector(comp.direction);
-        const pinPositions = getPinPositions(comp.pos, comp.direction, comp.pins.length);
-        const directions = getPinDirections(comp.direction, comp.pins.length);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(comp.pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
+        const directions = GeometryUtils.getDirectionsFromTemplate(comp.direction, this.dirTemplates[comp.pins.length]);
 
         comp.pins.forEach((pinId, index) => {
             this.pins[pinId].direction = directions[index];
@@ -122,7 +125,7 @@ export default class Circuit {
 
     moveComponent(id, pos) {
         const comp = this.components[id];
-        const pinPositions = getPinPositions(pos, comp.direction, comp.pins.length);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
         comp.pos = pos;
         comp.pins.forEach((pinId, index) => {
             this.moveNode(pinId, pinPositions[index]);
@@ -138,6 +141,6 @@ export default class Circuit {
     }
 
     simulate() {
-        return Analyser.getCurrentsAndVoltages(this);
+        return this.analyser.getCurrentsAndVoltages(this);
     }
 }

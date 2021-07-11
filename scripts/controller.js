@@ -1,25 +1,17 @@
 import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./components.js";
 import {ELEMENT_TYPES} from "./schematic/elements.js";
 
-export const KEYS = {
+const KEYS = {
     R: "r",
     DELETE: "Delete",
     ESCAPE: "Escape"
 };
+
 export default class Controller {
 
     constructor(circuit, motion, selection, schematicView, headerView, statusView, promptView) {
-        this.models = {
-            circuit,
-            motion,
-            selection
-        };
-        this.views = {
-            schematicView,
-            headerView,
-            statusView,
-            promptView
-        };
+        this.models = {circuit, motion, selection};
+        this.views = {schematicView, headerView, statusView, promptView};
         this.setMode("dc");
         this.views.schematicView.events.bindKeyPress(this.onKeyPress.bind(this));
         this.views.schematicView.events.bindContainerClick(this.onContainerClick.bind(this));

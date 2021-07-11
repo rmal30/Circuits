@@ -1,4 +1,3 @@
-import ComplexOperations from "../math/complex.js";
 import {DIRECTION_DELTAS} from "../rendering/geometry.js";
 
 export const IMAGE_SIZE = 48;
@@ -18,39 +17,5 @@ export const DIRECTION_TEMPLATE = {
 
 export const LABEL_POSITIONS = {
     V: [IMAGE_SIZE / 2 + 12, 5],
-    H: [0, IMAGE_SIZE / 2 + 8]
+    H: [0, IMAGE_SIZE / 2 + 12]
 };
-
-export function getPinDirections(alignmentDelta, count) {
-    return DIRECTION_TEMPLATE[count].map((delta) => {
-        const newDelta = ComplexOperations.multiply([delta.dx, delta.dy], [alignmentDelta.dx, alignmentDelta.dy])
-        return {dx: newDelta[0], dy: newDelta[1]}
-    });
-}
-
-export function getPinPositions(pos, alignmentDelta, count) {
-    return PIN_POSITION_TEMPLATE[count].map((point) => {
-        const {dx, dy} = alignmentDelta;
-        const rotatedPoint = ComplexOperations.multiply(point, [dx, dy]);
-        const delta = ComplexOperations.multiply(IMAGE_SIZE, rotatedPoint);
-        return pos.offset(delta[0], delta[1]);
-    });
-}
-
-function getLabelPosition(pos, alignmentDelta){
-    const {dx, dy} = alignmentDelta;
-    let dlx, dly;
-    if (dx === 0) {
-        [dlx, dly] = LABEL_POSITIONS.V;
-    } else if (dy === 0) {
-        [dlx, dly] = LABEL_POSITIONS.H;
-    }
-    return pos.offset(dlx, dly);
-}
-
-export function getLabelPinPos(pos, alignmentDelta, count) {
-    return [
-        ...getPinPositions(pos, alignmentDelta, count),
-        getLabelPosition(pos, alignmentDelta)
-    ];
-}

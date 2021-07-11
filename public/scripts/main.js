@@ -7,13 +7,27 @@ import HeaderView from "./views/header_view.js";
 import StatusView from "./views/status_view.js";
 import SVGGraphicsView from "./views/svg_graphics_view.js";
 import SchematicView from "./views/schematic_view.js";
+import Analyser from "./analysis/analyser.js";
 
 import Controller from "./controller.js";
-import { GRID_SIZE } from "./schematic/layout.js";
+import { DIRECTION_TEMPLATE, GRID_SIZE, IMAGE_SIZE, PIN_POSITION_TEMPLATE } from "./schematic/layout.js";
 
 
-export const DEFAULT_FREQUENCY = 60;
-const circuit = new Circuit(DEFAULT_FREQUENCY, {}, {}, {});
+const DEFAULT_FREQUENCY = 60;
+
+const circuit = new Circuit(
+    {
+        hertz: DEFAULT_FREQUENCY, 
+        pins: {}, 
+        lines: {}, 
+        components: {}
+    }, 
+    PIN_POSITION_TEMPLATE, 
+    DIRECTION_TEMPLATE, 
+    IMAGE_SIZE, 
+    Analyser
+);
+
 const motion = new MotionState();
 const selection = new SelectionState();
 

@@ -114,5 +114,131 @@ describe("Geometry utility function tests", () => {
                 assert.strictEqual(testFunc(linePoints, position, 10), false)
             });
         });
-    })
+    });
+
+    describe("Test if the maximum axis distance of two points is less than a certain tolerance", () => {
+        const testFunc = testClass.isNearPoint;
+        describe("Nearby", () => {
+            it("dx = 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(0, 10), 11), true);
+            });
+    
+            it("dy = 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(10, 0), 11), true);
+            });
+    
+            it("dx and dy /= 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(10, 10), 11), true);
+            });
+        });
+        
+        describe("Not nearby", () => {
+            it("dx = 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(0, 10), 8), false);
+            });
+    
+            it("dy = 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(10, 0), 8), false);
+            });
+    
+            it("dx and dy /= 0", () => {
+                assert.strictEqual(testFunc(new Position(0, 0), new Position(10, 10), 8), false);
+            });
+        });
+    });
+
+    describe("Get pin positions from template", () => {
+        const template = [[0.5, 0.25], [0.5, -0.25], [-0.5, 0.25], [-0.5, -0.25]];
+        const testFunc = testClass.getPositionsFromTemplate;
+        const position = new Position(80, 90);
+        it("Normal", () => {
+            assert.deepStrictEqual(testFunc(position, {dx: 1, dy: 0}, template, 100), [
+                new Position(80 + 50, 90 + 25),
+                new Position(80 + 50, 90 - 25),
+                new Position(80 - 50, 90 + 25),
+                new Position(80 - 50, 90 - 25)
+            ]);
+        });
+
+        it("Rotated clockwise 90", () => {
+            assert.deepStrictEqual(testFunc(position, {dx: 0, dy: 1}, template, 100), [
+                new Position(80 - 25, 90 + 50),
+                new Position(80 + 25, 90 + 50),
+                new Position(80 - 25, 90 - 50),
+                new Position(80 + 25, 90 - 50)
+            ]);
+        });
+
+        it("Rotated clockwise 180", () => {
+            assert.deepStrictEqual(testFunc(position, {dx: -1, dy: 0}, template, 100), [
+                new Position(80 - 50, 90 - 25),
+                new Position(80 - 50, 90 + 25),
+                new Position(80 + 50, 90 - 25),
+                new Position(80 + 50, 90 + 25)
+            ]);
+        });
+
+        it("Rotated clockwise 270", () => {
+            assert.deepStrictEqual(testFunc(position, {dx: 0, dy: -1}, template, 100), [
+                new Position(80 + 25, 90 - 50),
+                new Position(80 - 25, 90 - 50),
+                new Position(80 + 25, 90 + 50),
+                new Position(80 - 25, 90 + 50)
+            ]);
+        });
+        
+    });
+
+    describe("Get pin directions from template", () => {
+        const template = [DIRECTION_DELTAS.RIGHT, DIRECTION_DELTAS.RIGHT, DIRECTION_DELTAS.LEFT, DIRECTION_DELTAS.LEFT];
+        const testFunc = testClass.getDirectionsFromTemplate;
+        
+        function checkVectorsEqual(result, expected) {
+            assert(result.dx === expected.dx);
+            assert(result.dy === expected.dy);
+        }
+
+        function checkArraysEqual(resultArr, expectedArr, assertFunc) {
+            for (let i = 0; i < resultArr.length; i++) {
+                assertFunc(resultArr[i], expectedArr[i]);
+            }
+        }
+
+        it("Normal", () => {
+            assert.deepStrictEqual(testFunc({dx: 1, dy: 0}, template), template);
+        });
+
+        it("Rotated clockwise 90", () => {
+            const actual = testFunc({dx: 0, dy: 1}, template);
+            const expected = [
+                DIRECTION_DELTAS.DOWN,
+                DIRECTION_DELTAS.DOWN,
+                DIRECTION_DELTAS.UP,
+                DIRECTION_DELTAS.UP
+            ];
+            checkArraysEqual(actual, expected, checkVectorsEqual);
+        });
+
+        it("Rotated clockwise 180", () => {
+            const actual = testFunc({dx: -1, dy: 0}, template);
+            const expected = [
+                DIRECTION_DELTAS.LEFT,
+                DIRECTION_DELTAS.LEFT,
+                DIRECTION_DELTAS.RIGHT,
+                DIRECTION_DELTAS.RIGHT
+            ];
+            checkArraysEqual(actual, expected, checkVectorsEqual);
+        });
+
+        it("Rotated clockwise 270", () => {
+            const actual = testFunc({dx: 0, dy: -1}, template);
+            const expected = [
+                DIRECTION_DELTAS.UP,
+                DIRECTION_DELTAS.UP,
+                DIRECTION_DELTAS.DOWN,
+                DIRECTION_DELTAS.DOWN
+            ];
+            checkArraysEqual(actual, expected, checkVectorsEqual);
+        });
+    });
 })

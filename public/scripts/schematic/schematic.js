@@ -1,13 +1,13 @@
 import {COMPONENT_DEFINITIONS} from "../components.js";
-import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS, getLabelPinPos} from "./layout.js";
+import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS, PIN_POSITION_TEMPLATE} from "./layout.js";
 import {GeometryUtils} from "../rendering/geometry.js";
 import {planPolyLine} from "../rendering/polyline.js";
 import { ELEMENT_TYPES, getElementId } from "./elements.js";
 import { DEFAULT_LINE_STYLE, STYLES } from "./style.js";
 
-export const COMPONENT_RANGE = 0.7;
-export const LINE_RANGE = 10;
-export const PIN_RANGE = 1;
+const COMPONENT_RANGE = 0.7;
+const LINE_RANGE = 10;
+const PIN_RANGE = 1;
 
 export default class Schematic {
     constructor(graphics) {
@@ -87,16 +87,26 @@ export default class Schematic {
     }
 
     updateComponent(comp) {
-        const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(comp.pos, comp.direction, PIN_POSITION_TEMPLATE[comp.pins.length], IMAGE_SIZE);
         comp.pins.forEach((pinId, index) => {
             const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
-            this.graphics.updateCircle(elementId, pplPos[index]);
+            this.graphics.updateCircle(elementId, pinPositions[index]);
         });
 
-        const [labelPos] = pplPos.slice(-1);
+        const {dx, dy} = comp.direction;
+        let dlx, dly;
+
+        if (dx === 0) {
+            [dlx, dly] = LABEL_POSITIONS.V;
+        } else if (dy === 0) {
+            [dlx, dly] = LABEL_POSITIONS.H;
+        }
+
+        const labelPosition = comp.pos.offset(dlx, dly);
+        
         const compInfo = COMPONENT_DEFINITIONS[comp.type];
         const labelElementId = getElementId(comp.id, ELEMENT_TYPES.LABEL);
-        this.graphics.updateLabel(labelElementId, labelPos, `${comp.value} ${compInfo.unit}`);
+        this.graphics.updateLabel(labelElementId, labelPosition, `${comp.value} ${compInfo.unit}`);
 
         const angle = GeometryUtils.getAngleFromDirection(comp.direction);
         const imageElementId = getElementId(comp.id, ELEMENT_TYPES.IMAGE);
@@ -129,9 +139,7 @@ export default class Schematic {
     isNearPin(pinId, position, range) {
         const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
         const pinPosition = this.graphics.getCirclePosition(elementId);
-        const dx = Math.abs(position.x - pinPosition.x);
-        const dy = Math.abs(position.y - pinPosition.y);
-        return dx < range * DOT_SIZE && dy < range * DOT_SIZE;
+        return GeometryUtils.isNearPoint(pinPosition, position, range * DOT_SIZE);
     }
 
     isNearPolyLine(lineId, position, range) {
@@ -143,9 +151,7 @@ export default class Schematic {
     isNearImage(componentId, position, range) {
         const elementId = getElementId(componentId, ELEMENT_TYPES.IMAGE);
         const imagePosition = this.graphics.getImagePosition(elementId, IMAGE_SIZE);
-        const dx = Math.abs(position.x - imagePosition.x);
-        const dy = Math.abs(position.y - imagePosition.y);
-        return dx < range * IMAGE_SIZE && dy < range * IMAGE_SIZE;
+        return GeometryUtils.isNearPoint(imagePosition, position, range * IMAGE_SIZE);   
     }
 
     isNearby(circuit, position) {

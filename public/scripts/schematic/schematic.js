@@ -1,7 +1,9 @@
 import {COMPONENT_DEFINITIONS} from "../components.js";
 import {DOT_SIZE, IMAGE_SIZE, LABEL_POSITIONS, getLabelPinPos} from "./layout.js";
-import GeometryUtils from "../rendering/geometry.js";
+import {GeometryUtils} from "../rendering/geometry.js";
 import {planPolyLine} from "../rendering/polyline.js";
+import { ELEMENT_TYPES, getElementId } from "./elements.js";
+import { DEFAULT_LINE_STYLE, STYLES } from "./style.js";
 
 export const COMPONENT_RANGE = 0.7;
 export const LINE_RANGE = 10;
@@ -13,54 +15,70 @@ export default class Schematic {
     }
 
     deleteLine(lineId) {
-        this.graphics.removeLine(lineId);
+        this.graphics.removeElement(getElementId(lineId, ELEMENT_TYPES.LINE));
+    }
+
+    deletePin(pinId) {
+        this.graphics.removeElement(getElementId(pinId, ELEMENT_TYPES.PIN));
+    }
+
+    deleteImage(id) {
+        this.graphics.removeElement(getElementId(id, ELEMENT_TYPES.IMAGE));
+    }
+
+    deleteLabel(id) {
+        this.graphics.removeElement(getElementId(id, ELEMENT_TYPES.LABEL));
     }
 
     deleteNode(pin) {
-        pin.lines.forEach((lineId) => this.graphics.removeLine(lineId));
-        this.graphics.removePin(pin.id);
+        pin.lines.forEach((lineId) => this.deleteLine(lineId));
+        this.deletePin(pin.id);
     }
 
     setSelection(item) {
-        this.graphics.setSelectedItem(item);
+        if (item.selected) {
+            this.graphics.setElementStyle(getElementId(item.id, item.type), STYLES.select[item.type]);
+        }
     }
 
     clearSelection(item) {
-        this.graphics.clearSelectedItem(item);
+        if (item.selected) {
+            this.graphics.setElementStyle(getElementId(item.id, item.type), STYLES.deselect[item.type]);
+        }
     }
 
     deleteComponent(component, pins) {
         component.pins.forEach((pinId) => {
-            pins[pinId].lines.forEach((lineId) => this.graphics.removeLine(lineId));
-            this.graphics.removePin(pinId);
+            this.deleteNode({lines: pins[pinId].lines, id: pinId});
         });
-        this.graphics.removeLabel(component.id);
-        this.graphics.removeImage(component.id);
+        this.deleteLabel(component.id);
+        this.deleteImage(component.id);
     }
 
     addComponent(pins, component) {
         const angle = GeometryUtils.getAngleFromDirection(component.direction);
         const info = COMPONENT_DEFINITIONS[component.type];
-        this.graphics.addImage(component.id, component.pos, component.type, angle);
+        const elementId = getElementId(component.id, ELEMENT_TYPES.IMAGE);
+        this.graphics.addImage(elementId, `images/${component.type}.png`, IMAGE_SIZE, component.pos, angle);
 
         const [dlx, dly] = component.direction.dx === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
         const labelPos = component.pos.offset(dlx, dly);
         const labelValue = component.value ? `${component.value} ${info.unit}` : "";
-        this.graphics.addLabel(component.id, labelPos, labelValue);
-        component.pins.forEach((pinId) => this.graphics.addPin(pinId, pins[pinId].pos));
+        this.graphics.addLabel(getElementId(component.id, ELEMENT_TYPES.LABEL), labelPos, labelValue);
+        component.pins.forEach((pinId) => this.addPin({id: pinId, pos: pins[pinId].pos}));
     }
 
     addLine(id, pin1, pin2) {
         const lines = planPolyLine(pin1, pin2, IMAGE_SIZE / 2);
-        this.graphics.addPolyline(id, lines);
+        this.graphics.addPolyline(getElementId(id, ELEMENT_TYPES.LINE), lines, DEFAULT_LINE_STYLE);
     }
 
     addPin(pin) {
-        this.graphics.addPin(pin.id, pin.pos);
+        this.graphics.addCircle(getElementId(pin.id, ELEMENT_TYPES.PIN), DOT_SIZE, pin.pos);
     }
 
     splitLineWithNode(circuit, lineId, newPinId) {
-        this.graphics.removeLine(lineId);
+        this.deleteLine(lineId);
         this.addPin(circuit.pins[newPinId]);
         for (const newLineId of circuit.pins[newPinId].lines) {
             const [pinId1, pinId2] = circuit.lines[newLineId];
@@ -71,15 +89,18 @@ export default class Schematic {
     updateComponent(comp) {
         const pplPos = getLabelPinPos(comp.pos, comp.direction, comp.pins.length);
         comp.pins.forEach((pinId, index) => {
-            this.graphics.updatePin(pinId, pplPos[index]);
+            const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+            this.graphics.updateCircle(elementId, pplPos[index]);
         });
 
         const [labelPos] = pplPos.slice(-1);
         const compInfo = COMPONENT_DEFINITIONS[comp.type];
-        this.graphics.updateLabel(comp.id, labelPos, `${comp.value} ${compInfo.unit}`);
+        const labelElementId = getElementId(comp.id, ELEMENT_TYPES.LABEL);
+        this.graphics.updateLabel(labelElementId, labelPos, `${comp.value} ${compInfo.unit}`);
 
         const angle = GeometryUtils.getAngleFromDirection(comp.direction);
-        this.graphics.updateImage(comp.id, comp.pos, angle);
+        const imageElementId = getElementId(comp.id, ELEMENT_TYPES.IMAGE);
+        this.graphics.updateImage(imageElementId, IMAGE_SIZE, comp.pos, angle);
     }
 
     updateComponentAndLines(circuit, componentId) {
@@ -93,30 +114,35 @@ export default class Schematic {
     }
 
     updateNodeAndLines(circuit, pinId) {
-        this.graphics.updatePin(pinId, circuit.pins[pinId].pos);
+        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+        this.graphics.updateCircle(elementId, circuit.pins[pinId].pos);
         circuit.pins[pinId].lines.forEach((lineId) => this.updateLine(circuit.pins, circuit.lines, lineId));
     }
 
     updateLine(pins, lines, lineId) {
         const [pinId1, pinId2] = lines[lineId];
         const newLines = planPolyLine(pins[pinId1], pins[pinId2], IMAGE_SIZE / 2);
-        this.graphics.updatePolyline(lineId, newLines);
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
+        this.graphics.updatePolyline(elementId, newLines);
     }
 
     isNearPin(pinId, position, range) {
-        const pinPosition = this.graphics.getPinPosition(pinId);
+        const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
+        const pinPosition = this.graphics.getCirclePosition(elementId);
         const dx = Math.abs(position.x - pinPosition.x);
         const dy = Math.abs(position.y - pinPosition.y);
         return dx < range * DOT_SIZE && dy < range * DOT_SIZE;
     }
 
     isNearPolyLine(lineId, position, range) {
-        const lines = this.graphics.getPolylinePoints(lineId);
+        const elementId = getElementId(lineId, ELEMENT_TYPES.LINE);
+        const lines = this.graphics.getPolylinePoints(elementId);
         return lines.some((linePoints) => GeometryUtils.isNearLine(linePoints, position, range));
     }
 
     isNearImage(componentId, position, range) {
-        const imagePosition = this.graphics.getImagePosition(componentId);
+        const elementId = getElementId(componentId, ELEMENT_TYPES.IMAGE);
+        const imagePosition = this.graphics.getImagePosition(elementId, IMAGE_SIZE);
         const dx = Math.abs(position.x - imagePosition.x);
         const dy = Math.abs(position.y - imagePosition.y);
         return dx < range * IMAGE_SIZE && dy < range * IMAGE_SIZE;

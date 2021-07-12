@@ -10,7 +10,7 @@ import SchematicView from "./views/schematic_view.js";
 import Analyser from "./analysis/analyser.js";
 
 import Controller from "./controller.js";
-import { DIRECTION_TEMPLATE, GRID_SIZE, IMAGE_SIZE, PIN_POSITION_TEMPLATE } from "./schematic/layout.js";
+import { PIN_DIRECTION_TEMPLATE, GRID_SIZE, IMAGE_SIZE, PIN_POSITION_TEMPLATE } from "./schematic/layout.js";
 
 
 const DEFAULT_FREQUENCY = 60;
@@ -23,7 +23,7 @@ const circuit = new Circuit(
         components: {}
     }, 
     PIN_POSITION_TEMPLATE, 
-    DIRECTION_TEMPLATE, 
+    PIN_DIRECTION_TEMPLATE, 
     IMAGE_SIZE, 
     Analyser
 );

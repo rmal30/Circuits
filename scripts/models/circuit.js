@@ -2,6 +2,7 @@
 import {COMPONENT_DEFINITIONS} from "../components.js";
 import Utils from "../math/utils.js";
 import {GeometryUtils, ALIGNMENT_DELTAS} from "../rendering/geometry.js";
+import Position from "../rendering/position.js";
 
 export default class Circuit {
 
@@ -60,19 +61,13 @@ export default class Circuit {
         const id = this.newComponentId;
         const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 
-        this.components[id] = {
-            id: id,
-            type: type,
-            value: parseFloat(value),
-            direction: pinDir[0],
-            pins: pinIds,
-            pos: pos
-        };
+        this.components[id] = {id, type, value: parseFloat(value), direction: pinDir[0], pins: pinIds, pos: {x: pos.x, y: pos.y}};
 
         this.newComponentId++;
 
         for (let index = 0; index < pinCount; index++) {
-            this.addComponentPin(id, pinPos[index], pinDir[index]);
+            const position = pinPos[index];
+            this.addComponentPin(id, {x: position.x, y: position.y}, pinDir[index]);
         }
 
         return id;
@@ -111,10 +106,11 @@ export default class Circuit {
         return pinId;
     }
 
-    rotateComponent(id, ) {
+    rotateComponent(id) {
         const comp = this.components[id];
         comp.direction = GeometryUtils.rotateVector(comp.direction);
-        const pinPositions = GeometryUtils.getPositionsFromTemplate(comp.pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
+        const componentPosition = new Position(comp.pos.x, comp.pos.y);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(componentPosition, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
         const directions = GeometryUtils.getDirectionsFromTemplate(comp.direction, this.dirTemplates[comp.pins.length]);
 
         comp.pins.forEach((pinId, index) => {
@@ -126,14 +122,14 @@ export default class Circuit {
     moveComponent(id, pos) {
         const comp = this.components[id];
         const pinPositions = GeometryUtils.getPositionsFromTemplate(pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
-        comp.pos = pos;
+        comp.pos = {x: pos.x, y: pos.y};
         comp.pins.forEach((pinId, index) => {
             this.moveNode(pinId, pinPositions[index]);
         });
     }
 
     moveNode(pinId, pos) {
-        this.pins[pinId].pos = pos;
+        this.pins[pinId].pos = {x: pos.x, y: pos.y};
     }
 
     setComponentValue(id, value) {

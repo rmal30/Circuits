@@ -4,6 +4,7 @@ import {GeometryUtils} from "../rendering/geometry.js";
 import {planPolyLine} from "../rendering/polyline.js";
 import { ELEMENT_TYPES, getElementId } from "./elements.js";
 import { DEFAULT_LINE_STYLE, STYLES } from "./style.js";
+import Position from "../rendering/position.js";
 
 const COMPONENT_RANGE = 0.7;
 const LINE_RANGE = 10;
@@ -59,10 +60,11 @@ export default class Schematic {
         const angle = GeometryUtils.getAngleFromDirection(component.direction);
         const info = COMPONENT_DEFINITIONS[component.type];
         const elementId = getElementId(component.id, ELEMENT_TYPES.IMAGE);
-        this.graphics.addImage(elementId, `images/${component.type}.png`, IMAGE_SIZE, component.pos, angle);
+        const position = Position.fromObject(component.pos);
+        this.graphics.addImage(elementId, `images/${component.type}.png`, IMAGE_SIZE, position, angle);
 
         const [dlx, dly] = component.direction.dx === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
-        const labelPos = component.pos.offset(dlx, dly);
+        const labelPos = position.offset(dlx, dly);
         const labelValue = component.value ? `${component.value} ${info.unit}` : "";
         this.graphics.addLabel(getElementId(component.id, ELEMENT_TYPES.LABEL), labelPos, labelValue);
         component.pins.forEach((pinId) => this.addPin({id: pinId, pos: pins[pinId].pos}));
@@ -74,7 +76,8 @@ export default class Schematic {
     }
 
     addPin(pin) {
-        this.graphics.addCircle(getElementId(pin.id, ELEMENT_TYPES.PIN), DOT_SIZE, pin.pos);
+        const pinPosition = Position.fromObject(pin.pos);
+        this.graphics.addCircle(getElementId(pin.id, ELEMENT_TYPES.PIN), DOT_SIZE, pinPosition);
     }
 
     splitLineWithNode(circuit, lineId, newPinId) {
@@ -87,7 +90,8 @@ export default class Schematic {
     }
 
     updateComponent(comp) {
-        const pinPositions = GeometryUtils.getPositionsFromTemplate(comp.pos, comp.direction, PIN_POSITION_TEMPLATE[comp.pins.length], IMAGE_SIZE);
+        const compPosition = Position.fromObject(comp.pos);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(compPosition, comp.direction, PIN_POSITION_TEMPLATE[comp.pins.length], IMAGE_SIZE);
         comp.pins.forEach((pinId, index) => {
             const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
             this.graphics.updateCircle(elementId, pinPositions[index]);
@@ -102,7 +106,7 @@ export default class Schematic {
             [dlx, dly] = LABEL_POSITIONS.H;
         }
 
-        const labelPosition = comp.pos.offset(dlx, dly);
+        const labelPosition = compPosition.offset(dlx, dly);
         
         const compInfo = COMPONENT_DEFINITIONS[comp.type];
         const labelElementId = getElementId(comp.id, ELEMENT_TYPES.LABEL);
@@ -110,7 +114,7 @@ export default class Schematic {
 
         const angle = GeometryUtils.getAngleFromDirection(comp.direction);
         const imageElementId = getElementId(comp.id, ELEMENT_TYPES.IMAGE);
-        this.graphics.updateImage(imageElementId, IMAGE_SIZE, comp.pos, angle);
+        this.graphics.updateImage(imageElementId, IMAGE_SIZE, compPosition, angle);
     }
 
     updateComponentAndLines(circuit, componentId) {

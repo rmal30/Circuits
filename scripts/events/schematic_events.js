@@ -10,15 +10,28 @@ export default class SchematicEvents {
         this.gridSize = gridSize;
     }
 
-    bindContainerMouseMove(onContainerMouseMove) {
+    getAlignedPosition(eventPosition, headerHeight) {
+        const pos = eventPosition.offset(0, -headerHeight);
+        return pos.offset(-pos.x % this.gridSize, -pos.y % this.gridSize);
+    }
+
+    bindContainerMouseEvent(eventTag, onContainerMouseEvent) {
         const headerHeight = this.header.clientHeight;
 
         // Drag component or node
-        this.svg.addEventListener("mousemove", (event) => {
-            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
-            const alignedPos = pos.offset(-pos.x % this.gridSize, -pos.y % this.gridSize);
-            onContainerMouseMove(alignedPos);
+        this.svg.addEventListener(eventTag, (event) => {
+            const eventPos = new Position(event.clientX, event.clientY);
+            const alignedPos = this.getAlignedPosition(eventPos, headerHeight);
+            onContainerMouseEvent(alignedPos);
         });
+    }
+
+    bindContainerMouseMove(onContainerMouseMove) {
+        this.bindContainerMouseEvent("mousemove", onContainerMouseMove);
+    }
+
+    bindContainerClick(onContainerClick) {
+        this.bindContainerMouseEvent("click", onContainerClick);
     }
 
     bindKeyPress(onKeyPress) {
@@ -31,15 +44,6 @@ export default class SchematicEvents {
     bindContainerMouseUp(onContainerMouseUp) {
         this.svg.addEventListener("mouseup", () => {
             onContainerMouseUp();
-        });
-    }
-
-    bindContainerClick(onContainerClick) {
-        const headerHeight = this.header.clientHeight;
-        this.svg.addEventListener("click", (event) => {
-            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
-            const alignedPos = pos.offset(-pos.x % this.gridSize, -pos.y % this.gridSize);
-            onContainerClick(alignedPos);
         });
     }
 
@@ -85,8 +89,8 @@ export default class SchematicEvents {
         const elementId = getElementId(id, ELEMENT_TYPES.LINE);
         const line = this.doc.getElementById(elementId);
         line.addEventListener("click", (event) => {
-            const pos = new Position(event.clientX, event.clientY).offset(0, -headerHeight);
-            const alignedPos = pos.offset(-pos.x % this.gridSize, -pos.y % this.gridSize);
+            const eventPos = new Position(event.clientX, event.clientY);
+            const alignedPos = this.getAlignedPosition(eventPos, headerHeight);
             onLineClick(id, alignedPos);
         });
     }

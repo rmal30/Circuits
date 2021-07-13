@@ -4,7 +4,7 @@ import CircuitGraph from "../../public/scripts/analysis/circuit_graph.js";
 import resistorVoltCircuit from '../circuit_examples/resistor_volt.json';
 import vcvsCircuit from "../circuit_examples/vcvs.json";
 import doubleResistorCircuit from "../circuit_examples/double_resistor_volt.json";
-
+import threePinComponentCircuit from "../circuit_examples/3_pin_component.json";
 
 describe("Construct graphs from circuits", () => {
     it("Should create graph from resistor and voltage source circuit", () => {
@@ -18,6 +18,10 @@ describe("Construct graphs from circuits", () => {
             0: {edges: new Set(['0', '1'])},
             1: {edges: new Set(['0', '1'])}
         });
+    });
+
+    it("Should throw error if component uses the wrong number of pins", () => {
+        assert.throws(() => new CircuitGraph(threePinComponentCircuit));
     });
 
     describe("Should create graph from circuits with 4 pin components", () => {

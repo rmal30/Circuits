@@ -19,35 +19,48 @@ export default class CircuitGraph extends Graph {
         });
 
         for (const id of Object.keys(circuit.components)) {
-            if (circuit.components[id].pins.length === 2) {
-                const [portA, portB] = circuit.components[id].pins.map((nodeId) => nodeId.toString());
-                const {type, value} = circuit.components[id];
+            this.addComponent(id, circuit.components[id], reducedNodeIds);
+        }
+    }
+
+    addComponent(id, component, reducedNodeIds){
+        switch(component.pins.length) {
+            case 2:
+                const [portA, portB] = component.pins.map((nodeId) => nodeId.toString());
+                const {type, value} = component;
                 this.addEdge(id, reducedNodeIds[portA], reducedNodeIds[portB], {type: type, value: value});
-            } else {
-                const [portA, portB, portC, portD] = circuit.components[id].pins.map((nodeId) => nodeId.toString());
-                const {type, value} = circuit.components[id];
-                this.addEdge(`${id}:2`, reducedNodeIds[portB], reducedNodeIds[portD], {
-                    type: type,
-                    value: value,
-                    meter: `${id}:1`
+                break;
+            case 4: 
+                this.addFourPinComponent(id, component, reducedNodeIds);
+                break;
+            default:
+                throw new Error("Unknown component");
+        }
+    }
+
+    addFourPinComponent(id, component, reducedNodeIds){
+        const [portA, portB, portC, portD] = component.pins.map((nodeId) => nodeId.toString());
+        const {type, value} = component;
+        this.addEdge(`${id}:2`, reducedNodeIds[portB], reducedNodeIds[portD], {
+            type: type,
+            value: value,
+            meter: `${id}:1`
+        });
+        switch (component.type) {
+            case COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE:
+            case COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE:
+                this.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
+                    type: COMPONENT_TYPES.VOLTAGE_METER
                 });
-                switch (circuit.components[id].type) {
-                    case COMPONENT_TYPES.VOLTAGE_CONTROLLED_VOLTAGE_SOURCE:
-                    case COMPONENT_TYPES.VOLTAGE_CONTROLLED_CURRENT_SOURCE:
-                        this.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
-                            type: COMPONENT_TYPES.VOLTAGE_METER
-                        });
-                        break;
-                    case COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE:
-                    case COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE:
-                        this.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
-                            type: COMPONENT_TYPES.CURRENT_METER
-                        });
-                        break;
-                    default:
-                        throw new Error("Unknown 4 pin component type");
-                }
-            }
+                break;
+            case COMPONENT_TYPES.CURRENT_CONTROLLED_CURRENT_SOURCE:
+            case COMPONENT_TYPES.CURRENT_CONTROLLED_VOLTAGE_SOURCE:
+                this.addEdge(`${id}:1`, reducedNodeIds[portA], reducedNodeIds[portC], {
+                    type: COMPONENT_TYPES.CURRENT_METER
+                });
+                break;
+            default:
+                throw new Error("Unknown 4 pin component type");
         }
     }
 

@@ -36,6 +36,14 @@ export default class Schematic {
         this.deletePin(pin.id);
     }
 
+    deleteComponent(component, pins) {
+        component.pins.forEach((pinId) => {
+            this.deleteNode({lines: pins[pinId].lines, id: pinId});
+        });
+        this.deleteLabel(component.id);
+        this.deleteImage(component.id);
+    }
+
     setSelection(item) {
         if (item.selected) {
             this.graphics.setElementStyle(getElementId(item.id, item.type), STYLES.select[item.type]);
@@ -46,14 +54,6 @@ export default class Schematic {
         if (item.selected) {
             this.graphics.setElementStyle(getElementId(item.id, item.type), STYLES.deselect[item.type]);
         }
-    }
-
-    deleteComponent(component, pins) {
-        component.pins.forEach((pinId) => {
-            this.deleteNode({lines: pins[pinId].lines, id: pinId});
-        });
-        this.deleteLabel(component.id);
-        this.deleteImage(component.id);
     }
 
     addComponent(pins, component) {

@@ -1,5 +1,5 @@
-import {COMPONENTS_LIST, COMPONENT_DEFINITIONS} from "./components.js";
-import {ELEMENT_TYPES} from "./schematic/elements.js";
+import {COMPONENT_DEFINITIONS} from "../components.js";
+import {ELEMENT_TYPES} from "../schematic/elements.js";
 
 const KEYS = {
     R: "r",
@@ -7,24 +7,16 @@ const KEYS = {
     ESCAPE: "Escape"
 };
 
-export default class Controller {
+export default class SchematicController {
 
-    constructor(circuit, motion, selection, schematicView, headerView, statusView, promptView) {
+    constructor(circuit, motion, selection, schematicView, headerView, promptView) {
         this.models = {circuit, motion, selection};
-        this.views = {schematicView, headerView, statusView, promptView};
-        this.setMode("dc");
+        this.views = {schematicView, headerView, promptView};
+
         this.views.schematicView.events.bindKeyPress(this.onKeyPress.bind(this));
         this.views.schematicView.events.bindContainerClick(this.onContainerClick.bind(this));
         this.views.schematicView.events.bindContainerMouseMove(this.onMouseMove.bind(this));
         this.views.schematicView.events.bindContainerMouseUp(this.models.motion.stopMove.bind(this.models.motion));
-
-        this.views.headerView.events.bindFreqChange(this.changeFreq.bind(this));
-        this.views.headerView.events.bindSimulate(this.onSimulate.bind(this));
-        this.views.headerView.events.bindChooseMode(this.setMode.bind(this));
-    }
-
-    changeFreq(value) {
-        this.models.circuit.setFreq(parseFloat(value));
     }
 
     onMouseMove(pos) {
@@ -50,12 +42,6 @@ export default class Controller {
         }
     }
 
-    // Simulate circuit and show results
-    onSimulate() {
-        const [currentSets, voltageSets] = this.models.circuit.simulate(this.models.circuit);
-        this.views.statusView.showSolution(currentSets, voltageSets, this.models.circuit.components);
-    }
-
     // Change component value
     changeComponentValue(id) {
         const component = this.models.circuit.components[id];
@@ -65,22 +51,6 @@ export default class Controller {
         if (value !== null) {
             this.models.circuit.setComponentValue(id, value);
             this.views.schematicView.schematic.updateComponent(component);
-        }
-    }
-
-    // Set AC/DC mode
-    setMode(mode) {
-        this.views.headerView.setFrequencyEnabled(mode === "ac");
-        this.views.headerView.setComponentOptions(COMPONENTS_LIST[mode]);
-
-        for (const possibleMode in COMPONENTS_LIST) {
-            if (possibleMode !== mode && possibleMode !== "both") {
-                for (const id of Object.keys(this.models.circuit.components)) {
-                    if (this.models.circuit.components[id].type in COMPONENTS_LIST[possibleMode]) {
-                        this.deleteComponent(id);
-                    }
-                }
-            }
         }
     }
 
@@ -113,26 +83,30 @@ export default class Controller {
         this.models.selection.clearSelection();
     }
 
+    deleteSelection() {
+        switch (this.models.selection.type) {
+            case ELEMENT_TYPES.PIN:
+                this.deleteNode(this.models.selection.id);
+                break;
+
+            case ELEMENT_TYPES.IMAGE:
+                this.deleteComponent(this.models.selection.id);
+                break;
+
+            case ELEMENT_TYPES.LINE:
+                this.deleteLine(this.models.selection.id);
+                break;
+
+            default:
+                break;
+        }
+    }
+
     onKeyPress(key) {
         if (this.models.selection.selected) {
             switch (key) {
                 case KEYS.DELETE:
-                    switch (this.models.selection.type) {
-                        case ELEMENT_TYPES.PIN:
-                            this.deleteNode(this.models.selection.id);
-                            break;
-
-                        case ELEMENT_TYPES.IMAGE:
-                            this.deleteComponent(this.models.selection.id);
-                            break;
-
-                        case ELEMENT_TYPES.LINE:
-                            this.deleteLine(this.models.selection.id);
-                            break;
-
-                        default:
-                            break;
-                    }
+                    this.deleteSelection();
                     break;
 
                 case KEYS.ESCAPE:

@@ -9,8 +9,9 @@ import SVGGraphicsView from "./views/svg_graphics_view.js";
 import SchematicView from "./views/schematic_view.js";
 import Analyser from "./analysis/analyser.js";
 
-import Controller from "./controller.js";
 import { PIN_DIRECTION_TEMPLATE, GRID_SIZE, IMAGE_SIZE, PIN_POSITION_TEMPLATE } from "./schematic/layout.js";
+import SchematicController from "./controllers/schematic_controller.js";
+import HeaderController from "./controllers/header_controller.js";
 
 
 const DEFAULT_FREQUENCY = 60;
@@ -38,4 +39,6 @@ const headerView = new HeaderView(document);
 const statusView = new StatusView(document);
 const promptView = new PromptView(window);
 
-const controller = new Controller(circuit, motion, selection, schematicView, headerView, statusView, promptView);
+const schematicController = new SchematicController(circuit, motion, selection, schematicView, headerView, promptView);
+const headerController = new HeaderController(schematicController, circuit, headerView, statusView);
+headerController.setMode("dc");

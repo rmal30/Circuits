@@ -109,7 +109,7 @@ export default class Circuit {
     rotateComponent(id) {
         const comp = this.components[id];
         comp.direction = GeometryUtils.rotateVector(comp.direction);
-        const componentPosition = new Position(comp.pos.x, comp.pos.y);
+        const componentPosition = Position.fromObject(comp.pos);
         const pinPositions = GeometryUtils.getPositionsFromTemplate(componentPosition, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
         const directions = GeometryUtils.getDirectionsFromTemplate(comp.direction, this.dirTemplates[comp.pins.length]);
 

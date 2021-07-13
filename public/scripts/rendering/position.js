@@ -6,6 +6,10 @@ export default class Position {
         this.y = y;
     }
 
+    static fromObject(positionObject) {
+        return new Position(positionObject.x, positionObject.y);
+    }
+
     show() {
         return `${this.x} ${this.y}`;
     }

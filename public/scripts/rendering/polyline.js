@@ -246,8 +246,8 @@ function findMidPointsWithNoDirection(startPosition, endPosition, startDirection
  * @returns {number[][]} - SVG polyline string
  */
 export function planPolyLine(originPin, destPin, padding) {
-    const origin = originPin.pos;
-    const dest = destPin.pos;
+    const origin = Position.fromObject(originPin.pos);
+    const dest = Position.fromObject(destPin.pos);
     const dir0 = originPin.direction;
     const dir1 = destPin.direction;
 

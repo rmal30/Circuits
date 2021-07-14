@@ -271,7 +271,7 @@ describe("Circuit model", () => {
         circuit.pins = {
             0: {id: 0, lines: [0, 1], pos: {x: 0, y: 0}},
         }
-        circuit.moveNode(0, {x: 6, y: 7});
+        circuit.moveNode(0, new Position(6, 7));
         assert.deepStrictEqual(circuit.pins[0].pos, {x: 6, y: 7})
     });
 

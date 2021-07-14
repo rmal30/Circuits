@@ -10,6 +10,10 @@ export default class Position {
         return new Position(positionObject.x, positionObject.y);
     }
 
+    toObject(){
+        return {x: this.x, y: this.y};
+    }
+
     show() {
         return `${this.x} ${this.y}`;
     }

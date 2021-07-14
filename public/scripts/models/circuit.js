@@ -30,17 +30,16 @@ export default class Circuit {
         this.hertz = freq;
     }
 
+    removeLineFromPin(lineId, pinId) {
+        const pinLineSet = new Set(this.pins[pinId].lines);
+        pinLineSet.delete(lineId);
+        this.pins[pinId].lines = [...pinLineSet];
+    }
+
     deleteLine(lineId) {
         const [pin1, pin2] = this.lines[lineId];
-
-        const pin1LineSet = new Set(this.pins[pin1].lines);
-        pin1LineSet.delete(lineId);
-        this.pins[pin1].lines = [...pin1LineSet];
-
-        const pin2LineSet = new Set(this.pins[pin2].lines);
-        pin2LineSet.delete(lineId);
-        this.pins[pin2].lines = [...pin2LineSet];
-
+        this.removeLineFromPin(lineId, pin1);
+        this.removeLineFromPin(lineId, pin2);
         delete this.lines[lineId];
     }
 
@@ -61,13 +60,12 @@ export default class Circuit {
         const id = this.newComponentId;
         const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 
-        this.components[id] = {id, type, value: parseFloat(value), direction: pinDir[0], pins: pinIds, pos: {x: pos.x, y: pos.y}};
+        this.components[id] = {id, type, value: parseFloat(value), direction: pinDir[0], pins: pinIds, pos: pos.toObject()};
 
         this.newComponentId++;
 
         for (let index = 0; index < pinCount; index++) {
-            const position = pinPos[index];
-            this.addComponentPin(id, {x: position.x, y: position.y}, pinDir[index]);
+            this.addComponentPin(id, pinPos[index].toObject(), pinDir[index]);
         }
 
         return id;
@@ -122,14 +120,14 @@ export default class Circuit {
     moveComponent(id, pos) {
         const comp = this.components[id];
         const pinPositions = GeometryUtils.getPositionsFromTemplate(pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
-        comp.pos = {x: pos.x, y: pos.y};
+        comp.pos = pos.toObject();
         comp.pins.forEach((pinId, index) => {
             this.moveNode(pinId, pinPositions[index]);
         });
     }
 
     moveNode(pinId, pos) {
-        this.pins[pinId].pos = {x: pos.x, y: pos.y};
+        this.pins[pinId].pos = pos.toObject();
     }
 
     setComponentValue(id, value) {

@@ -57,12 +57,13 @@ export default class Schematic {
     }
 
     addComponent(pins, component) {
-        const angle = GeometryUtils.getAngleFromDirection(component.direction);
-        const info = COMPONENT_DEFINITIONS[component.type];
-        const elementId = getElementId(component.id, ELEMENT_TYPES.IMAGE);
         const position = Position.fromObject(component.pos);
+
+        const angle = GeometryUtils.getAngleFromDirection(component.direction);
+        const elementId = getElementId(component.id, ELEMENT_TYPES.IMAGE);
         this.graphics.addImage(elementId, `images/${component.type}.png`, IMAGE_SIZE, position, angle);
 
+        const info = COMPONENT_DEFINITIONS[component.type];
         const [dlx, dly] = component.direction.dx === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
         const labelPos = position.offset(dlx, dly);
         const labelValue = component.value ? `${component.value} ${info.unit}` : "";
@@ -97,15 +98,7 @@ export default class Schematic {
             this.graphics.updateCircle(elementId, pinPositions[index]);
         });
 
-        const {dx, dy} = comp.direction;
-        let dlx, dly;
-
-        if (dx === 0) {
-            [dlx, dly] = LABEL_POSITIONS.V;
-        } else if (dy === 0) {
-            [dlx, dly] = LABEL_POSITIONS.H;
-        }
-
+        const [dlx, dly] = comp.direction.dx === 0 ? LABEL_POSITIONS.V : LABEL_POSITIONS.H;
         const labelPosition = compPosition.offset(dlx, dly);
         
         const compInfo = COMPONENT_DEFINITIONS[comp.type];

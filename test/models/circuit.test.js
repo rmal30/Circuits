@@ -1,10 +1,20 @@
 import assert from 'assert';
 import Circuit from "../../public/scripts/models/circuit.js"
+import { DIRECTION_DELTAS } from '../../public/scripts/rendering/geometry.js';
 import Position from '../../public/scripts/rendering/position.js';
-import { IMAGE_SIZE, PIN_DIRECTION_TEMPLATE, PIN_POSITION_TEMPLATE } from "../../public/scripts/schematic/layout.js"
 
 describe("Circuit model", () => {
     let circuit;
+
+    const pinPositionTemplate = {
+        1: [0, 0],
+        2: [[0.5, 0], [-0.5, 0]],
+        4: [[0.5, 0.25], [0.5, -0.25], [-0.5, 0.25], [-0.5, -0.25]]
+    };
+    const pinDirectionTemplate = {
+        2: [DIRECTION_DELTAS.RIGHT, DIRECTION_DELTAS.LEFT],
+        4: [DIRECTION_DELTAS.RIGHT, DIRECTION_DELTAS.RIGHT, DIRECTION_DELTAS.LEFT, DIRECTION_DELTAS.LEFT]
+    }
     
     const mockAnalyser = {
         getCurrentsAndVoltages: (circuit2) => {
@@ -14,7 +24,7 @@ describe("Circuit model", () => {
     }
 
     before(() => {
-        circuit = new Circuit({hertz: 60, pins: {}, lines: {}, components: {}}, PIN_POSITION_TEMPLATE, PIN_DIRECTION_TEMPLATE, IMAGE_SIZE, mockAnalyser);
+        circuit = new Circuit({hertz: 60, pins: {}, lines: {}, components: {}}, pinPositionTemplate, pinDirectionTemplate, 50, mockAnalyser);
     });
 
     beforeEach(() => {
@@ -28,9 +38,9 @@ describe("Circuit model", () => {
         assert.deepStrictEqual(circuit.pins, {});
         assert.deepStrictEqual(circuit.lines, {});
         assert.deepStrictEqual(circuit.components, {});
-        assert.deepStrictEqual(circuit.posTemplates, PIN_POSITION_TEMPLATE);
-        assert.deepStrictEqual(circuit.dirTemplates, PIN_DIRECTION_TEMPLATE);
-        assert.deepStrictEqual(circuit.imageSize, IMAGE_SIZE);
+        assert.deepStrictEqual(circuit.posTemplates, pinPositionTemplate);
+        assert.deepStrictEqual(circuit.dirTemplates, pinDirectionTemplate);
+        assert.deepStrictEqual(circuit.imageSize, 50);
         assert.deepStrictEqual(circuit.analyser, mockAnalyser);
     });
 
@@ -89,7 +99,7 @@ describe("Circuit model", () => {
 
         circuit.pins = {
             0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [0, 1], pos: {x: 100, y: 100}}, 
-            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [2, 3], pos: {x: 148, y: 100}}, 
+            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [2, 3], pos: {x: 150, y: 100}}, 
             2: {id: 2, lines: [0], pos: {x: 0, y: 78}}, 
             3: {id: 3, lines: [1], pos: {x: 0, y: 150}}, 
             4: {id: 4, lines: [2], pos: {x: 200, y: 78}}, 
@@ -104,7 +114,7 @@ describe("Circuit model", () => {
         };
 
         circuit.components = {
-            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 124, y: 100}}
+            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 125, y: 100}}
         };
 
         circuit.deleteComponent(0);
@@ -134,8 +144,8 @@ describe("Circuit model", () => {
         });
 
         assert.deepStrictEqual(circuit.pins, {
-            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [], pos: {x: 124, y: 200}}, 
-            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [], pos: {x: 76, y: 200}}, 
+            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [], pos: {x: 125, y: 200}}, 
+            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [], pos: {x: 75, y: 200}}, 
         });
     });
 
@@ -202,11 +212,11 @@ describe("Circuit model", () => {
         });
         assert.deepStrictEqual(circuit.newPinId, 1);
 
-        const nodeId2 = circuit.addComponentPin(0, {x: 10, y: 68}, {dx: 0, dy: 1});
+        const nodeId2 = circuit.addComponentPin(0, {x: 10, y: 70}, {dx: 0, dy: 1});
         assert.deepStrictEqual(nodeId2, 1);
         assert.deepStrictEqual(circuit.pins, {
             0: {id: 0, comp: 0, lines: [], pos: {x: 10, y: 20}, direction: {dx: 0, dy: -1}},
-            1: {id: 1, comp: 0, lines: [], pos: {x: 10, y: 68}, direction: {dx: 0, dy: 1}}
+            1: {id: 1, comp: 0, lines: [], pos: {x: 10, y: 70}, direction: {dx: 0, dy: 1}}
         });
         assert.deepStrictEqual(circuit.newPinId, 2);
     });
@@ -232,39 +242,39 @@ describe("Circuit model", () => {
 
     it("Rotate component", () => {
         circuit.components = {
-            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 552, y: 78}}
+            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 550, y: 75}}
         };
         circuit.pins = {
-            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [2], pos: {x: 576, y: 78}}, 
-            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [3], pos: {x: 528, y: 78}}, 
+            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [2], pos: {x: 525, y: 75}}, 
+            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [3], pos: {x: 575, y: 75}}, 
         };
 
         circuit.rotateComponent(0);
 
         assert.deepStrictEqual(circuit.components, {
-            0: {id: 0, type: "res", value: 2, direction: {dx: -0, dy: 1}, pins: [0, 1], pos: {x: 552, y: 78}}
+            0: {id: 0, type: "res", value: 2, direction: {dx: -0, dy: 1}, pins: [0, 1], pos: {x: 550, y: 75}}
         });
 
         assert.deepStrictEqual(circuit.pins, {
-            0: {id: 0, comp: 0, direction: {dx: -0, dy: 1}, lines: [2], pos: {x: 552, y: 102}}, 
-            1: {id: 1, comp: 0, direction: {dx: 0, dy: -1}, lines: [3], pos: {x: 552, y: 54}}, 
+            0: {id: 0, comp: 0, direction: {dx: -0, dy: 1}, lines: [2], pos: {x: 550, y: 100}}, 
+            1: {id: 1, comp: 0, direction: {dx: 0, dy: -1}, lines: [3], pos: {x: 550, y: 50}}, 
         });
 
     });
 
     it("Move component", () => {
         circuit.components = {
-            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 552, y: 78}}
+            0: {id: 0, type: "res", value: 2, direction: {dx: 1, dy: 0}, pins: [0, 1], pos: {x: 550, y: 78}}
         };
         circuit.pins = {
-            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [2], pos: {x: 576, y: 78}}, 
-            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [3], pos: {x: 528, y: 78}}, 
+            0: {id: 0, comp: 0, direction: {dx: 1, dy: 0}, lines: [2], pos: {x: 575, y: 78}}, 
+            1: {id: 1, comp: 0, direction: {dx: -1, dy: 0}, lines: [3], pos: {x: 525, y: 78}}, 
         }
         circuit.moveComponent(0, new Position(100, 200));
 
         assert.deepStrictEqual(circuit.components[0].pos, {x: 100, y: 200});
-        assert.deepStrictEqual(circuit.pins[0].pos, {x: 124, y: 200});
-        assert.deepStrictEqual(circuit.pins[1].pos, {x: 76, y: 200});
+        assert.deepStrictEqual(circuit.pins[0].pos, {x: 125, y: 200});
+        assert.deepStrictEqual(circuit.pins[1].pos, {x: 75, y: 200});
     });
 
     it("Move node", () => {

@@ -1,5 +1,11 @@
-
 export const STYLES = {
+    initial: {
+        Line: {
+            fill: "none",
+            stroke: "black",
+            "stroke-width": 2
+        }
+    },
     select: {
         Line: {stroke: "blue"},
         Image: {opacity: 0.7},
@@ -10,10 +16,4 @@ export const STYLES = {
         Image: {opacity: 1},
         Pin: {fill: "black"}
     }
-};
-
-export const DEFAULT_LINE_STYLE = {
-    fill: "none",
-    stroke: "black",
-    "stroke-width": 2
 };

@@ -1,20 +1,27 @@
 // Prompt value from user
 export default class PromptView {
     constructor (_window) {
-        this.window = _window;
+        this._window = _window;
     }
-    
-    promptComponentValue(info) {
-        const promptStr = `Please enter a ${info.prop} for a ${info.name} in ${info.unit}`;
+
+    promptUntilValid(promptStr) {
         let value = null;
         let invalid = true;
         do {
-            value = this.window.prompt(promptStr);
+            value = this._window.prompt(promptStr);
             invalid = value === "";
             if (invalid) {
-                this.window.alert("Please enter a valid value");
+                this._window.alert("Please enter a valid value");
             }
         } while (invalid);
         return value;
+    }
+    
+    promptComponentValue(info) {
+        return this.promptUntilValid(`Please enter a ${info.prop} for a ${info.name} in ${info.unit}`);
+    }
+
+    promptCircuitName() {
+        return this.promptUntilValid("Please enter a circuit name");
     }
 }

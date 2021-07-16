@@ -7,6 +7,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-blue.min.css"/>
         <link rel="stylesheet" href="styles/style.css"/>
+        <link rel="stylesheet" href="styles/dialog_polyfill.css"/>
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
     <body>
@@ -48,12 +49,29 @@
         </div>
 
         <nav class="white mdl-navigation">
+            <input type="file" id="importedFile" accept=".json, application/json"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="import" value="Import"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="load" value="Load existing"/>
             <input class="white mdl-button mdl-js-button" type="button" id="simulate" value="Simulate"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="save" value="Save"/>
+            <input class="white mdl-button mdl-js-button" type="button" id="export" value="Export"/>
         </nav>
 
         </div>
     </div>
-    <main class="mdl-layout__content">
+    <dialog class="colored mdl-dialog" id="localStorageDialog">
+        <h6 class="white mdl-dialog__title">Load existing</h6>
+        <div class="white mdl-dialog__content">
+            <p>Load circuit from local storage</p>
+            <select id="localStorageKeyInput" class="mdl-textfield__input">
+            </select>
+        </div>
+        <div class="mdl-dialog__actions">
+            <input type="button" class="white mdl-button mdl-js-button" id="loadCircuit" value="Load"/>
+            <input type="button" class="white mdl-button mdl-js-button" id="cancel" value ="Cancel"/>
+        </div>
+    </dialog>
+    <main class="mdl-layout__content">  
         <svg id="svg" width="70%" height="100%"></svg>
         <div id="info"></div>
     </main>
@@ -89,6 +107,7 @@
     <script type="module" src="scripts/views/prompt_view.js"></script>
     <script type="module" src="scripts/views/schematic_view.js"></script>
     <script type="module" src="scripts/views/status_view.js"></script>
+    <script type="module" src="scripts/views/storage_view.js"></script>
 
     <script type="module" src="scripts/models/circuit.js"></script>
     <script type="module" src="scripts/models/motion_state.js"></script>
@@ -102,5 +121,7 @@
 
     <script type="module" src="scripts/components.js"></script>
     <script type="module" src="scripts/main.js"></script>
+
+    <script type="module" src="scripts/dialog_polyfill.js"></script>
 
 </HTML>

@@ -132,7 +132,7 @@ export default class SchematicController {
             if (this.models.selection.selected) {
                 this.clearSelection();
             } else if (newCompType !== " ") {
-                this.addComponent(newCompType, position);
+                this.addNewComponent(newCompType, position);
             }
         }
     }
@@ -149,10 +149,7 @@ export default class SchematicController {
             this.models.selection.selectPin(pinId);
             this.views.schematicView.schematic.setSelection(this.models.selection);
         } else if (pinId !== this.models.selection.id) {
-            const lineId = this.models.circuit.addLine(this.models.selection.id, pinId);
-            const {pins} = this.models.circuit;
-            this.views.schematicView.schematic.addLine(lineId, pins[this.models.selection.id], pins[pinId]);
-            this.views.schematicView.events.bindLineClick(lineId, this.onLineClick.bind(this));
+            this.addLine(this.models.selection.id, pinId);
             this.clearSelection();
         }
     }
@@ -168,8 +165,13 @@ export default class SchematicController {
         }
     }
 
+    addLine(pinId1, pinId2){
+        const lineId = this.models.circuit.addLine(pinId1, pinId2);
+        this.addInteractiveLineDrawing(lineId);
+    }
+
     // Add component to diagram
-    addComponent(type, position) {
+    addNewComponent(type, position) {
         let value = null;
         const newCompInfo = COMPONENT_DEFINITIONS[type];
         if (newCompInfo.prop) {
@@ -181,6 +183,23 @@ export default class SchematicController {
 
         const directionStr = this.views.headerView.getNewComponentDirection();
         const id = this.models.circuit.addComponent(type, value, position, directionStr);
+        this.addInteractiveComponentDrawing(id);
+    }
+
+    addInteractiveLineDrawing(lineId) {
+        const {pins, lines} = this.models.circuit;
+        const [pinId1, pinId2] = lines[lineId];
+        this.views.schematicView.schematic.addLine(lineId, pins[pinId1], pins[pinId2]);
+        this.views.schematicView.events.bindLineClick(lineId, this.onLineClick.bind(this));
+    }
+
+    addInteractiveNodeDrawing(pin){
+        this.views.schematicView.schematic.addPin(pin);
+        this.views.schematicView.events.bindPinClick(pin.id, this.onPinClick.bind(this));
+        this.views.schematicView.events.bindNodeMouseDown(pin.id, this.models.motion.startNodeMove.bind(this.models.motion));
+    }
+
+    addInteractiveComponentDrawing(id) {
         this.views.schematicView.schematic.addComponent(this.models.circuit.pins, this.models.circuit.components[id]);
         this.views.schematicView.events.bindLabelClick(id, this.changeComponentValue.bind(this));
         this.views.schematicView.events.bindComponentClick(id, this.onComponentClick.bind(this));
@@ -197,5 +216,42 @@ export default class SchematicController {
         this.views.schematicView.events.bindPinClick(newPinId, this.onPinClick.bind(this));
         this.views.schematicView.events.bindNodeMouseDown(newPinId, this.models.motion.startNodeMove.bind(this.models.motion));
         return newPinId;
+    }
+
+    clearCircuit() {
+        for (const lineId of Object.keys(this.models.circuit.lines)) {
+            this.deleteLine(lineId);
+        }
+
+        for (const compId of Object.keys(this.models.circuit.components)) {
+            this.deleteComponent(compId);
+        }
+
+        for (const pinId of Object.keys(this.models.circuit.pins)) {
+            this.deleteNode(pinId);
+        }
+    }
+
+    drawCircuit(circuit){
+        Object.assign(this.models.circuit, circuit);
+        for (const compId in circuit.components) {
+            this.addInteractiveComponentDrawing(compId)
+        }
+
+        for (const pinId in circuit.pins) {
+            const pin = circuit.pins[pinId];
+            if(!("comp" in pin)) {
+                this.addInteractiveNodeDrawing(pin);
+            }
+        }
+
+        for (const lineId in circuit.lines) {
+            this.addInteractiveLineDrawing(lineId);
+        }
+    }
+
+    loadCircuit(circuitObject) {
+        this.clearCircuit();
+        this.drawCircuit(circuitObject);
     }
 }

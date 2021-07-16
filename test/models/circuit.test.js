@@ -38,9 +38,9 @@ describe("Circuit model", () => {
         assert.deepStrictEqual(circuit.pins, {});
         assert.deepStrictEqual(circuit.lines, {});
         assert.deepStrictEqual(circuit.components, {});
-        assert.deepStrictEqual(circuit.posTemplates, pinPositionTemplate);
-        assert.deepStrictEqual(circuit.dirTemplates, pinDirectionTemplate);
-        assert.deepStrictEqual(circuit.imageSize, 50);
+        assert.deepStrictEqual(circuit.config.posTemplates, pinPositionTemplate);
+        assert.deepStrictEqual(circuit.config.dirTemplates, pinDirectionTemplate);
+        assert.deepStrictEqual(circuit.config.imageSize, 50);
         assert.deepStrictEqual(circuit.analyser, mockAnalyser);
     });
 

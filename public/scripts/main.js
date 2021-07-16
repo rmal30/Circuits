@@ -7,11 +7,14 @@ import HeaderView from "./views/header_view.js";
 import StatusView from "./views/status_view.js";
 import SVGGraphicsView from "./views/svg_graphics_view.js";
 import SchematicView from "./views/schematic_view.js";
+import StorageView from "./views/storage_view.js";
+
 import Analyser from "./analysis/analyser.js";
 
 import { PIN_DIRECTION_TEMPLATE, GRID_SIZE, IMAGE_SIZE, PIN_POSITION_TEMPLATE } from "./schematic/layout.js";
 import SchematicController from "./controllers/schematic_controller.js";
 import HeaderController from "./controllers/header_controller.js";
+import DialogController from "./controllers/dialog_controller.js";
 
 
 const DEFAULT_FREQUENCY = 60;
@@ -37,8 +40,10 @@ const graphicsView = new SVGGraphicsView(document, graphicsElement);
 const schematicView = new SchematicView(document, graphicsView, GRID_SIZE);
 const headerView = new HeaderView(document);
 const statusView = new StatusView(document);
+const storageView = new StorageView(document, window);
 const promptView = new PromptView(window);
 
 const schematicController = new SchematicController(circuit, motion, selection, schematicView, headerView, promptView);
-const headerController = new HeaderController(schematicController, circuit, headerView, statusView);
+const dialogController = new DialogController(schematicController, storageView);
+const headerController = new HeaderController(schematicController, circuit, headerView, statusView, promptView, storageView);
 headerController.setMode("dc");

@@ -2,14 +2,22 @@ import {COMPONENTS_LIST} from "../components.js";
 
 export default class HeaderController {
 
-    constructor(controller, circuit, headerView, statusView) {
+    constructor(controller, circuit, headerView, statusView, promptView, storageView) {
         this.controller = controller;
         this.circuit = circuit;
         this.headerView = headerView;
         this.statusView = statusView;
+        this.promptView = promptView;
+        this.storageView = storageView;
 
         this.headerView.events.bindFreqChange(this.changeFreq.bind(this));
         this.headerView.events.bindSimulate(this.onSimulate.bind(this));
+        this.headerView.events.bindFilePicked(this.onFilePicked.bind(this));
+
+        this.headerView.events.bindLoad(this.onLoad.bind(this));
+        this.headerView.events.bindImport(this.onImport.bind(this));
+        this.headerView.events.bindSave(this.onSave.bind(this));
+        this.headerView.events.bindExport(this.onExport.bind(this));
         this.headerView.events.bindChooseMode(this.setMode.bind(this));
     }
 
@@ -21,6 +29,37 @@ export default class HeaderController {
     onSimulate() {
         const [currentSets, voltageSets] = this.circuit.simulate(this.circuit);
         this.statusView.showSolution(currentSets, voltageSets, this.circuit.components);
+    }
+
+    onImport() {
+        this.storageView.pickFile();
+    }
+
+    onFilePicked() {
+        this.storageView.importJSONFile((jsonData) => {
+            const circuitObject = JSON.parse(jsonData);
+            this.controller.loadCircuit(circuitObject);
+        });
+    }
+
+    onLoad() {
+        this.storageView.showLocalStorageDialog();
+    }
+
+    onSave() {
+        const circuitJSONString = JSON.stringify(this.circuit);
+        const key = this.promptView.promptCircuitName();
+        if (key) {
+            this.storageView.saveDataToLocalStorage(key, circuitJSONString);
+        }
+    }
+
+    onExport() {
+        const circuitJSONString = JSON.stringify(this.circuit);
+        const filename = this.promptView.promptCircuitName();
+        if (filename) {
+            this.storageView.exportJSONFile(`${filename}.json`, circuitJSONString);
+        }
     }
 
     // Set AC/DC mode

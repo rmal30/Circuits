@@ -2,6 +2,10 @@
     padding: 0 40px 0 20px;
 }
 
+#importedFile{
+    display: none;
+}
+
 #info{
     width: 28%;
     height: 80%;
@@ -19,6 +23,10 @@
 
 .mdl-layout-title, .mdl-textfield__label, .white{
     color: #fff;
+}
+
+.colored{
+    background-color: #4caf50;
 }
 
 .control{

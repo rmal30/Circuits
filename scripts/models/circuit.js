@@ -14,9 +14,7 @@ export default class Circuit {
         this.newPinId = Circuit.getNewID(this.pins);
         this.newLineId = Circuit.getNewID(this.lines);
         this.newComponentId = Circuit.getNewID(this.components);
-        this.posTemplates = posTemplates;
-        this.dirTemplates = dirTemplates;
-        this.imageSize = imageSize;
+        this.config = {posTemplates, dirTemplates, imageSize};
         this.analyser = analyser;
     }
 
@@ -32,7 +30,7 @@ export default class Circuit {
 
     removeLineFromPin(lineId, pinId) {
         const pinLineSet = new Set(this.pins[pinId].lines);
-        pinLineSet.delete(lineId);
+        pinLineSet.delete(Number(lineId));
         this.pins[pinId].lines = [...pinLineSet];
     }
 
@@ -55,8 +53,8 @@ export default class Circuit {
 
     addComponent(type, value, pos, alignment) {
         const {pinCount} = COMPONENT_DEFINITIONS[type];
-        const pinDir = GeometryUtils.getDirectionsFromTemplate(ALIGNMENT_DELTAS[alignment], this.dirTemplates[pinCount]);
-        const pinPos = GeometryUtils.getPositionsFromTemplate(pos, ALIGNMENT_DELTAS[alignment], this.posTemplates[pinCount], this.imageSize);
+        const pinDir = GeometryUtils.getDirectionsFromTemplate(ALIGNMENT_DELTAS[alignment], this.config.dirTemplates[pinCount]);
+        const pinPos = GeometryUtils.getPositionsFromTemplate(pos, ALIGNMENT_DELTAS[alignment], this.config.posTemplates[pinCount], this.config.imageSize);
         const id = this.newComponentId;
         const pinIds = Utils.range(this.newPinId, this.newPinId + pinCount);
 
@@ -108,8 +106,8 @@ export default class Circuit {
         const comp = this.components[id];
         comp.direction = GeometryUtils.rotateVector(comp.direction);
         const componentPosition = Position.fromObject(comp.pos);
-        const pinPositions = GeometryUtils.getPositionsFromTemplate(componentPosition, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
-        const directions = GeometryUtils.getDirectionsFromTemplate(comp.direction, this.dirTemplates[comp.pins.length]);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(componentPosition, comp.direction, this.config.posTemplates[comp.pins.length], this.config.imageSize);
+        const directions = GeometryUtils.getDirectionsFromTemplate(comp.direction, this.config.dirTemplates[comp.pins.length]);
 
         comp.pins.forEach((pinId, index) => {
             this.pins[pinId].direction = directions[index];
@@ -119,7 +117,7 @@ export default class Circuit {
 
     moveComponent(id, pos) {
         const comp = this.components[id];
-        const pinPositions = GeometryUtils.getPositionsFromTemplate(pos, comp.direction, this.posTemplates[comp.pins.length], this.imageSize);
+        const pinPositions = GeometryUtils.getPositionsFromTemplate(pos, comp.direction, this.config.posTemplates[comp.pins.length], this.config.imageSize);
         comp.pos = pos.toObject();
         comp.pins.forEach((pinId, index) => {
             this.moveNode(pinId, pinPositions[index]);

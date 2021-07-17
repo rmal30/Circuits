@@ -127,7 +127,8 @@ export default class Schematic {
 
     updateNodeAndLines(circuit, pinId) {
         const elementId = getElementId(pinId, ELEMENT_TYPES.PIN);
-        this.graphics.updateCircle(elementId, circuit.pins[pinId].pos);
+        const nodePosition = Position.fromObject(circuit.pins[pinId].pos)
+        this.graphics.updateCircle(elementId, nodePosition);
         circuit.pins[pinId].lines.forEach((lineId) => this.updateLine(circuit.pins, circuit.lines, lineId));
     }
 

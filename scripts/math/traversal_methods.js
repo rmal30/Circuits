@@ -31,7 +31,7 @@ export default class TraversalMethods {
                 visited.add(node);
                 children[node] = new Set();
                 for (const neighbour of getNeighbours(node)) {
-                    if(!visited.has(neighbour)) {
+                    if (!visited.has(neighbour)) {
                         parents[neighbour] = node;
                         stack.push(neighbour);
                     }

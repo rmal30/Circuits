@@ -39,7 +39,7 @@ export default class StorageView {
     importJSONFile(onReadCallback) {
         const file = this.importedFileInput.files[0];
         if (file) {
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.readAsText(file, "UTF-8");
             reader.onload = function (evt) {
                 if (evt.target) {

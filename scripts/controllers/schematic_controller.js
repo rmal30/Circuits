@@ -165,7 +165,7 @@ export default class SchematicController {
         }
     }
 
-    addLine(pinId1, pinId2){
+    addLine(pinId1, pinId2) {
         const lineId = this.models.circuit.addLine(pinId1, pinId2);
         this.addInteractiveLineDrawing(lineId);
     }
@@ -193,7 +193,7 @@ export default class SchematicController {
         this.views.schematicView.events.bindLineClick(lineId, this.onLineClick.bind(this));
     }
 
-    addInteractiveNodeDrawing(pin){
+    addInteractiveNodeDrawing(pin) {
         this.views.schematicView.schematic.addPin(pin);
         this.views.schematicView.events.bindPinClick(pin.id, this.onPinClick.bind(this));
         this.views.schematicView.events.bindNodeMouseDown(pin.id, this.models.motion.startNodeMove.bind(this.models.motion));
@@ -232,7 +232,7 @@ export default class SchematicController {
         }
     }
 
-    drawCircuit(circuit){
+    drawCircuit(circuit) {
         Object.assign(this.models.circuit, circuit);
         for (const compId in circuit.components) {
             this.addInteractiveComponentDrawing(compId)
@@ -240,7 +240,7 @@ export default class SchematicController {
 
         for (const pinId in circuit.pins) {
             const pin = circuit.pins[pinId];
-            if(!("comp" in pin)) {
+            if (!("comp" in pin)) {
                 this.addInteractiveNodeDrawing(pin);
             }
         }

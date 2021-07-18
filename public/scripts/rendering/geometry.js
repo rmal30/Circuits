@@ -30,7 +30,7 @@ export class GeometryUtils {
     static isNearPoint(point, position, range) {
         const dx = Math.abs(position.x - point.x);
         const dy = Math.abs(position.y - point.y);
-        return Math.max(dx, dy) < range;
+        return Math.max(dx, dy) <= range;
     }
 
     static getAngleFromDirection(direction) {

@@ -4,6 +4,7 @@ import NodalAnalysis from "../../public/scripts/analysis/nodal_analysis.js";
 import rlcSerialCircuit from "../circuit_examples/RLC_serial_voltage.json";
 import rlcParallelCircuit from "../circuit_examples/RLC_parallel_voltage.json";
 import vcvsCircuit from "../circuit_examples/vcvs.json";
+import vcvs2Circuit from "../circuit_examples/vcvs2.json";
 import bjtCircuit from "../circuit_examples/bjt.json";
 import fetCircuit from "../circuit_examples/fet.json";
 
@@ -142,6 +143,21 @@ describe("Test nodal analysis", () => {
                 "13": -31.105651105651113,
                 "14:1": 3.552713678800501e-15,
                 "14:2": -26.577886977886983
+            }
+        });
+    });
+
+    it("VCVS2", () => {
+        assert.deepStrictEqual(Analyser.analyse(vcvs2Circuit, NodalAnalysis), {
+            meterCurrents: {},
+            meterVoltages: {
+                '0:1': 2
+            },
+            voltages: {
+                '0:2': 23.999999999999996,
+                '1': 21.818181818181813,
+                '2': -0,
+                '3': 2.1818181818181817
             }
         });
     });

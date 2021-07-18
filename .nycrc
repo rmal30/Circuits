@@ -1,0 +1,9 @@
+{
+    "reporter": ["text", "lcov"],
+    "include": ["public/scripts"],
+    "exclude": [
+        "public/scripts/*.js",
+        "public/scripts/schematic/layout.js",
+        "public/scripts/schematic/style.js"
+    ]
+}

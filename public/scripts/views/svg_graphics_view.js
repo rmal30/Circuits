@@ -161,7 +161,7 @@ class SVGPolylines {
         return polyLinePoints.map((point) => `${point.x},${point.y}`).join(" ");
     }
 
-    static parsePoints(polylineStr){
+    static parsePoints(polylineStr) {
         const points = polylineStr.split(" ").map((pointStr) => {
             const [x, y] = pointStr.split(",").map((v) => Number(v));
             return new Position(x, y)

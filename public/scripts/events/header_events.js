@@ -30,7 +30,7 @@ export default class HeaderEvents {
         });
     }
 
-    bindFilePicked(onFilePicked){
+    bindFilePicked(onFilePicked) {
         this.importedFileInput.addEventListener("change", () => {
             onFilePicked();
         });

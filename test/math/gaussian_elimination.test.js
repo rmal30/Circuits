@@ -86,8 +86,8 @@ describe("Gaussian elimination", () => {
             ];
 
             let delta = 0;
-            for (let i=0; i<result.length; i++) {
-                for(let j=0; j<result[0].length; j++) {
+            for (let i = 0; i < result.length; i++) {
+                for (let j = 0; j < result[0].length; j++) {
                     delta += Math.abs(result[i][j] - expected[i][j]);
                 }
             }

@@ -67,7 +67,7 @@ export default class SchematicEvents {
         this.bindElementClick(id, onPinClick, ELEMENT_TYPES.PIN);
     }
 
-    bindElementMouseDown(id, onElementMouseDown, elementType){
+    bindElementMouseDown(id, onElementMouseDown, elementType) {
         const elementId = getElementId(id, elementType);
         const image = this.doc.getElementById(elementId);
         image.addEventListener("mousedown", (event) => {

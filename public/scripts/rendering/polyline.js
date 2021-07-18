@@ -9,7 +9,7 @@ function findMidPointsWithSameDirection(originPosition, destPosition, direction,
     const maxY = Math.max(originPosition.y, destPosition.y);
 
     if (direction.dx === 0) {
-        if(Math.abs(dx) > padding) {
+        if (Math.abs(dx) > padding) {
             const yPos = direction.dy < 0 ? (minY - padding) : (maxY + padding);
             return [ 
                 new Position(originPosition.x, yPos),
@@ -27,7 +27,7 @@ function findMidPointsWithSameDirection(originPosition, destPosition, direction,
             ];
         }
     } else {
-        if(Math.abs(dy) > padding) {
+        if (Math.abs(dy) > padding) {
             const xPos = direction.dx < 0 ? (minX - padding) : (maxX + padding);
             return [ 
                 new Position(xPos, originPosition.y),
@@ -99,11 +99,11 @@ function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding)
     const dx = dest.x - origin.x;
     const dy = dest.y - origin.y;
 
-    if((dir0.dx * dx > padding || dir0.dy * dy > padding) && (dir1.dx * dx < -padding || dir1.dy * dy < -padding)) {
+    if ((dir0.dx * dx > padding || dir0.dy * dy > padding) && (dir1.dx * dx < -padding || dir1.dy * dy < -padding)) {
         return [
             origin.offset(Math.abs(dx) * dir0.dx, Math.abs(dy) * dir0.dy)
         ];
-    } else if((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx < -2 * padding || dir1.dy * dy < -2 * padding)) {
+    } else if ((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx < -2 * padding || dir1.dy * dy < -2 * padding)) {
         const firstMidPoint = origin.offset(padding * dir0.dx, padding * dir0.dy);
         const secondMidPoint = firstMidPoint.offset(-Math.abs(dx/2) * dir1.dx, -Math.abs(dy/2) * dir1.dy)
         return [
@@ -111,7 +111,7 @@ function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding)
             secondMidPoint,
             dest.offset(Math.abs(dx/2) * dir1.dx, Math.abs(dy/2) * dir1.dy)
         ];
-    } else if((dir0.dx * dx > 2 * padding || dir0.dy * dy > 2 * padding) && (dir1.dx * dx < 0 || dir1.dy * dy < 0)) {
+    } else if ((dir0.dx * dx > 2 * padding || dir0.dy * dy > 2 * padding) && (dir1.dx * dx < 0 || dir1.dy * dy < 0)) {
         const firstMidPoint = origin.offset(Math.abs(dx/2) * dir0.dx, Math.abs(dy/2) * dir0.dy);
         const lastMidPoint = dest.offset(padding * dir1.dx, padding * dir1.dy);
         return [
@@ -134,7 +134,7 @@ function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding)
             secondMidPoint,
             dest.offset(padding * dir1.dx, padding * dir1.dy)
         ];
-    } else if((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx > 0 || dir1.dy * dy > 0)) {
+    } else if ((dir0.dx * dx > 0 || dir0.dy * dy > 0) && (dir1.dx * dx > 0 || dir1.dy * dy > 0)) {
         const initialdx = Math.abs(dx) > 2 * padding ? Math.abs(dx/2) : (Math.abs(dx) + padding);
         const initialdy = Math.abs(dy) > 2 * padding ? Math.abs(dy/2) : (Math.abs(dy) + padding);
         const firstMidPoint = origin.offset(initialdx * dir0.dx, initialdy * dir0.dy);
@@ -160,7 +160,7 @@ function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding)
             lastMidPoint
         ];
     } else if (dir0.dx * dx === 0 && dir0.dy * dy === 0) {
-        if(Math.abs(dx) + Math.abs(dy) < 2 * padding && dir1.dx * dx <= 0 && dir1.dy * dy <= 0) {
+        if (Math.abs(dx) + Math.abs(dy) < 2 * padding && dir1.dx * dx <= 0 && dir1.dy * dy <= 0) {
             return [];
         } else {
             const secondX = dir1.dx * dx < 0 ? -Math.abs(dx/2) : (Math.abs(dx) + padding);
@@ -175,7 +175,7 @@ function findMidPointsWithOrthogonalDirection(origin, dest, dir0, dir1, padding)
             ];
         }
     } else {
-        if(Math.abs(dx) + Math.abs(dy) < 2 * padding && dir0.dx * dx >= 0 && dir0.dy * dy >= 0) {
+        if (Math.abs(dx) + Math.abs(dy) < 2 * padding && dir0.dx * dx >= 0 && dir0.dy * dy >= 0) {
             return [];
         } else {
             const secondX = dir0.dx * dx > 0 ? -Math.abs(dx/2) : (Math.abs(dx) + padding);
@@ -196,11 +196,11 @@ function findMidPointsWithNoDirection(startPosition, endPosition, startDirection
     const dy = endPosition.y - startPosition.y;
     const dx = endPosition.x - startPosition.x;
 
-    if(dy * startDirection.dx - dx * startDirection.dy === 0 && dx * startDirection.dx + dy * startDirection.dy >= 0) {
+    if (dy * startDirection.dx - dx * startDirection.dy === 0 && dx * startDirection.dx + dy * startDirection.dy >= 0) {
         return [];
     } else {
         if (startDirection.dx === 0) {
-            if(startDirection.dy * dy >= 0 && (Math.abs(dy) > padding || Math.abs(dx) <= padding)) {
+            if (startDirection.dy * dy >= 0 && (Math.abs(dy) > padding || Math.abs(dx) <= padding)) {
                 return [
                     new Position(startPosition.x, endPosition.y)
                 ];
@@ -217,7 +217,7 @@ function findMidPointsWithNoDirection(startPosition, endPosition, startDirection
                 ]
             }
         } else {
-            if(startDirection.dx * dx >= 0 && (Math.abs(dx) > padding || Math.abs(dy) <= padding)) {
+            if (startDirection.dx * dx >= 0 && (Math.abs(dx) > padding || Math.abs(dy) <= padding)) {
                 return [
                     new Position(endPosition.x, startPosition.y)
                 ];
@@ -256,11 +256,11 @@ export function planPolyLine(originPin, destPin, padding) {
         midPoints = [
             new Position(origin.x, dest.y)
         ];
-    } else if(!dir1) {
+    } else if (!dir1) {
         midPoints = findMidPointsWithNoDirection(origin, dest, dir0, padding);
-    } else if(!dir0) {
+    } else if (!dir0) {
         midPoints = findMidPointsWithNoDirection(dest, origin, dir1, padding).reverse();
-    } else if(dir0.dx === dir1.dx && dir0.dy === dir1.dy) {
+    } else if (dir0.dx === dir1.dx && dir0.dy === dir1.dy) {
         midPoints = findMidPointsWithSameDirection(origin, dest, dir0, padding);
     } else if (dir0.dx === -dir1.dx && dir0.dy === -dir1.dy) {
         midPoints = findMidPointsWithOppositeDirection(origin, dest, dir0, padding);

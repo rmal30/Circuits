@@ -15,7 +15,7 @@ describe("Traversal methods", () => {
              4   5   6
             */
             const graph = new Graph();
-            for(let i=1; i<=6; i++){
+            for (let i = 1; i <= 6; i++) {
                 graph.addNode(`node${i}`);
             }
             
@@ -56,7 +56,7 @@ describe("Traversal methods", () => {
              4 - 5 - 6     4 - 5 - 6
             */
              const graph = new Graph();
-             for(let i=1; i<=6; i++){
+             for (let i = 1; i <= 6; i++) {
                  graph.addNode(`node${i}`);
              }
              

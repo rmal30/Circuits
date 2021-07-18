@@ -1189,7 +1189,7 @@ describe("Polyline planning", () => {
                         new Position(100, -100)
                     ];
                     
-                    for(const dest of DESTS) {
+                    for (const dest of DESTS) {
                         const result1 = planPolyLine(
                             anchor(ORIGIN, DIRECTION_DELTAS.UP), 
                             anchor(dest, DIRECTION_DELTAS.LEFT),
@@ -1216,7 +1216,7 @@ describe("Polyline planning", () => {
                         new Position(-100, -100)
                     ];
                     
-                    for(const dest of DESTS) {
+                    for (const dest of DESTS) {
                         const result1 = planPolyLine(
                             anchor(ORIGIN, DIRECTION_DELTAS.UP), 
                             anchor(dest, DIRECTION_DELTAS.RIGHT),
@@ -1241,7 +1241,7 @@ describe("Polyline planning", () => {
                         new Position(100, 100)
                     ];
                     
-                    for(const dest of DESTS) {
+                    for (const dest of DESTS) {
                         const result1 = planPolyLine(
                             anchor(ORIGIN, DIRECTION_DELTAS.DOWN), 
                             anchor(dest, DIRECTION_DELTAS.LEFT),
@@ -1267,7 +1267,7 @@ describe("Polyline planning", () => {
                         new Position(-100, 100)
                     ];
         
-                    for(const dest of DESTS) {
+                    for (const dest of DESTS) {
                         const result1 = planPolyLine(
                             anchor(ORIGIN, DIRECTION_DELTAS.DOWN), 
                             anchor(dest, DIRECTION_DELTAS.RIGHT),

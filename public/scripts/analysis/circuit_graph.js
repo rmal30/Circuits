@@ -23,7 +23,7 @@ export default class CircuitGraph extends Graph {
         }
     }
 
-    addComponent(id, component, reducedNodeIds){
+    addComponent(id, component, reducedNodeIds) {
         switch(component.pins.length) {
             case 2:
                 const [portA, portB] = component.pins.map((nodeId) => nodeId.toString());
@@ -38,7 +38,7 @@ export default class CircuitGraph extends Graph {
         }
     }
 
-    addFourPinComponent(id, component, reducedNodeIds){
+    addFourPinComponent(id, component, reducedNodeIds) {
         const [portA, portB, portC, portD] = component.pins.map((nodeId) => nodeId.toString());
         const {type, value} = component;
         this.addEdge(`${id}:2`, reducedNodeIds[portB], reducedNodeIds[portD], {

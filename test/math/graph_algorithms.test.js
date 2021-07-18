@@ -7,7 +7,7 @@ const graphs = {
     singleNode: (a) => {
         const graph = new Graph();
         graph.addNode("node1");
-        for(let i=1; i<=a; i++) {
+        for (let i=1; i<=a; i++) {
             graph.addEdge(`edge${i}`, "node1", "node1", `label${i}`);
         }
         return graph;
@@ -17,11 +17,11 @@ const graphs = {
         graph.addNode("node1");
         graph.addNode("node2");
 
-        for(let i=1; i<=a; i++){
+        for (let i=1; i<=a; i++) {
             graph.addEdge(`edge${i}`, "node1", "node2", `label${i}`);
         }
 
-        for(let i=1; i<=b; i++){
+        for (let i=1; i<=b; i++) {
             graph.addEdge(`edge${a + i}`, "node2", "node1", `label${a + i}`);
         }
 
@@ -34,15 +34,15 @@ const graphs = {
         graph.addNode("node2");
         graph.addNode("node3");
 
-        for(let i=1; i<=a; i++){
+        for (let i = 1; i <= a; i++) {
             graph.addEdge(`edge${i}`, "node1", "node2", `label${i}`);
         }
 
-        for(let i=1; i<=b; i++){
+        for (let i = 1; i <= b; i++) {
             graph.addEdge(`edge${a + i}`, "node2", "node3", `label${a + i}`);
         }
 
-        for(let i=1; i<=c; i++){
+        for (let i = 1; i <= c; i++) {
             graph.addEdge(`edge${a + b + i}`, "node3", "node1", `label${a + b + i}`);
         }
         return graph;
@@ -57,7 +57,7 @@ const graphs = {
              4             4 
         */
         const graph = new Graph();
-        for(let i=1; i<=4; i++){
+        for (let i = 1; i <= 4; i++) {
             graph.addNode(`node${i}`);
         }
         

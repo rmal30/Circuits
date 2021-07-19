@@ -2,12 +2,12 @@ import {COMPONENTS_LIST} from "../components.js";
 
 export default class HeaderController {
 
-    constructor(controller, circuit, headerView, statusView, promptView, storageView) {
+    constructor(controller, circuit, headerView, statusView, windowView, storageView) {
         this.controller = controller;
         this.circuit = circuit;
         this.headerView = headerView;
         this.statusView = statusView;
-        this.promptView = promptView;
+        this.windowView = windowView;
         this.storageView = storageView;
 
         this.headerView.events.bindFreqChange(this.changeFreq.bind(this));
@@ -27,8 +27,12 @@ export default class HeaderController {
 
     // Simulate circuit and show results
     onSimulate() {
-        const [currentSets, voltageSets] = this.circuit.simulate(this.circuit);
-        this.statusView.showSolution(currentSets, voltageSets, this.circuit.components);
+        try {
+            const [currentSets, voltageSets] = this.circuit.simulate(this.circuit);
+            this.statusView.showSolution(currentSets, voltageSets, this.circuit.components);
+        } catch(e) {
+            this.windowView.alertMessage(`Failed to simulate circuit: ${e.message}`);
+        }
     }
 
     onImport() {
@@ -48,7 +52,7 @@ export default class HeaderController {
 
     onSave() {
         const circuitJSONString = JSON.stringify(this.circuit);
-        const key = this.promptView.promptCircuitName();
+        const key = this.windowView.promptCircuitName();
         if (key) {
             this.storageView.saveDataToLocalStorage(key, circuitJSONString);
         }
@@ -56,7 +60,7 @@ export default class HeaderController {
 
     onExport() {
         const circuitJSONString = JSON.stringify(this.circuit);
-        const filename = this.promptView.promptCircuitName();
+        const filename = this.windowView.promptCircuitName();
         if (filename) {
             this.storageView.exportJSONFile(`${filename}.json`, circuitJSONString);
         }

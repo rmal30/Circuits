@@ -1,5 +1,5 @@
 // Prompt value from user
-export default class PromptView {
+export default class WindowView {
     constructor (_window) {
         this._window = _window;
     }
@@ -23,5 +23,9 @@ export default class PromptView {
 
     promptCircuitName() {
         return this.promptUntilValid("Please enter a circuit name");
+    }
+
+    alertMessage(errorMessage) {
+        this._window.alert(errorMessage);
     }
 }

@@ -5,77 +5,84 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+        <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-blue.min.css"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <link rel="stylesheet" href="styles/style.css"/>
         <link rel="stylesheet" href="styles/dialog_polyfill.css"/>
-        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
     <body>
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--header-scroll">
-    <div class="mdl-layout__header">
-        <div class="mdl-layout__header-row" id="header">
-            <span class="mdl-layout-title"> Circuits </span>
-            <div class="mdl-layout-spacer"> </div>
-        <div id="controls">
-            <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <label class="mdl-textfield__label" style="color:white">Mode</label>
-                <select id="mode" class="mdl-textfield__input">
-                    <option value="dc">DC</option>
-                    <option value="ac">AC</option>
-                </select>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="white mdl-layout-icon"></div>
+                <div class="mdl-layout__header-row" id="header">
+                    <span class="white mdl-layout__title">Circuits</span>
+                    <div class="mdl-layout-spacer"></div>
+                    <div id="controls">
+                        <div class="small_control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <label class="mdl-textfield__label" style="color:white">Mode</label>
+                            <select id="mode" class="mdl-textfield__input">
+                                <option value="dc">DC</option>
+                                <option value="ac">AC</option>
+                            </select>
+                        </div>
+
+                        <div id="freqComponent" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
+                            <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
+                            <input disabled id="frequency" class="mdl-textfield__input" type="number" step="any" value="60"></input>
+                        </div>
+
+                        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <label class="mdl-textfield__label" style="color:white">Add</label>
+                            <select class="mdl-textfield__input" id="newComp">
+                                <option value=" ">None</option>
+                                <option value="res">Resistor</option>
+                            </select>
+                        </div>
+
+                        <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <label class="mdl-textfield__label" style="color:white;">Orientation</label>
+                            <select class="mdl-textfield__input" id="newCompDir">
+                                <option value="H">Horizontal</option>
+                                <option value="V">Vertical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="file" id="importedFile" accept=".json, application/json"/>
+                    <label class="mdl-button mdl-js-button mdl-js-ripple-effect" id="simulate">
+                        <span class="material-icons"> play_arrow </span>
+                        <span class="white">Simulate</span>
+                    </label>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <span class="mdl-layout-title">Circuits</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" id="import">Import</a>
+                    <a class="mdl-navigation__link" id="load">Load existing</a>
+                    <a class="mdl-navigation__link" id="save">Save</a>
+                    <a class="mdl-navigation__link" id="export">Export</a>
+                </nav>
             </div>
-
-
-            <div id="freqComponent" class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-disabled">
-                <label class="white mdl-textfield__label" style="color:white">Frequency (Hz)</label>
-                <input disabled id="frequency" class="mdl-textfield__input" type="number" step="any" value="60"></input>
-            </div>
-
-            <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <label class="mdl-textfield__label" style="color:white">Add</label>
-                <select class="mdl-textfield__input" id="newComp">
-                    <option value=" ">None</option>
-                    <option value="res">Resistor</option>
-                </select>
-            </div>
-
-            <div class="control mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <label class="mdl-textfield__label" style="color:white;">Orientation</label>
-                <select class="mdl-textfield__input" id="newCompDir">
-                    <option value="H">Horizontal</option>
-                    <option value="V">Vertical</option>
-                </select>
-            </div>
+           
+            <dialog class="colored mdl-dialog" id="localStorageDialog">
+                <h6 class="white mdl-dialog__title">Load existing</h6>
+                <div class="white mdl-dialog__content">
+                    <p>Load circuit from local storage</p>
+                    <select id="localStorageKeyInput" class="mdl-textfield__input">
+                    </select>
+                </div>
+                <div class="mdl-dialog__actions">
+                    <input type="button" class="white mdl-button mdl-js-button" id="loadCircuit" value="Load"/>
+                    <input type="button" class="white mdl-button mdl-js-button" id="cancel" value ="Cancel"/>
+                </div>
+            </dialog>
+            <main class="mdl-layout__content">  
+                <svg id="svg" width="70%" height="100%"></svg>
+                <div id="info"></div>
+            </main>
         </div>
-
-        <nav class="white mdl-navigation">
-            <input type="file" id="importedFile" accept=".json, application/json"/>
-            <input class="white mdl-button mdl-js-button" type="button" id="import" value="Import"/>
-            <input class="white mdl-button mdl-js-button" type="button" id="load" value="Load existing"/>
-            <input class="white mdl-button mdl-js-button" type="button" id="simulate" value="Simulate"/>
-            <input class="white mdl-button mdl-js-button" type="button" id="save" value="Save"/>
-            <input class="white mdl-button mdl-js-button" type="button" id="export" value="Export"/>
-        </nav>
-
-        </div>
-    </div>
-    <dialog class="colored mdl-dialog" id="localStorageDialog">
-        <h6 class="white mdl-dialog__title">Load existing</h6>
-        <div class="white mdl-dialog__content">
-            <p>Load circuit from local storage</p>
-            <select id="localStorageKeyInput" class="mdl-textfield__input">
-            </select>
-        </div>
-        <div class="mdl-dialog__actions">
-            <input type="button" class="white mdl-button mdl-js-button" id="loadCircuit" value="Load"/>
-            <input type="button" class="white mdl-button mdl-js-button" id="cancel" value ="Cancel"/>
-        </div>
-    </dialog>
-    <main class="mdl-layout__content">  
-        <svg id="svg" width="70%" height="100%"></svg>
-        <div id="info"></div>
-    </main>
-    </div>
     </body>
 
     <script type="module" src="scripts/math/complex.js"></script>
@@ -104,7 +111,7 @@
 
     <script type="module" src="scripts/views/svg_graphics_view.js"></script>
     <script type="module" src="scripts/views/header_view.js"></script>
-    <script type="module" src="scripts/views/prompt_view.js"></script>
+    <script type="module" src="scripts/views/window_view.js"></script>
     <script type="module" src="scripts/views/schematic_view.js"></script>
     <script type="module" src="scripts/views/status_view.js"></script>
     <script type="module" src="scripts/views/storage_view.js"></script>

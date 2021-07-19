@@ -9,9 +9,9 @@ const KEYS = {
 
 export default class SchematicController {
 
-    constructor(circuit, motion, selection, schematicView, headerView, promptView) {
+    constructor(circuit, motion, selection, schematicView, headerView, windowView) {
         this.models = {circuit, motion, selection};
-        this.views = {schematicView, headerView, promptView};
+        this.views = {schematicView, headerView, windowView};
 
         this.views.schematicView.events.bindKeyPress(this.onKeyPress.bind(this));
         this.views.schematicView.events.bindContainerClick(this.onContainerClick.bind(this));
@@ -46,7 +46,7 @@ export default class SchematicController {
     changeComponentValue(id) {
         const component = this.models.circuit.components[id];
         const compInfo = COMPONENT_DEFINITIONS[component.type];
-        const value = this.views.promptView.promptComponentValue(compInfo);
+        const value = this.views.windowView.promptComponentValue(compInfo);
 
         if (value !== null) {
             this.models.circuit.setComponentValue(id, value);
@@ -175,7 +175,7 @@ export default class SchematicController {
         let value = null;
         const newCompInfo = COMPONENT_DEFINITIONS[type];
         if (newCompInfo.prop) {
-            value = this.views.promptView.promptComponentValue(newCompInfo);
+            value = this.views.windowView.promptComponentValue(newCompInfo);
             if (value === null) {
                 return;
             }

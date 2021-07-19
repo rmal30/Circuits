@@ -2,7 +2,7 @@ import Circuit from "./models/circuit.js";
 import MotionState from "./models/motion_state.js";
 import SelectionState from "./models/selection_state.js";
 
-import PromptView from "./views/prompt_view.js";
+import WindowView from "./views/window_view.js";
 import HeaderView from "./views/header_view.js";
 import StatusView from "./views/status_view.js";
 import SVGGraphicsView from "./views/svg_graphics_view.js";
@@ -41,9 +41,9 @@ const schematicView = new SchematicView(document, graphicsView, GRID_SIZE);
 const headerView = new HeaderView(document);
 const statusView = new StatusView(document);
 const storageView = new StorageView(document, window);
-const promptView = new PromptView(window);
+const windowView = new WindowView(window);
 
-const schematicController = new SchematicController(circuit, motion, selection, schematicView, headerView, promptView);
+const schematicController = new SchematicController(circuit, motion, selection, schematicView, headerView, windowView);
 const dialogController = new DialogController(schematicController, storageView);
-const headerController = new HeaderController(schematicController, circuit, headerView, statusView, promptView, storageView);
+const headerController = new HeaderController(schematicController, circuit, headerView, statusView, windowView, storageView);
 headerController.setMode("dc");

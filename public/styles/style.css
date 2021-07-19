@@ -1,7 +1,3 @@
-.mdl-layout__header-row{
-    padding: 0 40px 0 20px;
-}
-
 #importedFile{
     display: none;
 }
@@ -21,7 +17,7 @@
     color: #fff;
 }
 
-.mdl-layout-title, .mdl-textfield__label, .white{
+.material-icons, .mdl-textfield__label, .white{
     color: #fff;
 }
 
